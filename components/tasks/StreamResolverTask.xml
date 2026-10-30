@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="StreamResolverTask" extends="Task">
+  <interface>
+    <field id="requestItem" type="assocarray" />
+    <field id="resolvedItem" type="assocarray" />
+  </interface>
+
+  <script type="text/brightscript" uri="pkg:/components/tasks/StreamResolverTask.brs" />
+</component>

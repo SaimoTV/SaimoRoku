@@ -8,17 +8,30 @@
   </interface>
 
   <children>
-    <Group id="drawerContainer" translation="[-500, 0]" visible="false">
+    <Group id="drawerContainer" translation="[-520, 0]" visible="false">
       <!-- Fundo do drawer -->
-      <Rectangle width="480" height="1080" color="#0b0e14F5" />
-      <Rectangle translation="[479, 0]" width="1" height="1080" color="#242c3d" />
+      <Rectangle width="500" height="1080" color="#0b0e14FA" />
+      <Rectangle translation="[499, 0]" width="2" height="1080" color="#4FE3D0" />
 
       <!-- Cabeçalho -->
-      <Label translation="[30, 30]" text="Canais" font="font:LargeBoldSystemFont" color="#FFFFFF" />
-      <Label id="countLabel" translation="[30, 75]" text="0 canais" font="font:SmallSystemFont" color="#94a3b8" />
+      <Label translation="[30, 24]" text="Canais Ao Vivo" font="font:LargeBoldSystemFont" color="#FFFFFF" />
+      <Label id="countLabel" translation="[30, 70]" text="0 canais disponíveis" font="font:SmallSystemFont" color="#4FE3D0" />
+      <Label translation="[30, 96]" text="Digite os números do canal no controle (0-9)" font="font:SmallSystemFont" color="#64748b" />
 
       <!-- Lista de Canais -->
-      <LabelList id="channelList" translation="[20, 120]" itemSize="[440, 64]" itemSpacing="[0, 6]" textOffsets="[80, 16]" numRows="14" />
+      <LabelList
+        id="channelList"
+        translation="[20, 130]"
+        itemSize="[460, 58]"
+        itemSpacing="[0, 6]"
+        numRows="14"
+        color="#94a3b8"
+        focusedColor="#4FE3D0"
+      />
+
+      <!-- Rodapé de Ajuda -->
+      <Rectangle translation="[20, 1020]" width="460" height="44" color="#111827" />
+      <Label translation="[30, 1032]" text="[OK] Assistir  •  ▶ Fechar Lista  •  ◀ Menu" font="font:SmallSystemFont" color="#94a3b8" />
     </Group>
   </children>
 

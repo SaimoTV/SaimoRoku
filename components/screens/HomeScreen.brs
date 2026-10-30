@@ -14,11 +14,19 @@ end sub
 
 sub onFocusChange()
     if m.top.hasFocus() then
-        if m.currentFocus = "hero" then
-            m.heroBanner.setFocus(true)
-        else
-            m.contentRowList.setFocus(true)
-        end if
+        updateLayoutFocus()
+    end if
+end sub
+
+sub updateLayoutFocus()
+    if m.currentFocus = "rows" then
+        m.heroBanner.translation = [80, -320]
+        m.contentRowList.translation = [80, 110]
+        if m.contentRowList <> invalid then m.contentRowList.setFocus(true)
+    else
+        m.heroBanner.translation = [80, 0]
+        m.contentRowList.translation = [80, 480]
+        if m.heroBanner <> invalid then m.heroBanner.setFocus(true)
     end if
 end sub
 
@@ -81,7 +89,7 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
         if m.currentFocus = "hero" then
             if m.contentRowList.content <> invalid and m.contentRowList.content.getChildCount() > 0 then
                 m.currentFocus = "rows"
-                m.contentRowList.setFocus(true)
+                updateLayoutFocus()
                 return true
             end if
         end if
@@ -90,9 +98,18 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
             rowFocused = m.contentRowList.rowItemFocused
             if rowFocused <> invalid and rowFocused.Count() > 0 and rowFocused[0] = 0 then
                 m.currentFocus = "hero"
-                m.heroBanner.setFocus(true)
+                updateLayoutFocus()
                 return true
             end if
+        end if
+    else if key = "left" then
+        if m.currentFocus = "rows" then
+            rowFocused = m.contentRowList.rowItemFocused
+            if rowFocused <> invalid and rowFocused.Count() > 1 and rowFocused[1] = 0 then
+                return false ' bubbles to MainScene to open sidebar
+            end if
+        else if m.currentFocus = "hero" then
+            return false ' bubbles to MainScene to open sidebar
         end if
     end if
 

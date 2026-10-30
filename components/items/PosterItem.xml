@@ -8,7 +8,7 @@
 
   <children>
     <Poster id="poster" width="160" height="230" loadDisplayMode="scaleToZoom" />
-    <Label id="title" translation="[0, 235]" width="160" font="font:SmallSystemFont" color="#cbd5e1" maxLines="2" wrap="true" />
+    <Label id="title" translation="[0, 235]" width="160" font="font:SmallSystemFont" color="#cbd5e1" numLines="2" wrap="true" />
   </children>
 
   <script type="text/brightscript" uri="pkg:/components/items/PosterItem.brs" />

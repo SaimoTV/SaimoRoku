@@ -6,6 +6,8 @@
 sub init()
     m.videoPlayer = m.top.findNode("videoPlayer")
     m.bufferingGroup = m.top.findNode("bufferingGroup")
+    m.errorGroup = m.top.findNode("errorGroup")
+    m.errorLabel = m.top.findNode("errorLabel")
     m.playerOsd = m.top.findNode("playerOsd")
     m.progressTimer = m.top.findNode("progressTimer")
 
@@ -23,29 +25,56 @@ sub onPlayItemChange()
     item = m.top.playItem
     if item = invalid then return
 
+    m.errorGroup.visible = false
+    m.bufferingGroup.visible = true
+
     m.playerOsd.title = item.title
     if item.isSeries then
-        m.playerOsd.subtitle = "Temporada 1 • " + item.episodeTitle
+        epTitle = "Episódio 1"
+        if item.episodeTitle <> invalid then epTitle = item.episodeTitle
+        m.playerOsd.subtitle = "Temporada 1 • " + epTitle
         m.playerOsd.isSeries = true
     else
         m.playerOsd.subtitle = "Filme • Full HD"
         m.playerOsd.isSeries = false
     end if
 
-    ' Constrói a URL do stream a partir da base
-    prefs = LoadPreferences()
-    baseUrl = prefs.urlFilmes
-    streamUrl = baseUrl + "stream/" + item.title + ".m3u8"
-    if item.url <> invalid and item.url <> "" then streamUrl = item.url
+    ' Se já tem URL direta, toca imediatamente
+    if item.url <> invalid and item.url <> "" then
+        startPlayback(item.url, item.resumePos)
+    else
+        ' Resolve a URL usando StreamResolverTask
+        m.resolverTask = CreateObject("roSGNode", "StreamResolverTask")
+        m.resolverTask.requestItem = item
+        m.resolverTask.observeField("resolvedItem", "onStreamResolved")
+        m.resolverTask.control = "run"
+    end if
+end sub
 
+sub onStreamResolved(evt as Object)
+    resolved = evt.getData()
+    if resolved <> invalid and resolved.url <> invalid and resolved.url <> "" then
+        startPlayback(resolved.url, resolved.resumePos)
+    else
+        m.bufferingGroup.visible = false
+        m.errorLabel.text = "Vídeo indisponível no momento"
+        m.errorGroup.visible = true
+    end if
+end sub
+
+sub startPlayback(streamUrl as String, resumePos as Dynamic)
     content = CreateObject("roSGNode", "ContentNode")
     content.url = streamUrl
-    content.title = item.title
-    content.streamFormat = "hls"
+    content.title = m.playerOsd.title
 
-    ' Aplica resume se fornecido
-    if item.resumePos <> invalid and item.resumePos > 0 then
-        content.playStart = item.resumePos
+    if Instr(1, streamUrl, ".m3u8") > 0 or Instr(1, streamUrl, "api/stream") > 0 then
+        content.streamFormat = "hls"
+    else
+        content.streamFormat = "mp4"
+    end if
+
+    if resumePos <> invalid and resumePos > 0 then
+        content.playStart = resumePos
     end if
 
     m.bufferingGroup.visible = true
@@ -59,17 +88,19 @@ sub onVideoState()
     state = m.videoPlayer.state
     if state = "playing" then
         m.bufferingGroup.visible = false
+        m.errorGroup.visible = false
         m.playerOsd.isPlaying = true
     else if state = "paused" then
         m.playerOsd.isPlaying = false
     else if state = "buffering" then
         m.bufferingGroup.visible = true
     else if state = "finished" then
-        ' Fim do vídeo: conclui e fecha
         saveCurrentProgress()
         m.top.exitRequested = true
     else if state = "error" then
         m.bufferingGroup.visible = false
+        m.errorLabel.text = "Falha ao reproduzir o vídeo"
+        m.errorGroup.visible = true
     end if
 end sub
 
@@ -98,7 +129,6 @@ sub onOsdSeek()
 end sub
 
 sub onOsdSkipIntro()
-    ' Pula abertura (+85 segundos)
     newPos = m.videoPlayer.position + 85
     if newPos > m.videoPlayer.duration then newPos = m.videoPlayer.duration
     m.videoPlayer.seek = newPos

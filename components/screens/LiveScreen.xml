@@ -4,6 +4,7 @@
     <field id="channels" type="array" onChange="onChannelsChange" />
     <field id="epgMap" type="assocarray" onChange="onEpgChange" />
     <field id="currentChannelIndex" type="integer" value="0" onChange="onChannelIndexChange" />
+    <field id="openDrawerOnLoad" type="boolean" value="true" />
   </interface>
 
   <children>
@@ -11,15 +12,22 @@
     <Video id="liveVideo" width="1920" height="1080" />
 
     <!-- Indicador de Carregando / Buffer -->
-    <Group id="bufferingGroup" translation="[860, 500]" visible="false">
-      <Rectangle translation="[-40, -20]" width="280" height="80" color="#000000B3" />
+    <Group id="bufferingGroup" translation="[840, 500]" visible="false">
+      <Rectangle translation="[-40, -20]" width="300" height="80" color="#000000D0" />
       <Label text="Carregando canal..." font="font:MediumBoldSystemFont" color="#4FE3D0" />
     </Group>
 
     <!-- ZapHUD (Mini Informações ao Trocar de Canal) -->
     <ZapHUD id="zapHud" />
 
-    <!-- Drawer Lateral de Canais (Tecla OK ou Esquerda) -->
+    <!-- Dica de Acesso à Lista de Canais -->
+    <Group id="drawerHintGroup" translation="[80, 1020]" visible="true">
+      <Rectangle width="480" height="40" color="#0b0e14D0" />
+      <Rectangle width="3" height="40" color="#4FE3D0" />
+      <Label translation="[20, 10]" text="[OK] ou ◀ Ver Lista de Canais  •  ▲ / ▼ Zapping" font="font:SmallSystemFont" color="#4FE3D0" />
+    </Group>
+
+    <!-- Drawer Lateral de Canais -->
     <ChannelDrawer id="channelDrawer" />
 
     <!-- Modal de PIN Parental -->

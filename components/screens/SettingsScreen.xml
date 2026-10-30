@@ -24,6 +24,8 @@
         itemSize="[1060, 64]"
         itemSpacing="[0, 8]"
         numRows="12"
+        color="#94a3b8"
+        focusedColor="#4FE3D0"
       />
     </Group>
 

@@ -22,7 +22,7 @@
       itemSpacing="[0, 30]"
       showRowLabel="[true]"
       rowLabelOffset="[[0, 10]]"
-      numRows="3"
+      numRows="4"
     />
   </children>
 

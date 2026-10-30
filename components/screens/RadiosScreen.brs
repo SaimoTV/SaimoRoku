@@ -23,7 +23,7 @@ end sub
 
 sub onRadiosChange()
     radios = m.top.radios
-    if radios = invalid then return
+    if radios = invalid or radios.Count() = 0 then return
 
     root = CreateObject("roSGNode", "ContentNode")
     for each r in radios
@@ -36,13 +36,13 @@ end sub
 sub onRadioSelected()
     idx = m.radiosList.itemSelected
     radios = m.top.radios
-    if radios = invalid or idx >= radios.Count() then return
+    if radios = invalid or idx < 0 or idx >= radios.Count() then return
 
     r = radios[idx]
     m.radioName.text = r.name
     m.radioGenre.text = r.genre
     m.radioStatus.text = "Conectando stream de áudio..."
-    if r.logo <> "" then m.radioLogo.uri = r.logo
+    if r.logo <> invalid and r.logo <> "" then m.radioLogo.uri = r.logo
 
     content = CreateObject("roSGNode", "ContentNode")
     content.url = r.url
@@ -65,8 +65,13 @@ end sub
 
 function onKeyEvent(key as String, press as Boolean) as Boolean
     if not press then return false
-    if key = "back" then
+
+    if key = "left" and m.radiosList.hasFocus() then
+        return false ' bubbles to MainScene to open sidebar
+    else if key = "back" then
         m.radioAudio.control = "stop"
+        return false ' bubbles to MainScene
     end if
+
     return false
 end function

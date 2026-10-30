@@ -7,40 +7,47 @@
   </interface>
 
   <children>
+    <Rectangle width="1920" height="1080" color="#0b0e14" />
+
     <!-- Topo: Chips de Categorias -->
-    <Group id="categoryChipsGroup" translation="[100, 40]">
+    <Group id="categoryChipsGroup" translation="[100, 36]">
       <!-- Chip 0: Filmes (#4FE3D0) -->
       <Group id="chip_0" translation="[0, 0]">
-        <Rectangle id="chipBg_0" width="160" height="44" color="#4FE3D0" />
-        <Label id="chipText_0" translation="[0, 10]" width="160" text="Filmes" font="font:MediumBoldSystemFont" color="#0b0e14" horizAlign="center" />
+        <Rectangle id="chipBg_0" width="160" height="46" color="#4FE3D0" />
+        <Rectangle id="chipBorder_0" width="160" height="46" color="#FFFFFF" visible="false" />
+        <Label id="chipText_0" translation="[0, 11]" width="160" text="Filmes" font="font:MediumBoldSystemFont" color="#0b0e14" horizAlign="center" />
       </Group>
 
       <!-- Chip 1: Séries (#7AA2FF) -->
       <Group id="chip_1" translation="[180, 0]">
-        <Rectangle id="chipBg_1" width="160" height="44" color="#1e293b" />
-        <Label id="chipText_1" translation="[0, 10]" width="160" text="Séries" font="font:MediumBoldSystemFont" color="#94a3b8" horizAlign="center" />
+        <Rectangle id="chipBg_1" width="160" height="46" color="#1e293b" />
+        <Rectangle id="chipBorder_1" width="160" height="46" color="#FFFFFF" visible="false" />
+        <Label id="chipText_1" translation="[0, 11]" width="160" text="Séries" font="font:MediumBoldSystemFont" color="#94a3b8" horizAlign="center" />
       </Group>
 
       <!-- Chip 2: Animes (#FFB454) -->
       <Group id="chip_2" translation="[360, 0]">
-        <Rectangle id="chipBg_2" width="160" height="44" color="#1e293b" />
-        <Label id="chipText_2" translation="[0, 10]" width="160" text="Animes" font="font:MediumBoldSystemFont" color="#94a3b8" horizAlign="center" />
+        <Rectangle id="chipBg_2" width="160" height="46" color="#1e293b" />
+        <Rectangle id="chipBorder_2" width="160" height="46" color="#FFFFFF" visible="false" />
+        <Label id="chipText_2" translation="[0, 11]" width="160" text="Animes" font="font:MediumBoldSystemFont" color="#94a3b8" horizAlign="center" />
       </Group>
 
       <!-- Chip 3: Doramas (#FF7EB6) -->
       <Group id="chip_3" translation="[540, 0]">
-        <Rectangle id="chipBg_3" width="160" height="44" color="#1e293b" />
-        <Label id="chipText_3" translation="[0, 10]" width="160" text="Doramas" font="font:MediumBoldSystemFont" color="#94a3b8" horizAlign="center" />
+        <Rectangle id="chipBg_3" width="160" height="46" color="#1e293b" />
+        <Rectangle id="chipBorder_3" width="160" height="46" color="#FFFFFF" visible="false" />
+        <Label id="chipText_3" translation="[0, 11]" width="160" text="Doramas" font="font:MediumBoldSystemFont" color="#94a3b8" horizAlign="center" />
       </Group>
 
-      <!-- Contador de títulos -->
-      <Label id="vodCountLabel" translation="[1500, 10]" text="0 títulos" font="font:SmallSystemFont" color="#64748b" />
+      <!-- Instrução e Contador -->
+      <Label id="chipsHint" translation="[720, 12]" text="[▲ Suba para trocar categorias • ▼ Desça para navegar capas]" font="font:SmallSystemFont" color="#4FE3D0" />
+      <Label id="vodCountLabel" translation="[1480, 12]" text="0 títulos" font="font:SmallBoldSystemFont" color="#FFFFFF" />
     </Group>
 
     <!-- Grid de Posters GPU-Accelerated -->
     <PosterGrid
       id="vodPosterGrid"
-      translation="[100, 110]"
+      translation="[100, 106]"
       basePosterSize="[200, 300]"
       itemSpacing="[20, 24]"
       numColumns="7"

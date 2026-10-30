@@ -17,7 +17,7 @@ sub onChannelsChange()
     content = CreateObject("roSGNode", "ContentNode")
     for each ch in channels
         item = content.CreateChild("ContentNode")
-        item.title = ch.number.ToStr() + "  " + ch.name
+        item.title = ch.number.ToStr() + "   " + ch.name
     end for
     m.channelList.content = content
 end sub
@@ -28,11 +28,11 @@ sub onOpenChange()
     if isOpen then
         m.drawerContainer.translation = [80, 0]
         m.channelList.setFocus(true)
-        if m.top.selectedIndex < m.top.channels.Count() then
+        if m.top.channels <> invalid and m.top.selectedIndex < m.top.channels.Count() then
             m.channelList.jumpToItem = m.top.selectedIndex
         end if
     else
-        m.drawerContainer.translation = [-500, 0]
+        m.drawerContainer.translation = [-520, 0]
     end if
 end sub
 
@@ -48,10 +48,15 @@ end sub
 function onKeyEvent(key as String, press as Boolean) as Boolean
     if not press then return false
 
-    if key = "back" or key = "left" then
+    if key = "right" or key = "back" then
         if m.top.isOpen then
             m.top.isOpen = false
             return true
+        end if
+    else if key = "left" then
+        if m.top.isOpen then
+            m.top.isOpen = false
+            return false ' Bubbles to MainScene to open sidebar
         end if
     end if
 

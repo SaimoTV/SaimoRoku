@@ -8,11 +8,14 @@ sub init()
     m.bufferingGroup = m.top.findNode("bufferingGroup")
     m.zapHud = m.top.findNode("zapHud")
     m.channelDrawer = m.top.findNode("channelDrawer")
+    m.drawerHintGroup = m.top.findNode("drawerHintGroup")
     m.pinModal = m.top.findNode("pinModal")
 
     m.liveVideo.observeField("state", "onVideoState")
     m.channelDrawer.observeField("channelSelected", "onDrawerSelect")
+    m.channelDrawer.observeField("isOpen", "onDrawerOpenChange")
     m.pinModal.observeField("isUnlocked", "onPinUnlocked")
+    m.top.observeField("focused", "onFocusChange")
 
     m.numberBuffer = ""
     m.numberTimer = CreateObject("roSGNode", "Timer")
@@ -22,10 +25,33 @@ sub init()
     m.top.appendChild(m.numberTimer)
 end sub
 
+sub onFocusChange()
+    if m.top.hasFocus() then
+        if m.channelDrawer.isOpen then
+            m.channelDrawer.setFocus(true)
+        end if
+    end if
+end sub
+
+sub onDrawerOpenChange()
+    if m.channelDrawer.isOpen then
+        m.drawerHintGroup.visible = false
+    else
+        m.drawerHintGroup.visible = true
+        m.top.setFocus(true)
+    end if
+end sub
+
 sub onChannelsChange()
     m.channelDrawer.channels = m.top.channels
     if m.top.channels <> invalid and m.top.channels.Count() > 0 then
         playChannel(m.top.currentChannelIndex)
+        if m.top.openDrawerOnLoad then
+            m.channelDrawer.selectedIndex = m.top.currentChannelIndex
+            m.channelDrawer.isOpen = true
+            m.channelDrawer.setFocus(true)
+            m.top.openDrawerOnLoad = false
+        end if
     end if
 end sub
 
@@ -118,7 +144,6 @@ sub onVideoState()
         m.bufferingGroup.visible = true
     else if state = "error" then
         m.bufferingGroup.visible = false
-        ' Tenta próxima fonte reserva do canal se houver
         tryNextVariant()
     end if
 end sub

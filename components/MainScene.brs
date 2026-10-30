@@ -47,32 +47,39 @@ sub init()
 end sub
 
 sub loadAllData()
-    ' Dispara tarefas assíncronas
+    ' Dispara tarefas assíncronas e armazena referências para evitar garbage collection prematuro
+    m.loaders = []
+
     loader1 = CreateObject("roSGNode", "DataLoaderTask")
     loader1.requestType = "channels"
     loader1.observeField("responseChannels", "onChannelsLoaded")
     loader1.control = "run"
+    m.loaders.Push(loader1)
 
     loader2 = CreateObject("roSGNode", "DataLoaderTask")
     loader2.requestType = "epg"
     loader2.observeField("responseEpg", "onEpgLoaded")
     loader2.control = "run"
+    m.loaders.Push(loader2)
 
     loader3 = CreateObject("roSGNode", "DataLoaderTask")
     loader3.requestType = "destaques"
     loader3.observeField("responseDestaques", "onDestaquesLoaded")
     loader3.observeField("responseVodItems", "onVodLoaded")
     loader3.control = "run"
+    m.loaders.Push(loader3)
 
     loader5 = CreateObject("roSGNode", "DataLoaderTask")
     loader5.requestType = "events"
     loader5.observeField("responseEvents", "onEventsLoaded")
     loader5.control = "run"
+    m.loaders.Push(loader5)
 
     loader6 = CreateObject("roSGNode", "DataLoaderTask")
     loader6.requestType = "radios"
     loader6.observeField("responseRadios", "onRadiosLoaded")
     loader6.control = "run"
+    m.loaders.Push(loader6)
 end sub
 
 sub onChannelsLoaded(evt as Object)
@@ -302,9 +309,10 @@ sub onSidebarSelected(evt as Object)
     m.sidebarMenu.isExpanded = false
     if m.currentScreenName <> itemKey then
         switchScreen(itemKey)
-    end if
-    if m.currentScreenNode <> invalid then
-        m.currentScreenNode.setFocus(true)
+    else
+        if m.currentScreenNode <> invalid then
+            m.currentScreenNode.setFocus(true)
+        end if
     end if
 end sub
 

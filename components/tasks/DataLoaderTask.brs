@@ -179,6 +179,7 @@ sub fetchDestaques(baseUrl as String)
             if tabParts.Count() >= 5 then
                 tipo = tabParts[0].Trim()
                 title = tabParts[1].Trim()
+                letter = tabParts[2].Trim()
                 year = tabParts[3].Trim()
                 posterPath = tabParts[4].Trim()
                 posterUrl = posterPath
@@ -188,6 +189,7 @@ sub fetchDestaques(baseUrl as String)
 
                 item = {
                     title: title,
+                    letter: letter,
                     poster: posterUrl,
                     backdrop: posterUrl,
                     isSeries: (tipo = "s"),

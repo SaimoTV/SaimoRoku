@@ -34,7 +34,7 @@ end sub
 
 sub addSettingItem(root as Object, key as String, label as String, val as String)
     node = root.CreateChild("ContentNode")
-    node.title = label + "  ▶  " + UCase(val)
+    node.title = label + " : " + UCase(val)
     node.addFields({ settingKey: key })
 end sub
 
@@ -46,7 +46,7 @@ end function
 sub onSettingSelected()
     idx = m.settingsList.itemSelected
     root = m.settingsList.content
-    if root <> invalid and idx < root.getChildCount() then
+    if root <> invalid and idx >= 0 and idx < root.getChildCount() then
         node = root.getChild(idx)
         key = node.settingKey
 
@@ -88,3 +88,13 @@ sub onSettingSelected()
         m.settingsList.jumpToItem = idx
     end if
 end sub
+
+function onKeyEvent(key as String, press as Boolean) as Boolean
+    if not press then return false
+
+    if key = "left" then
+        return false ' bubbles to MainScene to open sidebar
+    end if
+
+    return false
+end function

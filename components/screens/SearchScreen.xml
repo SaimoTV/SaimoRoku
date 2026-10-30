@@ -33,6 +33,8 @@
         itemSize="[940, 60]"
         itemSpacing="[0, 6]"
         numRows="13"
+        color="#94a3b8"
+        focusedColor="#4FE3D0"
       />
     </Group>
   </children>

@@ -9,7 +9,13 @@ sub init()
 
     m.searchKeyboard.observeField("text", "onSearchTextChanged")
     m.resultsList.observeField("itemSelected", "onResultSelected")
-    m.searchKeyboard.setFocus(true)
+    m.top.observeField("focused", "onFocusChange")
+end sub
+
+sub onFocusChange()
+    if m.top.hasFocus() and m.searchKeyboard <> invalid then
+        m.searchKeyboard.setFocus(true)
+    end if
 end sub
 
 sub onSearchTextChanged()
@@ -60,7 +66,7 @@ end sub
 sub onResultSelected()
     idx = m.resultsList.itemSelected
     root = m.resultsList.content
-    if root <> invalid and idx < root.getChildCount() then
+    if root <> invalid and idx >= 0 and idx < root.getChildCount() then
         node = root.getChild(idx)
         if node <> invalid then
             if node.type = "channel" then
@@ -83,6 +89,8 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
     else if key = "left" and m.resultsList.hasFocus() then
         m.searchKeyboard.setFocus(true)
         return true
+    else if key = "left" and m.searchKeyboard.hasFocus() then
+        return false ' bubbles to MainScene to open sidebar
     end if
 
     return false

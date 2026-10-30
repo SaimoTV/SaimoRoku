@@ -23,7 +23,7 @@ sub onEventsChange()
         node = root.CreateChild("ContentNode")
         scoreStr = ""
         if ev.score <> invalid and ev.score <> "" then scoreStr = "  [" + ev.score + "]"
-        node.title = ev.timeStr + "  •  " + ev.homeTeam + scoreStr + "  x  " + ev.awayTeam + "   (" + ev.league + ")   ▶ " + ev.channelName
+        node.title = ev.timeStr + "  •  " + ev.homeTeam + scoreStr + "  x  " + ev.awayTeam + "   (" + ev.league + ")   • Canal: " + ev.channelName
         node.addFields({ channelName: ev.channelName })
     end for
 
@@ -40,3 +40,13 @@ sub onEventSelected()
         end if
     end if
 end sub
+
+function onKeyEvent(key as String, press as Boolean) as Boolean
+    if not press then return false
+
+    if key = "left" and m.eventsList.hasFocus() then
+        return false ' Bubbles to MainScene to open sidebar
+    end if
+
+    return false
+end function

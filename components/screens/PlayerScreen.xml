@@ -10,9 +10,17 @@
     <Video id="videoPlayer" width="1920" height="1080" />
 
     <!-- Indicador de Buffer / Carregamento -->
-    <Group id="bufferingGroup" translation="[860, 500]" visible="false">
-      <Rectangle translation="[-30, -20]" width="260" height="70" color="#000000B3" />
+    <Group id="bufferingGroup" translation="[820, 500]" visible="false">
+      <Rectangle translation="[-40, -20]" width="360" height="80" color="#000000D0" />
       <Label text="Carregando vídeo..." font="font:MediumBoldSystemFont" color="#4FE3D0" />
+    </Group>
+
+    <!-- Indicador de Erro -->
+    <Group id="errorGroup" translation="[700, 480]" visible="false">
+      <Rectangle translation="[-30, -20]" width="580" height="120" color="#0b0e14F0" />
+      <Rectangle translation="[-30, -20]" width="580" height="3" color="#e11d48" />
+      <Label id="errorLabel" translation="[0, 15]" width="520" text="Vídeo indisponível no momento" font="font:MediumBoldSystemFont" color="#FFFFFF" horizAlign="center" />
+      <Label translation="[0, 60]" width="520" text="Pressione [Voltar] no controle remoto" font="font:SmallSystemFont" color="#94a3b8" horizAlign="center" />
     </Group>
 
     <!-- OSD Customizado Completo -->
