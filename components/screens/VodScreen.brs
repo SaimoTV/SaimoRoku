@@ -10,6 +10,15 @@ sub init()
     m.focusArea = "grid" ' "chips" ou "grid"
     m.categories = ["Filmes", "Séries", "Animes", "Doramas"]
     m.chipColors = ["#4FE3D0", "#7AA2FF", "#FFB454", "#FF7EB6"]
+    m.top.observeField("focused", "onFocusChange")
+end sub
+
+sub onFocusChange()
+    if m.top.hasFocus() then
+        if m.focusArea = "grid" and m.vodPosterGrid <> invalid then
+            m.vodPosterGrid.setFocus(true)
+        end if
+    end if
 end sub
 
 sub onItemsChange()

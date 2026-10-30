@@ -8,7 +8,9 @@ sub init()
     m.genreLabel = m.top.findNode("genreLabel")
     m.overviewLabel = m.top.findNode("overviewLabel")
     m.playBtnBg = m.top.findNode("playBtnBg")
+    m.playBtnText = m.top.findNode("playBtnText")
     m.detailsBtnBg = m.top.findNode("detailsBtnBg")
+    m.detailsBtnText = m.top.findNode("detailsBtnText")
     m.focusedButton = 0 ' 0 = Play, 1 = Detalhes
     updateButtonFocus()
 end sub
@@ -26,8 +28,10 @@ sub onItemChange()
 
     if item.genres <> invalid then
         m.genreLabel.text = item.genres
+    else if item.year <> invalid and item.year <> "" then
+        m.genreLabel.text = item.year + " • Filmes e Séries • HD / 4K"
     else
-        m.genreLabel.text = "Filmes & Séries • HD / 4K"
+        m.genreLabel.text = "Filmes e Séries • HD / 4K"
     end if
 
     if item.overview <> invalid and item.overview <> "" then
@@ -40,11 +44,16 @@ end sub
 sub updateButtonFocus()
     if m.focusedButton = 0 then
         m.playBtnBg.color = "#4FE3D0"
+        m.playBtnText.color = "#0b0e14"
         m.detailsBtnBg.color = "#1e293b"
+        m.detailsBtnText.color = "#FFFFFF"
     else
         m.playBtnBg.color = "#1e293b"
+        m.playBtnText.color = "#FFFFFF"
         m.detailsBtnBg.color = "#4FE3D0"
+        m.detailsBtnText.color = "#0b0e14"
     end if
+    m.top.focusedButton = m.focusedButton
 end sub
 
 function onKeyEvent(key as String, press as Boolean) as Boolean

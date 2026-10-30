@@ -6,7 +6,14 @@ sub init()
     m.settingsList = m.top.findNode("settingsList")
     m.settingsList.observeField("itemSelected", "onSettingSelected")
     m.prefs = LoadPreferences()
+    m.top.observeField("focused", "onFocusChange")
     populateSettings()
+end sub
+
+sub onFocusChange()
+    if m.top.hasFocus() and m.settingsList <> invalid then
+        m.settingsList.setFocus(true)
+    end if
 end sub
 
 sub populateSettings()

@@ -19,8 +19,6 @@ sub executeRequest()
         fetchEpg(urlCanais)
     else if reqType = "destaques" then
         fetchDestaques(urlFilmes)
-    else if reqType = "vod" then
-        fetchVod(urlFilmes)
     else if reqType = "events" then
         fetchEvents(urlCanais)
     else if reqType = "radios" then
@@ -58,8 +56,8 @@ sub fetchChannels(baseUrl as String)
         line = rawLine.Trim()
         if line = "" or Left(line, 1) = "#" then continue for
 
-        colon = line.Instr(":")
-        if colon <= 0 then continue for
+        colon = Instr(1, line, ":")
+        if colon <= 1 then continue for
 
         key = LCase(Left(line, colon - 1).Trim())
         val = Mid(line, colon + 1).Trim()
@@ -159,107 +157,87 @@ sub fetchDestaques(baseUrl as String)
     lines = text.Split(Chr(10))
     rails = []
     currentRail = invalid
+    capaBase = "https://image.tmdb.org/t/p/w342"
+    allVodItems = []
 
     for each rawLine in lines
         line = rawLine.Trim()
-        if line = "" then continue for
+        if line = "" or Left(line, 1) = "#" then continue for
 
-        if Left(line, 1) = "[" and Right(line, 1) = "]" then
-            railTitle = Mid(line, 2, Len(line) - 2)
+        if Left(line, 5) = "capa:" then
+            capaBase = Mid(line, 6).Trim()
+        else if Left(line, 4) = "fila" then
+            tabParts = line.Split(Chr(9))
+            railTitle = "Em Destaque"
+            if tabParts.Count() >= 2 then railTitle = tabParts[1].Trim()
             currentRail = {
                 title: railTitle,
                 items: []
             }
             rails.Push(currentRail)
         else if currentRail <> invalid then
-            parts = line.Split("|")
-            if parts.Count() >= 2 then
-                title = parts[0].Trim()
-                poster = parts[1].Trim()
-                isSeries = false
-                if parts.Count() >= 3 and parts[2].Trim() = "serie" then isSeries = true
-                
+            tabParts = line.Split(Chr(9))
+            if tabParts.Count() >= 5 then
+                tipo = tabParts[0].Trim()
+                title = tabParts[1].Trim()
+                year = tabParts[3].Trim()
+                posterPath = tabParts[4].Trim()
+                posterUrl = posterPath
+                if Left(posterPath, 1) = "/" then
+                    posterUrl = capaBase + posterPath
+                end if
+
                 item = {
                     title: title,
-                    poster: poster,
-                    isSeries: isSeries
+                    poster: posterUrl,
+                    backdrop: posterUrl,
+                    isSeries: (tipo = "s"),
+                    year: year,
+                    category: currentRail.title
                 }
                 currentRail.items.Push(item)
+                allVodItems.Push(item)
             end if
         end if
     end for
 
     m.top.responseDestaques = rails
-end sub
-
-' ----- Catálogo VOD (Filmes e Séries) -----
-sub fetchVod(baseUrl as String)
-    url = baseUrl + "indice.txt"
-    text = HttpGet(url)
-    if text = "" then return
-
-    lines = text.Split(Chr(10))
-    vodItems = []
-
-    for each rawLine in lines
-        line = rawLine.Trim()
-        if line = "" or Left(line, 1) = "#" then continue for
-        parts = line.Split("|")
-        if parts.Count() >= 3 then
-            title = parts[0].Trim()
-            category = parts[1].Trim()
-            poster = parts[2].Trim()
-            isSeries = (category = "Séries" or category = "Animes" or category = "Doramas")
-            year = ""
-            if parts.Count() >= 4 then year = parts[3].Trim()
-
-            item = {
-                title: title,
-                category: category,
-                poster: poster,
-                isSeries: isSeries,
-                year: year
-            }
-            vodItems.Push(item)
-        end if
-    end for
-
-    m.top.responseVodItems = vodItems
+    m.top.responseVodItems = allVodItems
 end sub
 
 ' ----- Eventos Esportivos -----
 sub fetchEvents(baseUrl as String)
-    url = baseUrl + "eventos.txt"
+    url = "https://saimo-tv.pages.dev/eventos-extra.json"
     text = HttpGet(url)
-    if text = "" then return
-
-    lines = text.Split(Chr(10))
     events = []
 
-    for each rawLine in lines
-        line = rawLine.Trim()
-        if line = "" or Left(line, 1) = "#" then continue for
-        parts = line.Split("|")
-        if parts.Count() >= 5 then
-            homeTeam = parts[0].Trim()
-            awayTeam = parts[1].Trim()
-            league = parts[2].Trim()
-            timeStr = parts[3].Trim()
-            channelName = parts[4].Trim()
-            score = ""
-            if parts.Count() >= 6 then score = parts[5].Trim()
+    if text <> "" and text <> "[]" then
+        parsed = ParseJson(text)
+        if parsed <> invalid and type(parsed) = "roArray" then
+            for each ev in parsed
+                home = ""
+                away = ""
+                if ev.mandante <> invalid then home = ev.mandante
+                if ev.visitante <> invalid then away = ev.visitante
+                league = ""
+                if ev.campeonato <> invalid then league = ev.campeonato
+                timeStr = ""
+                if ev.hora <> invalid then timeStr = ev.hora
+                channelName = ""
+                if ev.canal <> invalid then channelName = ev.canal
 
-            item = {
-                homeTeam: homeTeam,
-                awayTeam: awayTeam,
-                league: league,
-                timeStr: timeStr,
-                channelName: channelName,
-                score: score
-            }
-            events.Push(item)
+                item = {
+                    homeTeam: home,
+                    awayTeam: away,
+                    league: league,
+                    timeStr: timeStr,
+                    channelName: channelName,
+                    score: ""
+                }
+                events.Push(item)
+            end for
         end if
-    end for
+    end if
 
     m.top.responseEvents = events
 end sub
@@ -277,12 +255,12 @@ sub fetchRadios(baseUrl as String)
         line = rawLine.Trim()
         if line = "" or Left(line, 1) = "#" then continue for
         parts = line.Split("|")
-        if parts.Count() >= 3 then
+        if parts.Count() >= 2 then
             name = parts[0].Trim()
             streamUrl = parts[1].Trim()
-            genre = parts[2].Trim()
             logo = ""
-            if parts.Count() >= 4 then logo = parts[3].Trim()
+            if parts.Count() >= 3 then logo = parts[2].Trim()
+            genre = "Ao Vivo"
 
             item = {
                 name: name,

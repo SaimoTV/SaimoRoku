@@ -9,6 +9,17 @@ sub init()
     m.heroBanner.observeField("detailsClicked", "onHeroDetails")
     m.contentRowList.observeField("rowItemSelected", "onRowItemSelected")
     m.currentFocus = "hero" ' "hero" ou "rows"
+    m.top.observeField("focused", "onFocusChange")
+end sub
+
+sub onFocusChange()
+    if m.top.hasFocus() then
+        if m.currentFocus = "hero" then
+            m.heroBanner.setFocus(true)
+        else
+            m.contentRowList.setFocus(true)
+        end if
+    end if
 end sub
 
 sub onFeaturedChange()
@@ -68,15 +79,20 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
 
     if key = "down" then
         if m.currentFocus = "hero" then
-            m.currentFocus = "rows"
-            m.contentRowList.setFocus(true)
-            return true
+            if m.contentRowList.content <> invalid and m.contentRowList.content.getChildCount() > 0 then
+                m.currentFocus = "rows"
+                m.contentRowList.setFocus(true)
+                return true
+            end if
         end if
     else if key = "up" then
-        if m.currentFocus = "rows" and m.contentRowList.rowItemFocused[0] = 0 then
-            m.currentFocus = "hero"
-            m.heroBanner.setFocus(true)
-            return true
+        if m.currentFocus = "rows" then
+            rowFocused = m.contentRowList.rowItemFocused
+            if rowFocused <> invalid and rowFocused.Count() > 0 and rowFocused[0] = 0 then
+                m.currentFocus = "hero"
+                m.heroBanner.setFocus(true)
+                return true
+            end if
         end if
     end if
 

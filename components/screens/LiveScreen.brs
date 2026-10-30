@@ -183,12 +183,13 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
         ' Abre o ChannelDrawer
         m.channelDrawer.selectedIndex = m.top.currentChannelIndex
         m.channelDrawer.isOpen = true
+        m.channelDrawer.setFocus(true)
         return true
     end if
 
     ' Dígitos 0-9
     validDigits = "0123456789"
-    if validDigits.Instr(key) > 0 or key = "0" then
+    if Instr(1, validDigits, key) > 0 then
         m.numberBuffer = m.numberBuffer + key
         m.zapHud.channelNumber = m.numberBuffer
         m.zapHud.channelName = "Sintonizando..."

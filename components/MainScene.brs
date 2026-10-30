@@ -39,6 +39,11 @@ sub init()
     else
         switchScreen("home")
     end if
+
+    ' Foco inicial no menu lateral para navegação instantânea e visível
+    m.sidebarMenu.visible = true
+    m.sidebarMenu.isExpanded = true
+    m.sidebarMenu.setFocus(true)
 end sub
 
 sub loadAllData()
@@ -56,12 +61,8 @@ sub loadAllData()
     loader3 = CreateObject("roSGNode", "DataLoaderTask")
     loader3.requestType = "destaques"
     loader3.observeField("responseDestaques", "onDestaquesLoaded")
+    loader3.observeField("responseVodItems", "onVodLoaded")
     loader3.control = "run"
-
-    loader4 = CreateObject("roSGNode", "DataLoaderTask")
-    loader4.requestType = "vod"
-    loader4.observeField("responseVodItems", "onVodLoaded")
-    loader4.control = "run"
 
     loader5 = CreateObject("roSGNode", "DataLoaderTask")
     loader5.requestType = "events"
@@ -300,6 +301,9 @@ sub onSidebarSelected(evt as Object)
     itemKey = evt.getData()
     m.sidebarMenu.isExpanded = false
     switchScreen(itemKey)
+    if m.currentScreenNode <> invalid then
+        m.currentScreenNode.setFocus(true)
+    end if
 end sub
 
 ' ====================================================================
@@ -373,8 +377,8 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
         return false
     end if
 
-    ' Se o usuário pressiona "left" e não está em Live ou Player
-    if key = "left" and m.currentScreenName <> "live" and m.currentScreenName <> "player" then
+    ' Se o usuário pressiona "left" e não está em Player de vídeo
+    if key = "left" and m.currentScreenName <> "player" then
         m.sidebarMenu.visible = true
         m.sidebarMenu.isExpanded = true
         m.sidebarMenu.setFocus(true)
@@ -385,6 +389,12 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
     if key = "back" then
         if m.currentScreenName <> "home" then
             switchScreen("home")
+            if m.currentScreenNode <> invalid then m.currentScreenNode.setFocus(true)
+            return true
+        else if not m.sidebarMenu.isExpanded then
+            m.sidebarMenu.visible = true
+            m.sidebarMenu.isExpanded = true
+            m.sidebarMenu.setFocus(true)
             return true
         end if
     end if

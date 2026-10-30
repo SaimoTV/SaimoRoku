@@ -5,6 +5,13 @@
 sub init()
     m.eventsList = m.top.findNode("eventsList")
     m.eventsList.observeField("itemSelected", "onEventSelected")
+    m.top.observeField("focused", "onFocusChange")
+end sub
+
+sub onFocusChange()
+    if m.top.hasFocus() and m.eventsList <> invalid then
+        m.eventsList.setFocus(true)
+    end if
 end sub
 
 sub onEventsChange()

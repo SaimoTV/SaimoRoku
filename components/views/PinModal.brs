@@ -43,7 +43,7 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
 
     ' Dígitos 0 a 9 do controle remoto
     validDigits = "0123456789"
-    if validDigits.Instr(key) > 0 or key = "0" then
+    if Instr(1, validDigits, key) > 0 then
         m.enteredPin = m.enteredPin + key
         m.errorLabel.visible = false
         updateDots()

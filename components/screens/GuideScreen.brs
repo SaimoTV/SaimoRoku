@@ -10,6 +10,13 @@ sub init()
     m.guideChannelList.observeField("itemFocused", "onChannelFocused")
     m.guideChannelList.observeField("itemSelected", "onChannelSelected")
     m.scheduleList.observeField("itemSelected", "onScheduleSelected")
+    m.top.observeField("focused", "onFocusChange")
+end sub
+
+sub onFocusChange()
+    if m.top.hasFocus() and m.guideChannelList <> invalid then
+        m.guideChannelList.setFocus(true)
+    end if
 end sub
 
 sub onChannelsChange()

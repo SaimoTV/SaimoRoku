@@ -27,9 +27,9 @@ sub onSearchTextChanged()
     channels = m.top.channels
     if channels <> invalid then
         for each ch in channels
-            if LCase(ch.name).Instr(query) >= 0 then
+            if Instr(1, LCase(ch.name), query) > 0 then
                 node = root.CreateChild("ContentNode")
-                node.title = "▶ [CANAL] " + ch.number.ToStr() + " - " + ch.name
+                node.title = "[CANAL] " + ch.number.ToStr() + " - " + ch.name
                 node.addFields({ type: "channel", item: ch })
                 count = count + 1
                 if count >= 30 then exit for
@@ -41,11 +41,11 @@ sub onSearchTextChanged()
     vodItems = m.top.vodItems
     if vodItems <> invalid and count < 30 then
         for each it in vodItems
-            if LCase(it.title).Instr(query) >= 0 then
+            if Instr(1, LCase(it.title), query) > 0 then
                 node = root.CreateChild("ContentNode")
                 tag = "FILME"
                 if it.isSeries then tag = "SÉRIE"
-                node.title = "▦ [" + tag + "] " + it.title
+                node.title = "[" + tag + "] " + it.title
                 node.addFields({ type: "vod", item: it })
                 count = count + 1
                 if count >= 30 then exit for

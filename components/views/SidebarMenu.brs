@@ -44,13 +44,10 @@ sub updateSelection(index as Integer)
     m.focusBar.translation = [8, yPos]
 
     for i = 0 to 7
-        iconNode = m.top.findNode("icon_" + i.ToStr())
         labelNode = m.top.findNode("label_" + i.ToStr())
         if i = index then
-            if iconNode <> invalid then iconNode.color = "#4FE3D0"
             if labelNode <> invalid then labelNode.color = "#4FE3D0"
         else
-            if iconNode <> invalid then iconNode.color = "#94a3b8"
             if labelNode <> invalid then labelNode.color = "#94a3b8"
         end if
     end for

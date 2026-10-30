@@ -12,6 +12,13 @@ sub init()
 
     m.radiosList.observeField("itemSelected", "onRadioSelected")
     m.radioAudio.observeField("state", "onAudioState")
+    m.top.observeField("focused", "onFocusChange")
+end sub
+
+sub onFocusChange()
+    if m.top.hasFocus() and m.radiosList <> invalid then
+        m.radiosList.setFocus(true)
+    end if
 end sub
 
 sub onRadiosChange()
