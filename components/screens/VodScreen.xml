@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="VodScreen" extends="Group">
+  <interface>
+    <field id="vodItems" type="array" onChange="onItemsChange" />
+    <field id="selectedCategory" type="string" value="Filmes" onChange="onCategoryChange" />
+    <field id="itemSelected" type="assocarray" />
+  </interface>
+
+  <children>
+    <!-- Topo: Chips de Categorias -->
+    <Group id="categoryChipsGroup" translation="[100, 40]">
+      <!-- Chip 0: Filmes (#4FE3D0) -->
+      <Group id="chip_0" translation="[0, 0]">
+        <Rectangle id="chipBg_0" width="160" height="44" color="#4FE3D0" />
+        <Label id="chipText_0" translation="[0, 10]" width="160" text="Filmes" font="font:MediumBoldSystemFont" color="#0b0e14" horizAlign="center" />
+      </Group>
+
+      <!-- Chip 1: Séries (#7AA2FF) -->
+      <Group id="chip_1" translation="[180, 0]">
+        <Rectangle id="chipBg_1" width="160" height="44" color="#1e293b" />
+        <Label id="chipText_1" translation="[0, 10]" width="160" text="Séries" font="font:MediumBoldSystemFont" color="#94a3b8" horizAlign="center" />
+      </Group>
+
+      <!-- Chip 2: Animes (#FFB454) -->
+      <Group id="chip_2" translation="[360, 0]">
+        <Rectangle id="chipBg_2" width="160" height="44" color="#1e293b" />
+        <Label id="chipText_2" translation="[0, 10]" width="160" text="Animes" font="font:MediumBoldSystemFont" color="#94a3b8" horizAlign="center" />
+      </Group>
+
+      <!-- Chip 3: Doramas (#FF7EB6) -->
+      <Group id="chip_3" translation="[540, 0]">
+        <Rectangle id="chipBg_3" width="160" height="44" color="#1e293b" />
+        <Label id="chipText_3" translation="[0, 10]" width="160" text="Doramas" font="font:MediumBoldSystemFont" color="#94a3b8" horizAlign="center" />
+      </Group>
+
+      <!-- Contador de títulos -->
+      <Label id="vodCountLabel" translation="[1500, 10]" text="0 títulos" font="font:SmallSystemFont" color="#64748b" />
+    </Group>
+
+    <!-- Grid de Posters GPU-Accelerated -->
+    <PosterGrid
+      id="vodPosterGrid"
+      translation="[100, 110]"
+      basePosterSize="[200, 300]"
+      itemSpacing="[20, 24]"
+      numColumns="7"
+      numRows="3"
+      caption1NumLines="1"
+    />
+  </children>
+
+  <script type="text/brightscript" uri="pkg:/components/screens/VodScreen.brs" />
+</component>

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="PlayerOSD" extends="Group">
+  <interface>
+    <field id="title" type="string" onChange="onDataChange" />
+    <field id="subtitle" type="string" onChange="onDataChange" />
+    <field id="positionSec" type="integer" value="0" onChange="onPositionChange" />
+    <field id="durationSec" type="integer" value="0" onChange="onPositionChange" />
+    <field id="isPlaying" type="boolean" value="true" onChange="onStateChange" />
+    <field id="isSeries" type="boolean" value="false" onChange="onDataChange" />
+    <field id="skipIntroRequested" type="boolean" value="false" />
+    <field id="playPauseRequested" type="boolean" value="false" />
+    <field id="seekRequested" type="integer" value="0" />
+    <field id="isOpen" type="boolean" value="false" onChange="onOpenChange" />
+  </interface>
+
+  <children>
+    <Group id="osdContainer" visible="false">
+      <!-- Gradiente inferior escuro -->
+      <Rectangle translation="[0, 760]" width="1920" height="320" color="#000000D9" />
+
+      <!-- Topo do OSD: Título e Detalhes -->
+      <Label id="titleLabel" translation="[80, 800]" width="1200" text="Título" font="font:MediumBoldSystemFont" color="#FFFFFF" />
+      <Label id="subLabel" translation="[80, 845]" width="1200" text="Detalhes" font="font:SmallSystemFont" color="#94a3b8" />
+
+      <!-- Botão Pular Abertura (+85s) -->
+      <Group id="skipIntroBtn" translation="[1560, 800]" visible="false">
+        <Rectangle id="skipIntroBg" width="260" height="50" color="#1e293b" />
+        <Label id="skipIntroText" translation="[0, 12]" width="260" text="⏩ Pular Abertura (+85s)" font="font:SmallBoldSystemFont" color="#4FE3D0" horizAlign="center" />
+      </Group>
+
+      <!-- Barra de Progresso / Scrub Bar -->
+      <Group translation="[80, 920]">
+        <Rectangle width="1760" height="8" color="#334155" />
+        <Rectangle id="progressBar" width="0" height="8" color="#4FE3D0" />
+        <Rectangle id="scrubHead" translation="[0, -4]" width="16" height="16" color="#FFFFFF" />
+      </Group>
+
+      <!-- Contadores de Tempo -->
+      <Label id="timeCurrentLabel" translation="[80, 945]" text="00:00" font="font:SmallSystemFont" color="#FFFFFF" />
+      <Label id="timeRemainingLabel" translation="[1720, 945]" width="120" text="-00:00" font="font:SmallSystemFont" color="#94a3b8" horizAlign="right" />
+
+      <!-- Controles inferiores com botões -->
+      <Group id="controlsRow" translation="[80, 990]">
+        <Label id="btnRewind" translation="[0, 0]" text="⏮ -10s" font="font:SmallBoldSystemFont" color="#94a3b8" />
+        <Label id="btnPlayPause" translation="[120, 0]" text="⏸ Pausar" font="font:SmallBoldSystemFont" color="#4FE3D0" />
+        <Label id="btnForward" translation="[260, 0]" text="⏭ +10s" font="font:SmallBoldSystemFont" color="#94a3b8" />
+        <Label id="btnAudio" translation="[400, 0]" text="🎧 Áudio/Legendas (*)" font="font:SmallSystemFont" color="#94a3b8" />
+      </Group>
+    </Group>
+
+    <!-- Timer para auto-esconder OSD -->
+    <Timer id="hideTimer" duration="5.0" repeat="false" />
+  </children>
+
+  <script type="text/brightscript" uri="pkg:/source/utils/Format.brs" />
+  <script type="text/brightscript" uri="pkg:/components/views/PlayerOSD.brs" />
+</component>

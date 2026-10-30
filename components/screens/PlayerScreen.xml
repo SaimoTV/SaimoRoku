@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="PlayerScreen" extends="Group">
+  <interface>
+    <field id="playItem" type="assocarray" onChange="onPlayItemChange" />
+    <field id="exitRequested" type="boolean" value="false" />
+  </interface>
+
+  <children>
+    <!-- Player de Vídeo Nativo por Hardware -->
+    <Video id="videoPlayer" width="1920" height="1080" />
+
+    <!-- Indicador de Buffer / Carregamento -->
+    <Group id="bufferingGroup" translation="[860, 500]" visible="false">
+      <Rectangle translation="[-30, -20]" width="260" height="70" color="#000000B3" />
+      <Label text="Carregando vídeo..." font="font:MediumBoldSystemFont" color="#4FE3D0" />
+    </Group>
+
+    <!-- OSD Customizado Completo -->
+    <PlayerOSD id="playerOsd" />
+
+    <!-- Timer de salvamento de progresso a cada 5 segundos -->
+    <Timer id="progressTimer" duration="5.0" repeat="true" />
+  </children>
+
+  <script type="text/brightscript" uri="pkg:/source/utils/Storage.brs" />
+  <script type="text/brightscript" uri="pkg:/components/screens/PlayerScreen.brs" />
+</component>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="LiveScreen" extends="Group">
+  <interface>
+    <field id="channels" type="array" onChange="onChannelsChange" />
+    <field id="epgMap" type="assocarray" onChange="onEpgChange" />
+    <field id="currentChannelIndex" type="integer" value="0" onChange="onChannelIndexChange" />
+  </interface>
+
+  <children>
+    <!-- Player de Vídeo Nativo por Hardware -->
+    <Video id="liveVideo" width="1920" height="1080" />
+
+    <!-- Indicador de Carregando / Buffer -->
+    <Group id="bufferingGroup" translation="[860, 500]" visible="false">
+      <Rectangle translation="[-40, -20]" width="280" height="80" color="#000000B3" />
+      <Label text="Carregando canal..." font="font:MediumBoldSystemFont" color="#4FE3D0" />
+    </Group>
+
+    <!-- ZapHUD (Mini Informações ao Trocar de Canal) -->
+    <ZapHUD id="zapHud" />
+
+    <!-- Drawer Lateral de Canais (Tecla OK ou Esquerda) -->
+    <ChannelDrawer id="channelDrawer" />
+
+    <!-- Modal de PIN Parental -->
+    <PinModal id="pinModal" />
+  </children>
+
+  <script type="text/brightscript" uri="pkg:/components/screens/LiveScreen.brs" />
+</component>

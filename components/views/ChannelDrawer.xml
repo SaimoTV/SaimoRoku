@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="ChannelDrawer" extends="Group">
+  <interface>
+    <field id="channels" type="array" onChange="onChannelsChange" />
+    <field id="selectedIndex" type="integer" value="0" />
+    <field id="channelSelected" type="assocarray" />
+    <field id="isOpen" type="boolean" value="false" onChange="onOpenChange" />
+  </interface>
+
+  <children>
+    <Group id="drawerContainer" translation="[-500, 0]" visible="false">
+      <!-- Fundo do drawer -->
+      <Rectangle width="480" height="1080" color="#0b0e14F5" />
+      <Rectangle translation="[479, 0]" width="1" height="1080" color="#242c3d" />
+
+      <!-- Cabeçalho -->
+      <Label translation="[30, 30]" text="Canais" font="font:LargeBoldSystemFont" color="#FFFFFF" />
+      <Label id="countLabel" translation="[30, 75]" text="0 canais" font="font:SmallSystemFont" color="#94a3b8" />
+
+      <!-- Lista de Canais -->
+      <LabelList id="channelList" translation="[20, 120]" itemSize="[440, 64]" itemSpacing="[0, 6]" textOffsets="[80, 16]" numRows="14" />
+    </Group>
+  </children>
+
+  <script type="text/brightscript" uri="pkg:/components/views/ChannelDrawer.brs" />
+</component>

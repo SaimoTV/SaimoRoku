@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="DataLoaderTask" extends="Task">
+  <interface>
+    <field id="requestType" type="string" />
+    <field id="requestUrl" type="string" />
+    <field id="requestParams" type="assocarray" />
+
+    <field id="responseChannels" type="array" />
+    <field id="responseEpg" type="assocarray" />
+    <field id="responseDestaques" type="array" />
+    <field id="responseVodItems" type="array" />
+    <field id="responseEvents" type="array" />
+    <field id="responseRadios" type="array" />
+    <field id="error" type="string" />
+  </interface>
+
+  <script type="text/brightscript" uri="pkg:/source/utils/Storage.brs" />
+  <script type="text/brightscript" uri="pkg:/source/utils/Format.brs" />
+  <script type="text/brightscript" uri="pkg:/components/tasks/DataLoaderTask.brs" />
+</component>

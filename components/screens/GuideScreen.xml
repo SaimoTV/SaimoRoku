@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="GuideScreen" extends="Group">
+  <interface>
+    <field id="channels" type="array" onChange="onChannelsChange" />
+    <field id="epgMap" type="assocarray" onChange="onEpgChange" />
+    <field id="tuneRequested" type="assocarray" />
+  </interface>
+
+  <children>
+    <Rectangle width="1920" height="1080" color="#0b0e14" />
+
+    <!-- Cabeçalho -->
+    <Group translation="[100, 40]">
+      <Label text="Guia de Programação" font="font:LargeBoldSystemFont" color="#FFFFFF" />
+      <Label translation="[0, 45]" text="Programação completa e transmissão ao vivo em tempo real" font="font:SmallSystemFont" color="#94a3b8" />
+    </Group>
+
+    <!-- Coluna Esquerda: Canais -->
+    <Group translation="[100, 140]">
+      <Rectangle width="460" height="880" color="#111827" />
+      <Rectangle width="460" height="3" color="#4FE3D0" />
+      <Label translation="[24, 20]" text="CANAIS" font="font:SmallBoldSystemFont" color="#4FE3D0" />
+
+      <LabelList
+        id="guideChannelList"
+        translation="[16, 60]"
+        itemSize="[428, 54]"
+        itemSpacing="[0, 6]"
+        numRows="13"
+      />
+    </Group>
+
+    <!-- Coluna Direita: Grade do Canal Selecionado -->
+    <Group translation="[580, 140]">
+      <Rectangle width="1240" height="880" color="#111827" />
+      <Rectangle width="1240" height="3" color="#7AA2FF" />
+      <Label id="selectedChannelHeader" translation="[30, 20]" text="PROGRAMAÇÃO" font="font:SmallBoldSystemFont" color="#7AA2FF" />
+
+      <LabelList
+        id="scheduleList"
+        translation="[20, 60]"
+        itemSize="[1200, 64]"
+        itemSpacing="[0, 8]"
+        numRows="12"
+      />
+    </Group>
+  </children>
+
+  <script type="text/brightscript" uri="pkg:/components/screens/GuideScreen.brs" />
+</component>

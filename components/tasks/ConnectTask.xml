@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="ConnectTask" extends="Task">
+  <interface>
+    <field id="port" type="integer" value="8999" />
+    <field id="currentState" type="assocarray" />
+    <field id="receivedCommand" type="assocarray" />
+    <field id="activeClients" type="integer" value="0" />
+    <field id="status" type="string" />
+  </interface>
+
+  <script type="text/brightscript" uri="pkg:/components/tasks/ConnectTask.brs" />
+</component>

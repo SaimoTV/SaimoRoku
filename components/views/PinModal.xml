@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="PinModal" extends="Group">
+  <interface>
+    <field id="isOpen" type="boolean" value="false" onChange="onOpenChange" />
+    <field id="isUnlocked" type="boolean" value="false" />
+  </interface>
+
+  <children>
+    <Group id="modalContainer" visible="false">
+      <!-- Overlay escuro -->
+      <Rectangle width="1920" height="1080" color="#000000CC" />
+
+      <!-- Card Central -->
+      <Group translation="[660, 360]">
+        <Rectangle width="600" height="360" color="#111827" />
+        <Rectangle translation="[0, 0]" width="600" height="4" color="#4FE3D0" />
+
+        <Label translation="[0, 40]" width="600" text="Bloqueio Parental" font="font:LargeBoldSystemFont" color="#FFFFFF" horizAlign="center" />
+        <Label translation="[40, 95]" width="520" text="Digite o PIN de 4 dígitos para desbloquear este canal:" font="font:SmallSystemFont" color="#94a3b8" horizAlign="center" />
+
+        <!-- 4 Círculos de Dígitos -->
+        <Group id="dotsGroup" translation="[190, 160]">
+          <Rectangle id="dot_0" translation="[0, 0]" width="36" height="36" color="#374151" />
+          <Rectangle id="dot_1" translation="[60, 0]" width="36" height="36" color="#374151" />
+          <Rectangle id="dot_2" translation="[120, 0]" width="36" height="36" color="#374151" />
+          <Rectangle id="dot_3" translation="[180, 0]" width="36" height="36" color="#374151" />
+        </Group>
+
+        <!-- Mensagem de Erro -->
+        <Label id="errorLabel" translation="[0, 230]" width="600" text="PIN incorreto!" font="font:SmallBoldSystemFont" color="#ef4444" horizAlign="center" visible="false" />
+
+        <Label translation="[0, 280]" width="600" text="Padrão: 1010 | Pressione Voltar para cancelar" font="font:SmallSystemFont" color="#64748b" horizAlign="center" />
+      </Group>
+    </Group>
+  </children>
+
+  <script type="text/brightscript" uri="pkg:/components/views/PinModal.brs" />
+</component>

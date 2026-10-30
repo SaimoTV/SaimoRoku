@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="HomeScreen" extends="Group">
+  <interface>
+    <field id="featuredItem" type="assocarray" onChange="onFeaturedChange" />
+    <field id="railsData" type="array" onChange="onRailsChange" />
+    <field id="itemSelected" type="assocarray" />
+    <field id="playRequested" type="assocarray" />
+  </interface>
+
+  <children>
+    <!-- Banner de Destaque -->
+    <HeroBanner id="heroBanner" translation="[80, 0]" />
+
+    <!-- Trilhos Horizontais de Conteúdo (RowList) -->
+    <RowList
+      id="contentRowList"
+      translation="[80, 480]"
+      itemSize="[1760, 260]"
+      rowItemSize="[[150, 220]]"
+      rowItemSpacing="[[16, 0]]"
+      itemSpacing="[0, 30]"
+      showRowLabel="[true]"
+      rowLabelOffset="[[0, 10]]"
+      numRows="4"
+    />
+  </children>
+
+  <script type="text/brightscript" uri="pkg:/components/screens/HomeScreen.brs" />
+</component>

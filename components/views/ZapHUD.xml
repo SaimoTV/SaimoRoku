@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="ZapHUD" extends="Group">
+  <interface>
+    <field id="channelNumber" type="string" onChange="onDataChange" />
+    <field id="channelName" type="string" onChange="onDataChange" />
+    <field id="channelLogo" type="string" onChange="onDataChange" />
+    <field id="programTitle" type="string" onChange="onDataChange" />
+    <field id="programProgress" type="float" onChange="onDataChange" />
+    <field id="visibleTimer" type="boolean" value="false" />
+  </interface>
+
+  <children>
+    <Group id="hudContainer" translation="[80, 860]" visible="false">
+      <!-- Fundo com cantos e sombra -->
+      <Rectangle width="1760" height="140" color="#0b0e14E6" />
+      <Rectangle translation="[0, 137]" width="1760" height="3" color="#4FE3D0" />
+
+      <!-- Número e Logo -->
+      <Rectangle translation="[24, 20]" width="90" height="100" color="#1e293b" />
+      <Label id="numLabel" translation="[34, 45]" width="70" text="1" font="font:LargeBoldSystemFont" color="#4FE3D0" horizAlign="center" />
+      <Poster id="logoPoster" translation="[130, 20]" width="100" height="100" loadDisplayMode="scaleToFit" />
+
+      <!-- Textos do Canal e EPG -->
+      <Label id="nameLabel" translation="[250, 25]" width="1200" text="Nome do Canal" font="font:MediumBoldSystemFont" color="#FFFFFF" />
+      <Label id="progLabel" translation="[250, 70]" width="1200" text="Carregando programação..." font="font:SmallSystemFont" color="#94a3b8" />
+
+      <!-- Barra de Progresso EPG -->
+      <Rectangle translation="[250, 105]" width="1200" height="6" color="#1e293b" />
+      <Rectangle id="progBar" translation="[250, 105]" width="300" height="6" color="#4FE3D0" />
+
+      <!-- Badge "AO VIVO" -->
+      <Rectangle translation="[1620, 30]" width="100" height="32" color="#e11d48" />
+      <Label translation="[1620, 35]" width="100" text="AO VIVO" font="font:SmallBoldSystemFont" color="#FFFFFF" horizAlign="center" />
+    </Group>
+
+    <!-- Timer para auto-esconder -->
+    <Timer id="hideTimer" duration="3.5" repeat="false" />
+  </children>
+
+  <script type="text/brightscript" uri="pkg:/components/views/ZapHUD.brs" />
+</component>

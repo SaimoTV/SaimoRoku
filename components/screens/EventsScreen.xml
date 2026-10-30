@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="EventsScreen" extends="Group">
+  <interface>
+    <field id="events" type="array" onChange="onEventsChange" />
+    <field id="tuneRequested" type="string" />
+  </interface>
+
+  <children>
+    <Rectangle width="1920" height="1080" color="#0b0e14" />
+
+    <!-- Topo -->
+    <Group translation="[100, 40]">
+      <Label text="Agenda Esportiva" font="font:LargeBoldSystemFont" color="#FFFFFF" />
+      <Label translation="[0, 45]" text="Jogos ao vivo e partidas de hoje com sintonia rápida" font="font:SmallSystemFont" color="#94a3b8" />
+    </Group>
+
+    <!-- Lista de Jogos e Partidas -->
+    <LabelList
+      id="eventsList"
+      translation="[100, 140]"
+      itemSize="[1720, 72]"
+      itemSpacing="[0, 10]"
+      numRows="10"
+    />
+  </children>
+
+  <script type="text/brightscript" uri="pkg:/components/screens/EventsScreen.brs" />
+</component>

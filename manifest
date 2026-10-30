@@ -1,0 +1,19 @@
+title=Saimo TV
+subtitle=Canais ao Vivo e Acervo
+major_version=2
+minor_version=6
+build_version=0
+ui_resolutions=fhd,hd
+mm_icon_focus_hd=pkg:/images/icon_hd.png
+mm_icon_side_hd=pkg:/images/icon_hd.png
+mm_icon_focus_fhd=pkg:/images/icon_fhd.png
+mm_icon_side_fhd=pkg:/images/icon_fhd.png
+splash_screen_fhd=pkg:/images/splash_fhd.png
+splash_screen_hd=pkg:/images/splash_hd.png
+splash_color=#0b0e14
+splash_min_time=1200
+requires_audioperf=5.1
+bs_const={
+  APP_VERSION: "2.6.0"
+  DEBUG: false
+}

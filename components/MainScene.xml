@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="MainScene" extends="Scene">
+  <interface>
+    <field id="deepLink" type="assocarray" onChange="onDeepLinkChange" />
+  </interface>
+
+  <children>
+    <!-- Fundo base da aplicação -->
+    <Rectangle id="sceneBg" width="1920" height="1080" color="#0b0e14" />
+
+    <!-- Container de Telas Ativas -->
+    <Group id="screensContainer" />
+
+    <!-- Barra de Navegação Global (Sidebar) -->
+    <SidebarMenu id="sidebarMenu" />
+
+    <!-- Tarefa de Carregamento de Dados em Background -->
+    <DataLoaderTask id="dataLoader" />
+
+    <!-- Servidor Saimo Connect (Porta 8999) -->
+    <ConnectTask id="connectServer" />
+  </children>
+
+  <script type="text/brightscript" uri="pkg:/source/utils/Storage.brs" />
+  <script type="text/brightscript" uri="pkg:/components/MainScene.brs" />
+</component>

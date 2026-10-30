@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="SearchScreen" extends="Group">
+  <interface>
+    <field id="channels" type="array" />
+    <field id="vodItems" type="array" />
+    <field id="itemSelected" type="assocarray" />
+    <field id="tuneRequested" type="assocarray" />
+  </interface>
+
+  <children>
+    <Rectangle width="1920" height="1080" color="#0b0e14" />
+
+    <!-- Topo -->
+    <Group translation="[100, 40]">
+      <Label text="Buscar no Saimo TV" font="font:LargeBoldSystemFont" color="#FFFFFF" />
+      <Label translation="[0, 45]" text="Pesquise por canais ao vivo, filmes, séries ou animes" font="font:SmallSystemFont" color="#94a3b8" />
+    </Group>
+
+    <!-- Teclado Roku Nativo à Esquerda -->
+    <Group translation="[100, 140]">
+      <Keyboard id="searchKeyboard" />
+    </Group>
+
+    <!-- Resultados à Direita -->
+    <Group translation="[840, 140]">
+      <Rectangle width="980" height="880" color="#111827" />
+      <Rectangle width="980" height="3" color="#4FE3D0" />
+      <Label id="resultsHeader" translation="[30, 20]" text="RESULTADOS" font="font:SmallBoldSystemFont" color="#4FE3D0" />
+
+      <LabelList
+        id="resultsList"
+        translation="[20, 60]"
+        itemSize="[940, 60]"
+        itemSpacing="[0, 6]"
+        numRows="13"
+      />
+    </Group>
+  </children>
+
+  <script type="text/brightscript" uri="pkg:/components/screens/SearchScreen.brs" />
+</component>
