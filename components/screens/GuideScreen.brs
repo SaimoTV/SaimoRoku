@@ -10,12 +10,12 @@ sub init()
     m.guideChannelList.observeField("itemFocused", "onChannelFocused")
     m.guideChannelList.observeField("itemSelected", "onChannelSelected")
     m.scheduleList.observeField("itemSelected", "onScheduleSelected")
-    m.top.observeField("focused", "onFocusChange")
+    m.top.observeField("focusedChild", "onFocusedChildChange")
 end sub
 
-sub onFocusChange()
-    if m.top.hasFocus() and m.guideChannelList <> invalid then
-        m.guideChannelList.setFocus(true)
+sub onFocusedChildChange()
+    if m.top.isInFocusChain() and not m.guideChannelList.isInFocusChain() and not m.scheduleList.isInFocusChain() then
+        if m.guideChannelList <> invalid then m.guideChannelList.setFocus(true)
     end if
 end sub
 
@@ -87,16 +87,26 @@ end sub
 function onKeyEvent(key as String, press as Boolean) as Boolean
     if not press then return false
 
-    if key = "right" and m.guideChannelList.hasFocus() then
+    if not m.guideChannelList.isInFocusChain() and not m.scheduleList.isInFocusChain() then
+        if m.guideChannelList <> invalid then m.guideChannelList.setFocus(true)
+    end if
+
+    if key = "right" and m.guideChannelList.isInFocusChain() then
         if m.scheduleList.content <> invalid and m.scheduleList.content.getChildCount() > 0 then
             m.scheduleList.setFocus(true)
             return true
         end if
-    else if key = "left" and m.scheduleList.hasFocus() then
+    else if key = "left" and m.scheduleList.isInFocusChain() then
         m.guideChannelList.setFocus(true)
         return true
-    else if key = "left" and m.guideChannelList.hasFocus() then
+    else if key = "left" and m.guideChannelList.isInFocusChain() then
         return false ' bubbles to MainScene to open sidebar
+    else if key = "back" then
+        if m.scheduleList.isInFocusChain() then
+            m.guideChannelList.setFocus(true)
+            return true
+        end if
+        return false ' bubbles to MainScene
     end if
 
     return false

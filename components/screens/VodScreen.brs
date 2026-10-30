@@ -8,18 +8,20 @@ sub init()
     m.chipsHint = m.top.findNode("chipsHint")
     m.vodPosterGrid.observeField("itemSelected", "onPosterSelected")
     m.currentCategoryIdx = 0
-    m.focusArea = "grid" ' "chips" ou "grid"
+    m.focusArea = "chips" ' "chips" ou "grid"
     m.categories = ["Filmes", "Séries", "Animes", "Doramas"]
     m.chipColors = ["#4FE3D0", "#7AA2FF", "#FFB454", "#FF7EB6"]
-    m.top.observeField("focused", "onFocusChange")
+    m.top.observeField("focusedChild", "onFocusedChildChange")
+    updateChipStyles()
 end sub
 
-sub onFocusChange()
-    if m.top.hasFocus() then
-        if m.focusArea = "chips" then
-            updateChipStyles()
-        else if m.vodPosterGrid <> invalid then
+sub onFocusedChildChange()
+    if m.top.isInFocusChain() then
+        if m.focusArea = "grid" and m.vodPosterGrid <> invalid then
             m.vodPosterGrid.setFocus(true)
+        else
+            m.focusArea = "chips"
+            updateChipStyles()
         end if
     end if
 end sub
@@ -49,11 +51,8 @@ sub updateChipStyles()
             if i = m.currentCategoryIdx then
                 bg.color = m.chipColors[i]
                 txt.color = "#0b0e14"
-                if m.focusArea = "chips" and border <> invalid then
-                    border.visible = true
-                    border.color = "#FFFFFF"
-                else if border <> invalid then
-                    border.visible = false
+                if border <> invalid then
+                    border.visible = (m.focusArea = "chips")
                 end if
             else
                 bg.color = "#1e293b"
@@ -64,10 +63,10 @@ sub updateChipStyles()
     end for
 
     if m.focusArea = "chips" then
-        m.chipsHint.text = "◀ / ▶ Trocar categoria  •  [OK] ou ▼ Navegar títulos  •  ◀ Menu"
+        m.chipsHint.text = "◀ / ▶ Trocar categoria  •  ▼ Descer para os títulos  •  ◀ Menu"
         m.chipsHint.color = "#FFFFFF"
     else
-        m.chipsHint.text = "▲ Suba para trocar categorias  •  [OK] Ver detalhes  •  ◀ Menu"
+        m.chipsHint.text = "▲ Subir ou [Voltar] para categorias  •  [OK] Ver detalhes  •  ◀ Menu"
         m.chipsHint.color = "#4FE3D0"
     end if
 end sub
@@ -110,8 +109,13 @@ sub applyCategoryFilter()
     m.filteredList = filtered
     m.vodCountLabel.text = filtered.Count().ToStr() + " títulos em " + cat
 
+    ' Limita a criação inicial de ContentNodes para fluidez instantânea
+    maxNodes = 140
+    if filtered.Count() < maxNodes then maxNodes = filtered.Count()
+
     root = CreateObject("roSGNode", "ContentNode")
-    for each it in filtered
+    for i = 0 to maxNodes - 1
+        it = filtered[i]
         node = root.CreateChild("ContentNode")
         node.title = it.title
         node.hdPosterUrl = it.poster
@@ -119,10 +123,7 @@ sub applyCategoryFilter()
     end for
 
     m.vodPosterGrid.content = root
-    if m.focusArea = "grid" and m.vodPosterGrid <> invalid then
-        m.vodPosterGrid.jumpToItem = 0
-        if m.top.hasFocus() then m.vodPosterGrid.setFocus(true)
-    end if
+    m.vodPosterGrid.jumpToItem = 0
 end sub
 
 sub onPosterSelected()
@@ -135,41 +136,57 @@ end sub
 function onKeyEvent(key as String, press as Boolean) as Boolean
     if not press then return false
 
-    if key = "up" and m.focusArea = "grid" and m.vodPosterGrid.itemFocused < 7 then
-        m.focusArea = "chips"
-        m.top.setFocus(true)
-        updateChipStyles()
-        return true
-    else if (key = "down" or key = "OK") and m.focusArea = "chips" then
-        m.focusArea = "grid"
-        m.vodPosterGrid.setFocus(true)
-        updateChipStyles()
-        return true
-    else if key = "left" and m.focusArea = "chips" then
-        if m.currentCategoryIdx > 0 then
-            m.currentCategoryIdx = m.currentCategoryIdx - 1
-            m.top.selectedCategory = m.categories[m.currentCategoryIdx]
+    ' Se está na grade de posters
+    if m.focusArea = "grid" then
+        if key = "back" then
+            ' [Voltar] na grade retorna o foco para as categorias no topo
+            m.focusArea = "chips"
             updateChipStyles()
-            applyCategoryFilter()
+            m.top.setFocus(true)
             return true
-        else
-            return false ' Bubbles to MainScene to open sidebar
+        else if key = "up" then
+            ' Se estiver na linha superior da grade (itens 0-6), sobe para os chips
+            if m.vodPosterGrid.itemFocused < 7 then
+                m.focusArea = "chips"
+                updateChipStyles()
+                m.top.setFocus(true)
+                return true
+            end if
+        else if key = "left" then
+            ' Se estiver na coluna da esquerda, abre a barra lateral
+            if m.vodPosterGrid.itemFocused mod 7 = 0 then
+                return false ' Bubbles para MainScene abrir menu lateral
+            end if
         end if
-    else if key = "right" and m.focusArea = "chips" then
-        if m.currentCategoryIdx < 3 then
-            m.currentCategoryIdx = m.currentCategoryIdx + 1
-            m.top.selectedCategory = m.categories[m.currentCategoryIdx]
-            updateChipStyles()
-            applyCategoryFilter()
-            return true
-        else
-            return true
-        end if
-    else if key = "up" and m.focusArea = "chips" then
-        return true
-    else if key = "left" and m.focusArea = "grid" then
-        if m.vodPosterGrid.itemFocused mod 7 = 0 then
-            return false ' Bubbles to MainScene to open sidebar
+        return false
+
+    ' Se o foco está nos chips de categoria
+    else if m.focusArea = "chips" then
+        if key = "down" or key = "OK" then
+            if m.filteredList <> invalid and m.filteredList.Count() > 0 then
+                m.focusArea = "grid"
+                m.vodPosterGrid.setFocus(true)
+                updateChipStyles()
+                return true
+            end if
+        else if key = "left" then
+            if m.currentCategoryIdx > 0 then
+                m.currentCategoryIdx = m.currentCategoryIdx - 1
+                m.top.selectedCategory = m.categories[m.currentCategoryIdx]
+                return true
+            else
+                return false ' Bubbles para MainScene abrir menu lateral
+            end if
+        else if key = "right" then
+            if m.currentCategoryIdx < 3 then
+                m.currentCategoryIdx = m.currentCategoryIdx + 1
+                m.top.selectedCategory = m.categories[m.currentCategoryIdx]
+                return true
+            else
+                return true
+            end if
+        else if key = "back" then
+            return false ' Bubbles para MainScene voltar para a Home
         end if
     end if
 

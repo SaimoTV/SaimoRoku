@@ -140,6 +140,13 @@ end sub
 ' ====================================================================
 
 sub switchScreen(screenName as String, params = invalid as Dynamic)
+    ' Guarda tela anterior para retorno ao sair do player
+    if m.currentScreenName <> "" and m.currentScreenName <> "player" then
+        m.previousScreenName = m.currentScreenName
+        m.previousScreenParams = m.currentScreenParams
+    end if
+    m.currentScreenParams = params
+
     ' Remove tela atual do container se houver
     if m.currentScreenNode <> invalid then
         m.screensContainer.removeChild(m.currentScreenNode)
@@ -263,7 +270,11 @@ sub onFichaPlayRequested(evt as Object)
 end sub
 
 sub onPlayerExit()
-    switchScreen("home")
+    if m.previousScreenName <> invalid and m.previousScreenName <> "" and m.previousScreenName <> "player" then
+        switchScreen(m.previousScreenName, m.previousScreenParams)
+    else
+        switchScreen("home")
+    end if
 end sub
 
 sub onGuideTune(evt as Object)

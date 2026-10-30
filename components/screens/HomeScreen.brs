@@ -9,11 +9,11 @@ sub init()
     m.heroBanner.observeField("detailsClicked", "onHeroDetails")
     m.contentRowList.observeField("rowItemSelected", "onRowItemSelected")
     m.currentFocus = "hero" ' "hero" ou "rows"
-    m.top.observeField("focused", "onFocusChange")
+    m.top.observeField("focusedChild", "onFocusedChildChange")
 end sub
 
-sub onFocusChange()
-    if m.top.hasFocus() then
+sub onFocusedChildChange()
+    if m.top.isInFocusChain() and not m.heroBanner.isInFocusChain() and not m.contentRowList.isInFocusChain() then
         updateLayoutFocus()
     end if
 end sub

@@ -5,12 +5,12 @@
 sub init()
     m.eventsList = m.top.findNode("eventsList")
     m.eventsList.observeField("itemSelected", "onEventSelected")
-    m.top.observeField("focused", "onFocusChange")
+    m.top.observeField("focusedChild", "onFocusedChildChange")
 end sub
 
-sub onFocusChange()
-    if m.top.hasFocus() and m.eventsList <> invalid then
-        m.eventsList.setFocus(true)
+sub onFocusedChildChange()
+    if m.top.isInFocusChain() and not m.eventsList.isInFocusChain() then
+        if m.eventsList <> invalid then m.eventsList.setFocus(true)
     end if
 end sub
 
@@ -44,8 +44,14 @@ end sub
 function onKeyEvent(key as String, press as Boolean) as Boolean
     if not press then return false
 
-    if key = "left" and m.eventsList.hasFocus() then
+    if not m.eventsList.isInFocusChain() then
+        if m.eventsList <> invalid then m.eventsList.setFocus(true)
+    end if
+
+    if key = "left" then
         return false ' Bubbles to MainScene to open sidebar
+    else if key = "back" then
+        return false ' Bubbles to MainScene
     end if
 
     return false

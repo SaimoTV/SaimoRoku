@@ -9,12 +9,12 @@ sub init()
 
     m.searchKeyboard.observeField("text", "onSearchTextChanged")
     m.resultsList.observeField("itemSelected", "onResultSelected")
-    m.top.observeField("focused", "onFocusChange")
+    m.top.observeField("focusedChild", "onFocusedChildChange")
 end sub
 
-sub onFocusChange()
-    if m.top.hasFocus() and m.searchKeyboard <> invalid then
-        m.searchKeyboard.setFocus(true)
+sub onFocusedChildChange()
+    if m.top.isInFocusChain() and not m.searchKeyboard.isInFocusChain() and not m.resultsList.isInFocusChain() then
+        if m.searchKeyboard <> invalid then m.searchKeyboard.setFocus(true)
     end if
 end sub
 
@@ -81,16 +81,26 @@ end sub
 function onKeyEvent(key as String, press as Boolean) as Boolean
     if not press then return false
 
-    if key = "right" and m.searchKeyboard.hasFocus() then
+    if not m.searchKeyboard.isInFocusChain() and not m.resultsList.isInFocusChain() then
+        if m.searchKeyboard <> invalid then m.searchKeyboard.setFocus(true)
+    end if
+
+    if key = "right" and m.searchKeyboard.isInFocusChain() then
         if m.resultsList.content <> invalid and m.resultsList.content.getChildCount() > 0 then
             m.resultsList.setFocus(true)
             return true
         end if
-    else if key = "left" and m.resultsList.hasFocus() then
+    else if key = "left" and m.resultsList.isInFocusChain() then
         m.searchKeyboard.setFocus(true)
         return true
-    else if key = "left" and m.searchKeyboard.hasFocus() then
+    else if key = "left" and m.searchKeyboard.isInFocusChain() then
         return false ' bubbles to MainScene to open sidebar
+    else if key = "back" then
+        if m.resultsList.isInFocusChain() then
+            m.searchKeyboard.setFocus(true)
+            return true
+        end if
+        return false ' bubbles to MainScene
     end if
 
     return false

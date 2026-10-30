@@ -18,11 +18,11 @@ sub init()
     m.episodesRowList = m.top.findNode("episodesRowList")
     m.episodesRowList.observeField("rowItemSelected", "onEpisodeSelected")
     m.focusedControl = "play" ' "play", "resume", "episodes"
-    m.top.observeField("focused", "onFocusChange")
+    m.top.observeField("focusedChild", "onFocusedChildChange")
 end sub
 
-sub onFocusChange()
-    if m.top.hasFocus() then
+sub onFocusedChildChange()
+    if m.top.isInFocusChain() then
         updateButtonFocus()
     end if
 end sub
@@ -164,13 +164,16 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
             return true
         end if
     else if key = "OK" then
+        itemId = ""
+        if m.top.item <> invalid and m.top.item.id <> invalid then itemId = m.top.item.id
         if m.focusedControl = "play" then
             m.top.playRequested = {
                 title: m.top.item.title,
                 letter: m.top.item.letter,
                 year: m.top.item.year,
                 resumePos: 0,
-                isSeries: m.top.item.isSeries
+                isSeries: m.top.item.isSeries,
+                id: itemId
             }
             return true
         else if m.focusedControl = "resume" then
@@ -182,7 +185,8 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
                 letter: m.top.item.letter,
                 year: m.top.item.year,
                 resumePos: resumePosition,
-                isSeries: m.top.item.isSeries
+                isSeries: m.top.item.isSeries,
+                id: itemId
             }
             return true
         end if

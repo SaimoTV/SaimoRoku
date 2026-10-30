@@ -12,12 +12,12 @@ sub init()
 
     m.radiosList.observeField("itemSelected", "onRadioSelected")
     m.radioAudio.observeField("state", "onAudioState")
-    m.top.observeField("focused", "onFocusChange")
+    m.top.observeField("focusedChild", "onFocusedChildChange")
 end sub
 
-sub onFocusChange()
-    if m.top.hasFocus() and m.radiosList <> invalid then
-        m.radiosList.setFocus(true)
+sub onFocusedChildChange()
+    if m.top.isInFocusChain() and not m.radiosList.isInFocusChain() then
+        if m.radiosList <> invalid then m.radiosList.setFocus(true)
     end if
 end sub
 
@@ -66,7 +66,11 @@ end sub
 function onKeyEvent(key as String, press as Boolean) as Boolean
     if not press then return false
 
-    if key = "left" and m.radiosList.hasFocus() then
+    if not m.radiosList.isInFocusChain() then
+        if m.radiosList <> invalid then m.radiosList.setFocus(true)
+    end if
+
+    if key = "left" then
         return false ' bubbles to MainScene to open sidebar
     else if key = "back" then
         m.radioAudio.control = "stop"

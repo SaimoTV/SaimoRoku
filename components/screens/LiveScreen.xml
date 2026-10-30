@@ -22,10 +22,18 @@
 
     <!-- Dica de Acesso à Lista de Canais -->
     <Group id="drawerHintGroup" translation="[80, 1020]" visible="true">
-      <Rectangle width="480" height="40" color="#0b0e14D0" />
+      <Rectangle width="560" height="40" color="#0b0e14D0" />
       <Rectangle width="3" height="40" color="#4FE3D0" />
-      <Label translation="[20, 10]" text="[OK] ou ◀ Ver Lista de Canais  •  ▲ / ▼ Zapping" font="font:SmallSystemFont" color="#4FE3D0" />
+      <Label translation="[20, 10]" text="[OK] ou ◀ Canais  •  [*] Favoritar  •  ▲ / ▼ Zapping" font="font:SmallSystemFont" color="#4FE3D0" />
     </Group>
+
+    <!-- Toast de Favorito (*) -->
+    <Group id="favoriteToast" translation="[760, 60]" visible="false">
+      <Rectangle width="400" height="60" color="#0b0e14F0" />
+      <Rectangle width="400" height="3" color="#FFB454" />
+      <Label id="favoriteToastText" translation="[0, 18]" width="400" text="★ Canal Adicionado aos Favoritos" font="font:SmallBoldSystemFont" color="#FFB454" horizAlign="center" />
+    </Group>
+    <Timer id="favoriteToastTimer" duration="2.5" repeat="false" />
 
     <!-- Drawer Lateral de Canais -->
     <ChannelDrawer id="channelDrawer" />
@@ -34,5 +42,6 @@
     <PinModal id="pinModal" />
   </children>
 
+  <script type="text/brightscript" uri="pkg:/source/utils/Storage.brs" />
   <script type="text/brightscript" uri="pkg:/components/screens/LiveScreen.brs" />
 </component>

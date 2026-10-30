@@ -15,7 +15,12 @@ sub init()
     m.channelDrawer.observeField("channelSelected", "onDrawerSelect")
     m.channelDrawer.observeField("isOpen", "onDrawerOpenChange")
     m.pinModal.observeField("isUnlocked", "onPinUnlocked")
-    m.top.observeField("focused", "onFocusChange")
+    m.top.observeField("focusedChild", "onFocusedChildChange")
+
+    m.favoriteToast = m.top.findNode("favoriteToast")
+    m.favoriteToastText = m.top.findNode("favoriteToastText")
+    m.favoriteToastTimer = m.top.findNode("favoriteToastTimer")
+    m.favoriteToastTimer.observeField("fire", "onFavoriteToastTimer")
 
     m.numberBuffer = ""
     m.numberTimer = CreateObject("roSGNode", "Timer")
@@ -25,12 +30,27 @@ sub init()
     m.top.appendChild(m.numberTimer)
 end sub
 
-sub onFocusChange()
-    if m.top.hasFocus() then
+sub onFocusedChildChange()
+    if m.top.isInFocusChain() then
         if m.channelDrawer.isOpen then
             m.channelDrawer.setFocus(true)
         end if
     end if
+end sub
+
+sub onFavoriteToastTimer()
+    m.favoriteToast.visible = false
+end sub
+
+sub showFavoriteToast(channelName as String, isFav as Boolean)
+    if isFav then
+        m.favoriteToastText.text = "★ " + channelName + " nos Favoritos"
+    else
+        m.favoriteToastText.text = "☆ " + channelName + " removido dos Favoritos"
+    end if
+    m.favoriteToast.visible = true
+    m.favoriteToastTimer.control = "stop"
+    m.favoriteToastTimer.control = "start"
 end sub
 
 sub onDrawerOpenChange()
@@ -212,6 +232,18 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
         m.channelDrawer.isOpen = true
         m.channelDrawer.setFocus(true)
         return true
+    end if
+
+    ' Botão * (Options) para favoritar / desfavoritar canal
+    if key = "options" then
+        channels = m.top.channels
+        if channels <> invalid and m.top.currentChannelIndex < channels.Count() then
+            ch = channels[m.top.currentChannelIndex]
+            ToggleFavoriteChannel(ch.name)
+            isFav = IsChannelFavorite(ch.name)
+            showFavoriteToast(ch.name, isFav)
+            return true
+        end if
     end if
 
     ' Dígitos 0-9

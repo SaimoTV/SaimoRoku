@@ -41,9 +41,14 @@ sub resolveStream()
         streamUrl = resolveMovieStream(title, letter, bases)
     end if
 
-    ' Se não encontrou stream em MP4/HLS direto, tenta o endpoint da API
-    if streamUrl = "" then
-        streamUrl = "https://saimo-tv.pages.dev/api/stream?tipo=movie&nome=" + title
+    ' Se não encontrou stream em MP4/HLS direto, tenta o endpoint da API se houver id
+    if streamUrl = "" and item <> invalid and item.id <> invalid and item.id.ToStr() <> "" then
+        tipoReq = "movie"
+        if isSeries then tipoReq = "series"
+        apiUrl = "https://saimo-tv.pages.dev/api/stream?tipo=" + tipoReq + "&id=" + item.id.ToStr() + "&versao=dub"
+        if isSeries then apiUrl = apiUrl + "&s=" + season.ToStr() + "&e=" + episode.ToStr()
+        resolvedUrl = buildCandidateUrl(apiUrl, bases)
+        if resolvedUrl <> "" then streamUrl = resolvedUrl
     end if
 
     resolved = {
@@ -264,6 +269,31 @@ end function
 
 function buildCandidateUrl(cand as String, bases as Object) as String
     if cand = "" or Instr(1, cand, "desativado.invalid") > 0 then return ""
+
+    ' Se aponta para o relay central api/stream, consulta o endpoint com &json=1 para obter a URL direta do vídeo
+    if Instr(1, cand, "api/stream") > 0 then
+        jsonUrl = cand
+        if Instr(1, jsonUrl, "?") > 0 then
+            jsonUrl = jsonUrl + "&json=1"
+        else
+            jsonUrl = jsonUrl + "?json=1"
+        end if
+
+        utJson = CreateObject("roUrlTransfer")
+        utJson.SetUrl(jsonUrl)
+        utJson.SetCertificatesFile("common:/certs/ca-bundle.crt")
+        utJson.AddHeader("User-Agent", "SaimoTV/2.6.0 (RokuOS)")
+        utJson.RetainBodyOnError(true)
+        respText = utJson.GetToString()
+        if respText <> "" then
+            parsed = ParseJson(respText)
+            if parsed <> invalid and parsed.url <> invalid and parsed.url <> "" then
+                return parsed.url
+            end if
+        end if
+        ' Se a rota api/stream falhou (ex: 404 sem stream), retorna vazio para testar o próximo candidato da lista
+        return ""
+    end if
 
     if Left(cand, 7) = "http://" or Left(cand, 8) = "https://" then
         return cand

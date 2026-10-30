@@ -67,8 +67,11 @@ sub startPlayback(streamUrl as String, resumePos as Dynamic)
     content.url = streamUrl
     content.title = m.playerOsd.title
 
-    if Instr(1, streamUrl, ".m3u8") > 0 or Instr(1, streamUrl, "api/stream") > 0 then
+    lowerUrl = LCase(streamUrl)
+    if Instr(1, lowerUrl, ".m3u8") > 0 or Instr(1, lowerUrl, "master.txt") > 0 or Instr(1, lowerUrl, "/hls/") > 0 then
         content.streamFormat = "hls"
+    else if Instr(1, lowerUrl, ".mkv") > 0 then
+        content.streamFormat = "mkv"
     else
         content.streamFormat = "mp4"
     end if
@@ -95,8 +98,15 @@ sub onVideoState()
     else if state = "buffering" then
         m.bufferingGroup.visible = true
     else if state = "finished" then
-        saveCurrentProgress()
-        m.top.exitRequested = true
+        pos = m.videoPlayer.position
+        if pos > 10 then
+            saveCurrentProgress()
+            m.top.exitRequested = true
+        else
+            m.bufferingGroup.visible = false
+            m.errorLabel.text = "Falha ao carregar o vídeo"
+            m.errorGroup.visible = true
+        end if
     else if state = "error" then
         m.bufferingGroup.visible = false
         m.errorLabel.text = "Falha ao reproduzir o vídeo"

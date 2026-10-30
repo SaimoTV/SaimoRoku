@@ -16,12 +16,13 @@ echo "==> Verificando arquivos do canal Roku"
 VERSION=$(grep -m1 '^major_version' manifest | cut -d'=' -f2).$(grep -m1 '^minor_version' manifest | cut -d'=' -f2).$(grep -m1 '^build_version' manifest | cut -d'=' -f2)
 echo "==> Versão do canal Roku: $VERSION"
 
-mkdir -p dist
+mkdir -p dist out
 ZIP_OUTPUT="dist/SaimoTV-Roku.zip"
-rm -f "$ZIP_OUTPUT"
+rm -f "$ZIP_OUTPUT" "out/SaimoRoku.zip"
 
 echo "==> Montando $ZIP_OUTPUT"
 zip -9 -r "$ZIP_OUTPUT" manifest source components images -x "*.DS_Store" "*__MACOSX*"
+cp -f "$ZIP_OUTPUT" "out/SaimoRoku.zip"
 
 echo "==> Validando integridade do pacote"
 unzip -l "$ZIP_OUTPUT" | head -20

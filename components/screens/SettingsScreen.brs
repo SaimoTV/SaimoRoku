@@ -6,13 +6,13 @@ sub init()
     m.settingsList = m.top.findNode("settingsList")
     m.settingsList.observeField("itemSelected", "onSettingSelected")
     m.prefs = LoadPreferences()
-    m.top.observeField("focused", "onFocusChange")
+    m.top.observeField("focusedChild", "onFocusedChildChange")
     populateSettings()
 end sub
 
-sub onFocusChange()
-    if m.top.hasFocus() and m.settingsList <> invalid then
-        m.settingsList.setFocus(true)
+sub onFocusedChildChange()
+    if m.top.isInFocusChain() and not m.settingsList.isInFocusChain() then
+        if m.settingsList <> invalid then m.settingsList.setFocus(true)
     end if
 end sub
 
@@ -92,8 +92,14 @@ end sub
 function onKeyEvent(key as String, press as Boolean) as Boolean
     if not press then return false
 
+    if not m.settingsList.isInFocusChain() then
+        if m.settingsList <> invalid then m.settingsList.setFocus(true)
+    end if
+
     if key = "left" then
         return false ' bubbles to MainScene to open sidebar
+    else if key = "back" then
+        return false ' bubbles to MainScene
     end if
 
     return false
