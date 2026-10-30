@@ -31,11 +31,11 @@ sub onStateChange()
 end sub
 
 sub onPositionChange()
-    pos = m.top.positionSec
+    currentPos = m.top.positionSec
     dur = m.top.durationSec
     if dur <= 0 then dur = 1
 
-    pct = pos / dur
+    pct = currentPos / dur
     if pct < 0 then pct = 0
     if pct > 1 then pct = 1
 
@@ -43,8 +43,8 @@ sub onPositionChange()
     m.progressBar.width = barWidth
     m.scrubHead.translation = [barWidth, -4]
 
-    m.timeCurrentLabel.text = FormatSecondsToTime(pos)
-    remSec = dur - pos
+    m.timeCurrentLabel.text = FormatSecondsToTime(currentPos)
+    remSec = dur - currentPos
     if remSec < 0 then remSec = 0
     m.timeRemainingLabel.text = "-" + FormatSecondsToTime(remSec)
 end sub

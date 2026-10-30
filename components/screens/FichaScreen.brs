@@ -143,11 +143,11 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
             return true
         else if m.focusedControl = "resume" then
             prog = GetVODProgress(m.top.item.title)
-            pos = 0
-            if prog <> invalid then pos = prog.position
+            resumePosition = 0
+            if prog <> invalid then resumePosition = prog.position
             m.top.playRequested = {
                 title: m.top.item.title,
-                resumePos: pos,
+                resumePos: resumePosition,
                 isSeries: m.top.item.isSeries
             }
             return true

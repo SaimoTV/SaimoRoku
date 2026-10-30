@@ -13,7 +13,3 @@ splash_screen_hd=pkg:/images/splash_hd.png
 splash_color=#0b0e14
 splash_min_time=1200
 requires_audioperf=5.1
-bs_const={
-  APP_VERSION: "2.6.0"
-  DEBUG: false
-}

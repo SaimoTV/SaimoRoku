@@ -106,10 +106,10 @@ end sub
 
 sub saveCurrentProgress()
     if m.top.playItem = invalid then return
-    pos = Int(m.videoPlayer.position)
+    currentPos = Int(m.videoPlayer.position)
     dur = Int(m.videoPlayer.duration)
     if dur > 60 then
-        SaveVODProgress(m.top.playItem.title, pos, dur)
+        SaveVODProgress(m.top.playItem.title, currentPos, dur)
     end if
 end sub
 
