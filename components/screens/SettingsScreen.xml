@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <component name="SettingsScreen" extends="Group">
   <interface>
-    <field id="reloadRequested" type="boolean" value="false" />
+    <field id="reloadRequested" type="boolean" value="false" alwaysNotify="true" />
   </interface>
 
   <children>

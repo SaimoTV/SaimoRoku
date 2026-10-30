@@ -3,11 +3,12 @@
   <interface>
     <field id="playItem" type="assocarray" onChange="onPlayItemChange" />
     <field id="exitRequested" type="boolean" value="false" />
+    <function name="cleanUp" />
   </interface>
 
   <children>
     <!-- Player de Vídeo Nativo por Hardware -->
-    <Video id="videoPlayer" width="1920" height="1080" />
+    <Video id="videoPlayer" width="1920" height="1080" translation="[0, 0]" />
 
     <!-- Indicador de Buffer / Carregamento -->
     <Group id="bufferingGroup" translation="[820, 500]" visible="false">

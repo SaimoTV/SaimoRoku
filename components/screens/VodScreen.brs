@@ -20,6 +20,9 @@ sub onFocusedChildChange()
         if m.focusArea = "grid" and m.vodPosterGrid <> invalid then
             m.vodPosterGrid.setFocus(true)
         else
+            if m.vodPosterGrid <> invalid and m.vodPosterGrid.hasFocus() then
+                m.vodPosterGrid.setFocus(false)
+            end if
             m.focusArea = "chips"
             updateChipStyles()
         end if
@@ -63,11 +66,11 @@ sub updateChipStyles()
     end for
 
     if m.focusArea = "chips" then
-        m.chipsHint.text = "◀ / ▶ Trocar categoria  •  ▼ Descer para os títulos  •  ◀ Menu"
-        m.chipsHint.color = "#FFFFFF"
-    else
-        m.chipsHint.text = "▲ Subir ou [Voltar] para categorias  •  [OK] Ver detalhes  •  ◀ Menu"
+        m.chipsHint.text = "◀ / ▶ Escolher categoria  •  ▼ [OK] Navegar nos títulos  •  ◀ Menu"
         m.chipsHint.color = "#4FE3D0"
+    else
+        m.chipsHint.text = "[Voltar] Retornar para categorias  •  [OK] Assistir / Detalhes  •  ◀ Menu"
+        m.chipsHint.color = "#FFB454"
     end if
 end sub
 
@@ -141,15 +144,17 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
         if key = "back" then
             ' [Voltar] na grade retorna o foco para as categorias no topo
             m.focusArea = "chips"
-            updateChipStyles()
+            if m.vodPosterGrid <> invalid then m.vodPosterGrid.setFocus(false)
             m.top.setFocus(true)
+            updateChipStyles()
             return true
         else if key = "up" then
             ' Se estiver na linha superior da grade (itens 0-6), sobe para os chips
             if m.vodPosterGrid.itemFocused < 7 then
                 m.focusArea = "chips"
-                updateChipStyles()
+                if m.vodPosterGrid <> invalid then m.vodPosterGrid.setFocus(false)
                 m.top.setFocus(true)
+                updateChipStyles()
                 return true
             end if
         else if key = "left" then

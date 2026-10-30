@@ -80,10 +80,18 @@ end sub
 sub populateEpisodes(item as Object)
     root = CreateObject("roSGNode", "ContentNode")
     row = root.CreateChild("ContentNode")
+
+    thumbUrl = ""
+    if item.backdrop <> invalid and item.backdrop <> "" then
+        thumbUrl = item.backdrop
+    else if item.poster <> invalid then
+        thumbUrl = item.poster
+    end if
+
     for ep = 1 to 12
         node = row.CreateChild("ContentNode")
         node.title = "Episódio " + ep.ToStr()
-        if item.poster <> invalid then node.hdPosterUrl = item.poster
+        if thumbUrl <> "" then node.hdPosterUrl = thumbUrl
         node.addFields({
             episodeNum: ep,
             episodeTitle: "Episódio " + ep.ToStr(),

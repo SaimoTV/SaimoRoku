@@ -2,7 +2,7 @@
 <component name="FichaScreen" extends="Group">
   <interface>
     <field id="item" type="assocarray" onChange="onItemChange" />
-    <field id="playRequested" type="assocarray" />
+    <field id="playRequested" type="assocarray" alwaysNotify="true" />
   </interface>
 
   <children>
@@ -44,11 +44,11 @@
         <Label translation="[0, 0]" text="Episódios Disponíveis" font="font:MediumBoldSystemFont" color="#FFFFFF" />
         <RowList
           id="episodesRowList"
-          itemComponentName="PosterItem"
+          itemComponentName="EpisodeItem"
           translation="[0, 40]"
-          itemSize="[1720, 290]"
-          rowItemSize="[[160, 280]]"
-          rowItemSpacing="[[20, 0]]"
+          itemSize="[1720, 240]"
+          rowItemSize="[[300, 230]]"
+          rowItemSpacing="[[24, 0]]"
           showRowLabel="[false]"
           numRows="1"
         />

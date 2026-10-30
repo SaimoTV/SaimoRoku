@@ -2,7 +2,7 @@
 <component name="EventsScreen" extends="Group">
   <interface>
     <field id="events" type="array" onChange="onEventsChange" />
-    <field id="tuneRequested" type="string" />
+    <field id="tuneRequested" type="string" alwaysNotify="true" />
   </interface>
 
   <children>

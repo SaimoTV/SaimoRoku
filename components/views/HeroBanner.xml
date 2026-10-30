@@ -2,8 +2,8 @@
 <component name="HeroBanner" extends="Group">
   <interface>
     <field id="featuredItem" type="assocarray" onChange="onItemChange" />
-    <field id="playClicked" type="boolean" value="false" />
-    <field id="detailsClicked" type="boolean" value="false" />
+    <field id="playClicked" type="boolean" value="false" alwaysNotify="true" />
+    <field id="detailsClicked" type="boolean" value="false" alwaysNotify="true" />
     <field id="focusedButton" type="integer" value="0" />
   </interface>
 

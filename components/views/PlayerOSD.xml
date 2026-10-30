@@ -7,9 +7,9 @@
     <field id="durationSec" type="integer" value="0" onChange="onPositionChange" />
     <field id="isPlaying" type="boolean" value="true" onChange="onStateChange" />
     <field id="isSeries" type="boolean" value="false" onChange="onDataChange" />
-    <field id="skipIntroRequested" type="boolean" value="false" />
-    <field id="playPauseRequested" type="boolean" value="false" />
-    <field id="seekRequested" type="integer" value="0" />
+    <field id="skipIntroRequested" type="boolean" value="false" alwaysNotify="true" />
+    <field id="playPauseRequested" type="boolean" value="false" alwaysNotify="true" />
+    <field id="seekRequested" type="integer" value="0" alwaysNotify="true" />
     <field id="isOpen" type="boolean" value="false" onChange="onOpenChange" />
   </interface>
 

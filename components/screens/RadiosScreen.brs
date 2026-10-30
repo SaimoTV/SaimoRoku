@@ -79,3 +79,10 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
 
     return false
 end function
+
+sub cleanUp()
+    if m.radioAudio <> invalid then
+        m.radioAudio.control = "stop"
+        m.radioAudio.content = invalid
+    end if
+end sub

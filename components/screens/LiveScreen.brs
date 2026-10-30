@@ -259,3 +259,12 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
 
     return false
 end function
+
+sub cleanUp()
+    if m.liveVideo <> invalid then
+        m.liveVideo.control = "stop"
+        m.liveVideo.content = invalid
+    end if
+    if m.zapHud <> invalid then m.zapHud.visible = false
+    if m.channelDrawer <> invalid then m.channelDrawer.isOpen = false
+end sub

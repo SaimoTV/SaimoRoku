@@ -3,8 +3,8 @@
   <interface>
     <field id="featuredItem" type="assocarray" onChange="onFeaturedChange" />
     <field id="railsData" type="array" onChange="onRailsChange" />
-    <field id="itemSelected" type="assocarray" />
-    <field id="playRequested" type="assocarray" />
+    <field id="itemSelected" type="assocarray" alwaysNotify="true" />
+    <field id="playRequested" type="assocarray" alwaysNotify="true" />
   </interface>
 
   <children>

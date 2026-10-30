@@ -166,3 +166,14 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
 
     return false
 end function
+
+sub cleanUp()
+    saveCurrentProgress()
+    if m.videoPlayer <> invalid then
+        m.videoPlayer.control = "stop"
+        m.videoPlayer.content = invalid
+    end if
+    if m.progressTimer <> invalid then
+        m.progressTimer.control = "stop"
+    end if
+end sub

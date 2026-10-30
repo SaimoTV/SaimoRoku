@@ -5,11 +5,12 @@
     <field id="epgMap" type="assocarray" onChange="onEpgChange" />
     <field id="currentChannelIndex" type="integer" value="0" onChange="onChannelIndexChange" />
     <field id="openDrawerOnLoad" type="boolean" value="true" />
+    <function name="cleanUp" />
   </interface>
 
   <children>
     <!-- Player de Vídeo Nativo por Hardware -->
-    <Video id="liveVideo" width="1920" height="1080" />
+    <Video id="liveVideo" width="1920" height="1080" translation="[0, 0]" />
 
     <!-- Indicador de Carregando / Buffer -->
     <Group id="bufferingGroup" translation="[840, 500]" visible="false">

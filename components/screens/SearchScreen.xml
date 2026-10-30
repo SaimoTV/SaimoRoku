@@ -3,8 +3,8 @@
   <interface>
     <field id="channels" type="array" />
     <field id="vodItems" type="array" />
-    <field id="itemSelected" type="assocarray" />
-    <field id="tuneRequested" type="assocarray" />
+    <field id="itemSelected" type="assocarray" alwaysNotify="true" />
+    <field id="tuneRequested" type="assocarray" alwaysNotify="true" />
   </interface>
 
   <children>
@@ -16,21 +16,21 @@
       <Label translation="[0, 45]" text="Pesquise por canais ao vivo, filmes, séries ou animes" font="font:SmallSystemFont" color="#94a3b8" />
     </Group>
 
-    <!-- Teclado Roku Nativo à Esquerda -->
+    <!-- Teclado Roku Nativo à Esquerda (MiniKeyboard compacto para busca lado a lado) -->
     <Group translation="[100, 140]">
-      <Keyboard id="searchKeyboard" />
+      <MiniKeyboard id="searchKeyboard" />
     </Group>
 
     <!-- Resultados à Direita -->
-    <Group translation="[840, 140]">
-      <Rectangle width="980" height="880" color="#111827" />
-      <Rectangle width="980" height="3" color="#4FE3D0" />
+    <Group translation="[680, 140]">
+      <Rectangle width="1140" height="880" color="#111827" />
+      <Rectangle width="1140" height="3" color="#4FE3D0" />
       <Label id="resultsHeader" translation="[30, 20]" text="RESULTADOS" font="font:SmallBoldSystemFont" color="#4FE3D0" />
 
       <LabelList
         id="resultsList"
         translation="[20, 60]"
-        itemSize="[940, 60]"
+        itemSize="[1100, 60]"
         itemSpacing="[0, 6]"
         numRows="13"
         color="#94a3b8"

@@ -2,6 +2,7 @@
 <component name="RadiosScreen" extends="Group">
   <interface>
     <field id="radios" type="array" onChange="onRadiosChange" />
+    <function name="cleanUp" />
   </interface>
 
   <children>

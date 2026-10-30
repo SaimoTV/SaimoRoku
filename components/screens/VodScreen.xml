@@ -3,7 +3,7 @@
   <interface>
     <field id="vodItems" type="array" onChange="onItemsChange" />
     <field id="selectedCategory" type="string" value="Filmes" onChange="onCategoryChange" />
-    <field id="itemSelected" type="assocarray" />
+    <field id="itemSelected" type="assocarray" alwaysNotify="true" />
   </interface>
 
   <children>

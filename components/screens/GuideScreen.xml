@@ -3,7 +3,7 @@
   <interface>
     <field id="channels" type="array" onChange="onChannelsChange" />
     <field id="epgMap" type="assocarray" onChange="onEpgChange" />
-    <field id="tuneRequested" type="assocarray" />
+    <field id="tuneRequested" type="assocarray" alwaysNotify="true" />
   </interface>
 
   <children>

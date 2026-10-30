@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="EpisodeItem" extends="Group">
+  <interface>
+    <field id="itemContent" type="node" onChange="onItemContentChange" />
+    <field id="width" type="float" value="300" />
+    <field id="height" type="float" value="230" />
+    <field id="rowFocusPercent" type="float" onChange="onFocusChange" />
+  </interface>
+
+  <children>
+    <!-- Borda de Foco Dinâmica -->
+    <Rectangle id="focusBorder" translation="[-3, -3]" width="306" height="175" color="#4FE3D0" visible="false" />
+
+    <!-- Thumbnail 16:9 em alta definição -->
+    <Poster id="thumb" width="300" height="169" loadDisplayMode="scaleToZoom" />
+
+    <!-- Badge do episódio -->
+    <Rectangle translation="[0, 137]" width="300" height="32" color="#000000C0" />
+    <Label id="epBadge" translation="[10, 143]" width="280" font="font:SmallBoldSystemFont" color="#4FE3D0" />
+
+    <!-- Título do Episódio abaixo da miniatura -->
+    <Label id="title" translation="[0, 178]" width="300" font="font:SmallSystemFont" color="#cbd5e1" numLines="2" wrap="true" />
+  </children>
+
+  <script type="text/brightscript" uri="pkg:/components/items/EpisodeItem.brs" />
+</component>

@@ -3,7 +3,7 @@
   <interface>
     <field id="isExpanded" type="boolean" value="true" onChange="onExpandedChange" />
     <field id="selectedIndex" type="integer" value="0" onChange="onIndexChange" />
-    <field id="itemSelected" type="string" />
+    <field id="itemSelected" type="string" alwaysNotify="true" />
   </interface>
 
   <children>
