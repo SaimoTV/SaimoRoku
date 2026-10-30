@@ -98,8 +98,8 @@ sub onVideoState()
     else if state = "buffering" then
         m.bufferingGroup.visible = true
     else if state = "finished" then
-        pos = m.videoPlayer.position
-        if pos > 10 then
+        videoPos = m.videoPlayer.position
+        if videoPos > 10 then
             saveCurrentProgress()
             m.top.exitRequested = true
         else
