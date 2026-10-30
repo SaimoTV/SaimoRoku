@@ -15,50 +15,61 @@ sub runServer()
         return
     end if
 
-    listenSock.setPort(port)
-    listenSock.setAddress("0.0.0.0:" + port.ToStr())
-    if not listenSock.listen(5) then
-        m.top.status = "Erro ao vincular porta " + port.ToStr()
+    msgPort = CreateObject("roMessagePort")
+    listenSock.setMessagePort(msgPort)
+
+    addr = CreateObject("roSocketAddress")
+    if addr = invalid then return
+    addr.setPort(port)
+    listenSock.setAddress(addr)
+
+    listenSock.notifyReadable(true)
+    if not listenSock.listen(4) then
+        m.top.status = "Erro ao iniciar escuta"
         return
     end if
 
-    msgPort = CreateObject("roMessagePort")
-    listenSock.setMessagePort(msgPort)
-    listenSock.notifyOnStatus(true)
-    m.top.status = "Pronto em 0.0.0.0:" + port.ToStr()
+    if not listenSock.eOK() then
+        m.top.status = "Erro de socket"
+        return
+    end if
 
-    connections = []
+    m.top.status = "Pronto na porta " + port.ToStr()
+    connections = {}
+    buffer = CreateObject("roByteArray")
+    buffer[4096] = 0
 
     while true
-        msg = wait(200, msgPort)
+        msg = wait(500, msgPort)
         if type(msg) = "roSocketEvent" then
-            if msg.getSocketID() = listenSock.getID() then
-                ' Nova conexão de cliente chegando
-                clientSock = listenSock.accept()
-                if clientSock <> invalid then
-                    clientSock.setMessagePort(msgPort)
-                    clientSock.notifyOnStatus(true)
-                    connections.Push({ sock: clientSock, id: clientSock.getID(), buffer: "" })
+            changedID = msg.getSocketID()
+            if changedID = listenSock.getID() and listenSock.isReadable() then
+                newConn = listenSock.accept()
+                if newConn <> invalid then
+                    newConn.notifyReadable(true)
+                    newConn.setMessagePort(msgPort)
+                    connections[Stri(newConn.getID())] = newConn
                     m.top.activeClients = connections.Count()
                 end if
             else
-                ' Dados recebidos de um cliente existente
-                for i = connections.Count() - 1 to 0 step -1
-                    conn = connections[i]
-                    if conn.id = msg.getSocketID() then
-                        ba = CreateObject("roByteArray")
-                        bytesRead = conn.sock.receive(ba, 0, 4096)
-                        if bytesRead > 0 then
-                            receivedText = ba.ToAsciiString()
-                            handleClientData(conn, receivedText)
-                        else if conn.sock.eIsEOF() or bytesRead < 0 then
-                            conn.sock.close()
-                            connections.Delete(i)
-                            m.top.activeClients = connections.Count()
+                conn = connections[Stri(changedID)]
+                if conn <> invalid then
+                    closed = false
+                    if conn.isReadable() then
+                        received = conn.receive(buffer, 0, 4096)
+                        if received > 0 then
+                            dataText = buffer.ToAsciiString()
+                            handleClientData(conn, dataText)
+                        else if received = 0 then
+                            closed = true
                         end if
-                        exit for
                     end if
-                end for
+                    if closed then
+                        conn.close()
+                        connections.Delete(Stri(changedID))
+                        m.top.activeClients = connections.Count()
+                    end if
+                end if
             end if
         end if
     end while
@@ -71,7 +82,7 @@ sub handleClientData(conn as Object, data as String)
         httpResp = "HTTP/1.1 200 OK" + Chr(13) + Chr(10) + "Content-Type: application/json" + Chr(13) + Chr(10) + "Access-Control-Allow-Origin: *" + Chr(13) + Chr(10) + "Content-Length: " + Len(infoJson).ToStr() + Chr(13) + Chr(10) + "Connection: close" + Chr(13) + Chr(10) + Chr(13) + Chr(10) + infoJson
         ba = CreateObject("roByteArray")
         ba.FromAsciiString(httpResp)
-        conn.sock.send(ba, 0, ba.Count())
+        conn.send(ba, 0, ba.Count())
         return
     end if
 
@@ -90,7 +101,7 @@ sub handleClientData(conn as Object, data as String)
                 okResp = "HTTP/1.1 200 OK" + Chr(13) + Chr(10) + "Content-Type: application/json" + Chr(13) + Chr(10) + "Access-Control-Allow-Origin: *" + Chr(13) + Chr(10) + "Connection: close" + Chr(13) + Chr(10) + Chr(13) + Chr(10) + "{" + Chr(34) + "status" + Chr(34) + ":" + Chr(34) + "ok" + Chr(34) + "}"
                 ba = CreateObject("roByteArray")
                 ba.FromAsciiString(okResp)
-                conn.sock.send(ba, 0, ba.Count())
+                conn.send(ba, 0, ba.Count())
             end if
         end if
     end if

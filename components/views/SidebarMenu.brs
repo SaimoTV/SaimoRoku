@@ -10,7 +10,7 @@ sub init()
     m.focusBar = m.top.findNode("focusBar")
     m.versionLabel = m.top.findNode("versionLabel")
     m.itemNames = ["home", "live", "vod", "guide", "events", "radios", "search", "settings"]
-    updateSelection(0)
+    updateVisuals(0)
 end sub
 
 sub onExpandedChange()
@@ -31,13 +31,12 @@ sub onExpandedChange()
 end sub
 
 sub onIndexChange()
-    updateSelection(m.top.selectedIndex)
+    updateVisuals(m.top.selectedIndex)
 end sub
 
-sub updateSelection(index as Integer)
+sub updateVisuals(index as Integer)
     if index < 0 then index = 0
     if index > 7 then index = 7
-    m.top.selectedIndex = index
 
     yPos = 120 + (index * 60)
     m.focusPill.translation = [8, yPos]

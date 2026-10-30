@@ -300,7 +300,9 @@ end sub
 sub onSidebarSelected(evt as Object)
     itemKey = evt.getData()
     m.sidebarMenu.isExpanded = false
-    switchScreen(itemKey)
+    if m.currentScreenName <> itemKey then
+        switchScreen(itemKey)
+    end if
     if m.currentScreenNode <> invalid then
         m.currentScreenNode.setFocus(true)
     end if

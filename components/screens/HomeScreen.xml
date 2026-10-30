@@ -14,14 +14,15 @@
     <!-- Trilhos Horizontais de Conteúdo (RowList) -->
     <RowList
       id="contentRowList"
+      itemComponentName="PosterItem"
       translation="[80, 480]"
-      itemSize="[1760, 260]"
-      rowItemSize="[[150, 220]]"
-      rowItemSpacing="[[16, 0]]"
+      itemSize="[1760, 290]"
+      rowItemSize="[[160, 280]]"
+      rowItemSpacing="[[20, 0]]"
       itemSpacing="[0, 30]"
       showRowLabel="[true]"
       rowLabelOffset="[[0, 10]]"
-      numRows="4"
+      numRows="3"
     />
   </children>
 

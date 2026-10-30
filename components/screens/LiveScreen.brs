@@ -42,7 +42,9 @@ sub playChannel(index as Integer)
     if channels = invalid or channels.Count() = 0 then return
     if index < 0 then index = channels.Count() - 1
     if index >= channels.Count() then index = 0
-    m.top.currentChannelIndex = index
+    if m.top.currentChannelIndex <> index then
+        m.top.currentChannelIndex = index
+    end if
 
     ch = channels[index]
 
