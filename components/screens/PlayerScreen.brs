@@ -151,7 +151,12 @@ sub startPlayback(streamUrl as String, resumePos as Dynamic)
     content = CreateObject("roSGNode", "ContentNode")
     content.url = streamUrl
     content.title = m.playerOsd.title
-    content.HttpHeaders = ["User-Agent: SaimoTV/2.6.0 (RokuOS)"]
+    
+    headers = ["User-Agent: SaimoTV/2.6.0 (RokuOS)", "Accept: */*"]
+    if Instr(1, LCase(streamUrl), "embedplayer2.xyz") > 0 then
+        headers.Push("Referer: https://embedplayer2.xyz/")
+    end if
+    content.HttpHeaders = headers
 
     lowerUrl = LCase(streamUrl)
     if Instr(1, lowerUrl, ".m3u8") > 0 or Instr(1, lowerUrl, "master.txt") > 0 or Instr(1, lowerUrl, "/hls/") > 0 or Instr(1, lowerUrl, "api/proxy") > 0 then
