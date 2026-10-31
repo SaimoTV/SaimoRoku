@@ -283,8 +283,8 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
         return true
     end if
 
-    ' Botão * (Options) ou Replay para favoritar / desfavoritar canal
-    if key = "options" or key = "replay" then
+    ' Botão Replay, Play ou * para favoritar / desfavoritar canal
+    if key = "replay" or key = "play" or key = "options" then
         channels = m.top.channels
         if channels <> invalid and m.top.currentChannelIndex < channels.Count() then
             ch = channels[m.top.currentChannelIndex]

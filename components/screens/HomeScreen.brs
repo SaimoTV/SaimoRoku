@@ -1,13 +1,18 @@
 ' ====================================================================
 ' Saimo TV - HomeScreen (BrightScript)
+' Tela inicial idêntica ao Android TV Box (EscolhaActivity.kt)
+' Fileiras: Continue assistindo, Ao vivo agora, Favoritos e Destaques
 ' ====================================================================
 
 sub init()
     m.heroBanner = m.top.findNode("heroBanner")
     m.contentRowList = m.top.findNode("contentRowList")
+
     m.heroBanner.observeField("playClicked", "onHeroPlay")
     m.heroBanner.observeField("detailsClicked", "onHeroDetails")
     m.contentRowList.observeField("rowItemSelected", "onRowItemSelected")
+    m.contentRowList.observeField("rowItemFocused", "onRowItemFocused")
+
     m.currentFocus = "hero" ' "hero" ou "rows"
     m.top.observeField("focusedChild", "onFocusedChildChange")
 end sub
@@ -20,53 +25,117 @@ end sub
 
 sub updateLayoutFocus()
     if m.currentFocus = "rows" then
-        m.heroBanner.translation = [80, -320]
-        m.contentRowList.translation = [80, 100]
         if m.contentRowList <> invalid then m.contentRowList.setFocus(true)
     else
-        m.heroBanner.translation = [80, 80]
-        m.contentRowList.translation = [80, 520]
         if m.heroBanner <> invalid then m.heroBanner.setFocus(true)
     end if
 end sub
 
 sub onFeaturedChange()
-    m.heroBanner.featuredItem = m.top.featuredItem
+    if m.top.featuredItem <> invalid then
+        m.heroBanner.featuredItem = m.top.featuredItem
+    end if
 end sub
 
 sub onRailsChange()
-    rails = m.top.railsData
-    if rails = invalid then return
-
     rootNode = CreateObject("roSGNode", "ContentNode")
-    for each rail in rails
-        rowNode = rootNode.CreateChild("ContentNode")
-        rowNode.title = rail.title
-        for each it in rail.items
-            itemNode = rowNode.CreateChild("ContentNode")
-            itemNode.title = it.title
-            if it.poster <> invalid then itemNode.hdPosterUrl = it.poster
-            itemNode.addFields({ rawItem: it })
+
+    ' 1. Fileira: Continue Assistindo (se houver progresso salvo)
+    inProg = GetInProgressList()
+    if inProg <> invalid and inProg.Count() > 0 then
+        rowProg = rootNode.CreateChild("ContentNode")
+        rowProg.title = "Continue Assistindo"
+        for each p in inProg
+            itemNode = rowProg.CreateChild("ContentNode")
+            itemNode.title = p.title
+            if p.percent <> invalid then
+                itemNode.title = p.title + " (" + p.percent.ToStr() + "%)"
+            end if
+            if p.poster <> invalid and p.poster <> "" then
+                itemNode.hdPosterUrl = p.poster
+            end if
+            itemNode.addFields({ itemType: "vod", rawItem: p })
         end for
-    end for
+    end if
+
+    ' 2. Fileira: Ao Vivo Agora (Canais principais com o programa do ar)
+    channels = m.top.channels
+    if channels <> invalid and channels.Count() > 0 then
+        rowLive = rootNode.CreateChild("ContentNode")
+        rowLive.title = "Ao Vivo Agora"
+        maxChannels = 16
+        if channels.Count() < maxChannels then maxChannels = channels.Count()
+
+        epg = m.top.epgMap
+
+        for i = 0 to maxChannels - 1
+            ch = channels[i]
+            itemNode = rowLive.CreateChild("ContentNode")
+            progTitle = "Transmissão Contínua"
+            if epg <> invalid and epg[ch.name] <> invalid and epg[ch.name].Count() > 0 then
+                for each p in epg[ch.name]
+                    if p.isCurrent then
+                        progTitle = p.title
+                        exit for
+                    end if
+                end for
+            end if
+
+            itemNode.title = ch.number.ToStr() + ". " + ch.name
+            if ch.logo <> invalid and ch.logo <> "" then
+                itemNode.hdPosterUrl = ch.logo
+            end if
+            itemNode.addFields({
+                itemType: "channel",
+                rawChannel: ch,
+                programTitle: progTitle
+            })
+        end for
+    end if
+
+    ' 3. Fileira: Favoritos VOD (se houver)
+    favVod = LoadFavoriteVOD()
+    if favVod <> invalid and favVod.Count() > 0 then
+        rowFav = rootNode.CreateChild("ContentNode")
+        rowFav.title = "Meus Favoritos"
+        for each f in favVod
+            itemNode = rowFav.CreateChild("ContentNode")
+            itemNode.title = f.title
+            if f.poster <> invalid and f.poster <> "" then
+                itemNode.hdPosterUrl = f.poster
+            else if f.backdrop <> invalid and f.backdrop <> "" then
+                itemNode.hdPosterUrl = f.backdrop
+            end if
+            itemNode.addFields({ itemType: "vod", rawItem: f })
+        end for
+    end if
+
+    ' 4. Fileiras de Destaques do Catálogo (Em Alta, Filmes Populares, Séries)
+    rails = m.top.railsData
+    if rails <> invalid then
+        for each rail in rails
+            rowNode = rootNode.CreateChild("ContentNode")
+            rowNode.title = rail.title
+            for each it in rail.items
+                itemNode = rowNode.CreateChild("ContentNode")
+                itemNode.title = it.title
+                if it.poster <> invalid then itemNode.hdPosterUrl = it.poster
+                itemNode.addFields({ itemType: "vod", rawItem: it })
+            end for
+        end for
+    end if
 
     m.contentRowList.content = rootNode
-end sub
 
-sub onHeroPlay()
-    if m.top.featuredItem <> invalid then
-        m.top.playRequested = m.top.featuredItem
+    ' Define o primeiro destaque do hero banner se ainda não definido
+    if m.top.featuredItem = invalid and rails <> invalid and rails.Count() > 0 and rails[0].items.Count() > 0 then
+        m.top.featuredItem = rails[0].items[0]
     end if
 end sub
 
-sub onHeroDetails()
-    if m.top.featuredItem <> invalid then
-        m.top.itemSelected = m.top.featuredItem
-    end if
-end sub
-
-sub onRowItemSelected()
-    coords = m.contentRowList.rowItemSelected
+sub onRowItemFocused()
+    coords = m.contentRowList.rowItemFocused
+    if coords = invalid or coords.Count() < 2 then return
     rowIndex = coords[0]
     colIndex = coords[1]
 
@@ -75,10 +144,62 @@ sub onRowItemSelected()
         rowNode = root.getChild(rowIndex)
         if rowNode <> invalid and colIndex < rowNode.getChildCount() then
             selectedNode = rowNode.getChild(colIndex)
-            if selectedNode <> invalid and selectedNode.rawItem <> invalid then
-                m.top.itemSelected = selectedNode.rawItem
+            if selectedNode <> invalid then
+                if selectedNode.itemType = "vod" and selectedNode.rawItem <> invalid then
+                    m.heroBanner.featuredItem = selectedNode.rawItem
+                else if selectedNode.itemType = "channel" and selectedNode.rawChannel <> invalid then
+                    ch = selectedNode.rawChannel
+                    prog = "Assistir canal ao vivo com transmissão em alta qualidade."
+                    if selectedNode.programTitle <> invalid then prog = "Agora: " + selectedNode.programTitle
+                    m.heroBanner.featuredItem = {
+                        title: ch.name,
+                        overview: prog,
+                        genres: "Canal Ao Vivo • Sinal Digital",
+                        year: ch.number.ToStr(),
+                        poster: ch.logo,
+                        backdrop: ch.logo
+                    }
+                end if
             end if
         end if
+    end if
+end sub
+
+sub onRowItemSelected()
+    coords = m.contentRowList.rowItemSelected
+    if coords = invalid or coords.Count() < 2 then return
+    rowIndex = coords[0]
+    colIndex = coords[1]
+
+    root = m.contentRowList.content
+    if root <> invalid and rowIndex < root.getChildCount() then
+        rowNode = root.getChild(rowIndex)
+        if rowNode <> invalid and colIndex < rowNode.getChildCount() then
+            selectedNode = rowNode.getChild(colIndex)
+            if selectedNode <> invalid then
+                if selectedNode.itemType = "vod" and selectedNode.rawItem <> invalid then
+                    m.top.itemSelected = selectedNode.rawItem
+                else if selectedNode.itemType = "channel" and selectedNode.rawChannel <> invalid then
+                    m.top.tuneRequested = selectedNode.rawChannel
+                end if
+            end if
+        end if
+    end if
+end sub
+
+sub onHeroPlay()
+    if m.heroBanner.featuredItem <> invalid then
+        m.top.playRequested = m.heroBanner.featuredItem
+    else if m.top.featuredItem <> invalid then
+        m.top.playRequested = m.top.featuredItem
+    end if
+end sub
+
+sub onHeroDetails()
+    if m.heroBanner.featuredItem <> invalid then
+        m.top.itemSelected = m.heroBanner.featuredItem
+    else if m.top.featuredItem <> invalid then
+        m.top.itemSelected = m.top.featuredItem
     end if
 end sub
 

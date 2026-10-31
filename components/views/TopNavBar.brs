@@ -12,7 +12,7 @@ sub init()
     m.clockTimer.control = "start"
     updateClock()
 
-    m.itemNames = ["search", "home", "live", "events", "vod", "guide", "radios", "settings"]
+    m.itemNames = ["search", "home", "live", "events", "vod", "favorites", "radios", "settings"]
     m.tabWidth = 140
     m.top.observeField("focusedChild", "onFocusedChildChange")
     updateVisuals(1)

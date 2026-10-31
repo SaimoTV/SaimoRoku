@@ -2,28 +2,28 @@
 <component name="EpisodeItem" extends="Group">
   <interface>
     <field id="itemContent" type="node" onChange="onItemContentChange" />
-    <field id="width" type="float" value="300" />
-    <field id="height" type="float" value="240" />
+    <field id="width" type="float" value="280" />
+    <field id="height" type="float" value="200" />
     <field id="rowFocusPercent" type="float" onChange="onFocusChange" />
   </interface>
 
   <children>
     <!-- Foco de Borda Dinâmica -->
-    <Rectangle id="focusBorder" translation="[-3, -3]" width="306" height="166" color="#4FE3D0" visible="false" />
+    <Rectangle id="focusBorder" translation="[-3, -3]" width="286" height="146" color="#4FE3D0" visible="false" />
 
     <!-- Fundo da Thumbnail -->
-    <Rectangle width="300" height="160" color="#1e293b" />
+    <Rectangle width="280" height="140" color="#1e293b" />
 
     <!-- Thumbnail 16:9 em alta definição -->
-    <Poster id="thumb" width="300" height="160" loadDisplayMode="scaleToZoom" />
+    <Poster id="thumb" width="280" height="140" loadDisplayMode="scaleToZoom" />
 
-    <!-- Badge do episódio sobre a miniatura -->
-    <Rectangle translation="[0, 126]" width="300" height="34" color="#000000B0" />
-    <Label id="epBadge" translation="[10, 132]" width="280" font="font:SmallBoldSystemFont" color="#4FE3D0" />
+    <!-- Badge do número do episódio sobre a miniatura -->
+    <Rectangle translation="[0, 108]" width="280" height="32" color="#000000CC" />
+    <Label id="epBadge" translation="[8, 114]" width="264" font="font:SmallBoldSystemFont" color="#4FE3D0" />
 
-    <!-- Título do Episódio abaixo da miniatura -->
-    <Label id="title" translation="[4, 168]" width="292" height="34" font="font:SmallBoldSystemFont" color="#FFFFFF" numLines="1" />
-    <Label id="subInfo" translation="[4, 202]" width="292" height="26" font="font:SmallSystemFont" color="#94a3b8" text="Full HD • Áudio Dublado" />
+    <!-- Título do Episódio e Formato abaixo da miniatura -->
+    <Label id="title" translation="[2, 146]" width="276" height="24" font="font:SmallBoldSystemFont" color="#FFFFFF" numLines="1" />
+    <Label id="subInfo" translation="[2, 172]" width="276" height="22" font="font:SmallSystemFont" color="#94a3b8" text="Full HD • Áudio Dublado" />
   </children>
 
   <script type="text/brightscript" uri="pkg:/components/items/EpisodeItem.brs" />

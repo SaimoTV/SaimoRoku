@@ -140,3 +140,67 @@ function IsChannelFavorite(channelName as String) as Boolean
     end for
     return false
 end function
+
+' ----- VOD Favoritos (Filmes e Séries) -----
+
+function LoadFavoriteVOD() as Object
+    reg = GetRegistry()
+    raw = reg.Read("fav_vod")
+    if raw <> "" then
+        parsed = ParseJson(raw)
+        if parsed <> invalid then return parsed
+    end if
+    return []
+end function
+
+sub ToggleFavoriteVOD(item as Object)
+    if item = invalid or item.title = invalid or item.title = "" then return
+    favs = LoadFavoriteVOD()
+    idx = -1
+    for i = 0 to favs.Count() - 1
+        if favs[i].title = item.title then
+            idx = i
+            exit for
+        end if
+    end for
+    if idx >= 0 then
+        favs.Delete(idx)
+    else
+        clean = {
+            title: item.title,
+            isSeries: (item.isSeries = true),
+            letter: item.letter,
+            poster: item.poster,
+            backdrop: item.backdrop,
+            year: item.year,
+            genres: item.genres,
+            overview: item.overview,
+            category: item.category
+        }
+        favs.Push(clean)
+    end if
+    reg = GetRegistry()
+    reg.Write("fav_vod", FormatJson(favs))
+    reg.Flush()
+end sub
+
+function IsVODFavorite(title as String) as Boolean
+    if title = "" then return false
+    favs = LoadFavoriteVOD()
+    for each f in favs
+        if f.title = title then return true
+    end for
+    return false
+end function
+
+function GetInProgressList() as Object
+    all = LoadAllProgress()
+    list = []
+    for each key in all
+        it = all[key]
+        if it <> invalid and it.percent <> invalid and it.percent > 2 and it.percent < 92 then
+            list.Push(it)
+        end if
+    end for
+    return list
+end function

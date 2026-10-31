@@ -4,13 +4,13 @@
     <field id="channels" type="array" onChange="onChannelsChange" />
     <field id="epgMap" type="assocarray" onChange="onEpgChange" />
     <field id="currentChannelIndex" type="integer" value="0" onChange="onChannelIndexChange" />
-    <field id="openDrawerOnLoad" type="boolean" value="true" />
+    <field id="openDrawerOnLoad" type="boolean" value="false" />
     <function name="cleanUp" />
   </interface>
 
   <children>
     <!-- Player de Vídeo Nativo por Hardware -->
-    <Video id="liveVideo" width="1920" height="1080" translation="[0, 0]" />
+    <Video id="liveVideo" width="1920" height="1080" translation="[0, 0]" enableUI="false" />
 
     <!-- Indicador de Carregando / Buffer -->
     <Group id="bufferingGroup" translation="[840, 500]" visible="false">
@@ -25,7 +25,7 @@
     <Group id="drawerHintGroup" translation="[80, 1020]" visible="true">
       <Rectangle width="640" height="40" color="#0b0e14D0" />
       <Rectangle width="3" height="40" color="#4FE3D0" />
-      <Label translation="[20, 10]" text="[OK] Canais  |  [*] ou [Replay] Favoritar  |  [Cima/Baixo] Zapping" font="font:SmallSystemFont" color="#4FE3D0" />
+      <Label translation="[20, 10]" text="[OK] Canais  |  [Replay] Favoritar  |  [Cima/Baixo] Zapping" font="font:SmallSystemFont" color="#4FE3D0" />
     </Group>
 
     <!-- Toast de Favorito (*) -->

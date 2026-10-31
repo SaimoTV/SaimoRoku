@@ -8,7 +8,7 @@
 
   <children>
     <!-- Player de Vídeo Nativo por Hardware -->
-    <Video id="videoPlayer" width="1920" height="1080" translation="[0, 0]" />
+    <Video id="videoPlayer" width="1920" height="1080" translation="[0, 0]" enableUI="false" />
 
     <!-- Indicador de Buffer / Carregamento -->
     <Group id="bufferingGroup" translation="[820, 500]" visible="false">

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="FavoritesScreen" extends="Group">
+  <interface>
+    <field id="channels" type="array" onChange="refreshFavorites" />
+    <field id="vodItems" type="array" onChange="refreshFavorites" />
+    <field id="itemSelected" type="assocarray" alwaysNotify="true" />
+    <field id="tuneRequested" type="assocarray" alwaysNotify="true" />
+    <field id="focusUpRequested" type="boolean" alwaysNotify="true" />
+  </interface>
+
+  <children>
+    <Rectangle width="1920" height="1080" color="#0b0e14" />
+
+    <!-- Cabeçalho -->
+    <Group translation="[80, 85]">
+      <Label text="MEUS FAVORITOS" font="font:SmallBoldSystemFont" color="#FFB454" />
+      <Label id="countLabel" translation="[0, 24]" text="Seus canais, filmes e séries marcados com estrela" font="font:SmallSystemFont" color="#94a3b8" />
+    </Group>
+
+    <!-- Trilhos de Favoritos (Canais e VOD) -->
+    <RowList
+      id="favoritesRowList"
+      itemComponentName="PosterItem"
+      translation="[80, 160]"
+      itemSize="[1760, 390]"
+      rowItemSize="[[180, 270]]"
+      rowItemSpacing="[[20, 0]]"
+      itemSpacing="[0, 40]"
+      showRowLabel="[true]"
+      rowLabelOffset="[[0, 10]]"
+      numRows="2"
+      wrap="false"
+    />
+
+    <!-- Estado Vazio (quando não há favoritos) -->
+    <Group id="emptyState" translation="[80, 220]" visible="false">
+      <Rectangle width="1760" height="300" color="#111827" />
+      <Rectangle width="1760" height="3" color="#FFB454" />
+      <Label translation="[40, 60]" width="1680" text="Nenhum favorito adicionado ainda" font="font:MediumBoldSystemFont" color="#FFFFFF" horizAlign="center" />
+      <Label translation="[40, 120]" width="1680" text="Pressione o botão [*] ou [Replay] no controle remoto enquanto assiste a um canal ou na ficha de um filme/série para adicioná-lo aqui." font="font:SmallSystemFont" color="#94a3b8" horizAlign="center" wrap="true" />
+    </Group>
+  </children>
+
+  <script type="text/brightscript" uri="pkg:/source/utils/Storage.brs" />
+  <script type="text/brightscript" uri="pkg:/components/screens/FavoritesScreen.brs" />
+</component>

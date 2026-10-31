@@ -36,8 +36,14 @@ sub onPlayItemChange()
     m.playerOsd.title = item.title
     if item.isSeries then
         epTitle = "Episódio 1"
-        if item.episodeTitle <> invalid then epTitle = item.episodeTitle
-        m.playerOsd.subtitle = "Temporada 1 • " + epTitle
+        if item.episodeTitle <> invalid and item.episodeTitle <> "" then
+            epTitle = item.episodeTitle
+        else if item.episode <> invalid then
+            epTitle = "Episódio " + item.episode.ToStr()
+        end if
+        seasonNum = 1
+        if item.season <> invalid and item.season > 0 then seasonNum = item.season
+        m.playerOsd.subtitle = "Temporada " + seasonNum.ToStr() + " • " + epTitle
         m.playerOsd.isSeries = true
     else
         m.playerOsd.subtitle = "Filme • Full HD"
@@ -181,7 +187,19 @@ sub onVideoState()
         videoPos = m.videoPlayer.position
         if videoPos > 10 then
             saveCurrentProgress()
-            m.top.exitRequested = true
+            item = m.top.playItem
+            if item <> invalid and item.isSeries and item.episode <> invalid then
+                ' Auto-avançar para o próximo episódio
+                nextEp = item.episode + 1
+                item.episode = nextEp
+                item.resumePos = 0
+                item.episodeTitle = "Episódio " + nextEp.ToStr()
+                item.url = "" ' Limpa URL direta para que StreamResolverTask resolva o próximo episódio
+                m.top.playItem = item
+                onPlayItemChange()
+            else
+                m.top.exitRequested = true
+            end if
         else
             ' Vídeo finalizou sem sequer começar -> falha de stream
             m.bufferingGroup.visible = false
@@ -228,7 +246,16 @@ sub saveCurrentProgress()
     currentPos = Int(m.videoPlayer.position)
     dur = Int(m.videoPlayer.duration)
     if dur > 60 then
-        SaveVODProgress(m.top.playItem.title, currentPos, dur)
+        item = m.top.playItem
+        season = 0
+        episode = 0
+        epTitle = ""
+        url = ""
+        if item.season <> invalid then season = item.season
+        if item.episode <> invalid then episode = item.episode
+        if item.episodeTitle <> invalid then epTitle = item.episodeTitle
+        if item.url <> invalid then url = item.url
+        SaveVODProgress(item.title, currentPos, dur, season, episode, epTitle, url)
     end if
 end sub
 

@@ -82,7 +82,9 @@ sub onChannelsLoaded(evt as Object)
     m.cachedChannels = evt.getData()
     if m.currentScreenName = "live" and m.currentScreenNode <> invalid then
         m.currentScreenNode.channels = m.cachedChannels
-    else if m.currentScreenName = "guide" and m.currentScreenNode <> invalid then
+    else if m.currentScreenName = "home" and m.currentScreenNode <> invalid then
+        m.currentScreenNode.channels = m.cachedChannels
+    else if m.currentScreenName = "favorites" and m.currentScreenNode <> invalid then
         m.currentScreenNode.channels = m.cachedChannels
     else if m.currentScreenName = "search" and m.currentScreenNode <> invalid then
         m.currentScreenNode.channels = m.cachedChannels
@@ -93,7 +95,7 @@ sub onEpgLoaded(evt as Object)
     m.cachedEpg = evt.getData()
     if m.currentScreenName = "live" and m.currentScreenNode <> invalid then
         m.currentScreenNode.epgMap = m.cachedEpg
-    else if m.currentScreenName = "guide" and m.currentScreenNode <> invalid then
+    else if m.currentScreenName = "home" and m.currentScreenNode <> invalid then
         m.currentScreenNode.epgMap = m.cachedEpg
     end if
 end sub
@@ -111,6 +113,10 @@ end sub
 sub onVodLoaded(evt as Object)
     m.cachedVod = evt.getData()
     if m.currentScreenName = "vod" and m.currentScreenNode <> invalid then
+        m.currentScreenNode.vodItems = m.cachedVod
+    else if m.currentScreenName = "home" and m.currentScreenNode <> invalid then
+        m.currentScreenNode.vodItems = m.cachedVod
+    else if m.currentScreenName = "favorites" and m.currentScreenNode <> invalid then
         m.currentScreenNode.vodItems = m.cachedVod
     else if m.currentScreenName = "search" and m.currentScreenNode <> invalid then
         m.currentScreenNode.vodItems = m.cachedVod
@@ -141,7 +147,7 @@ function screenToNavIndex(name as String) as Integer
     if name = "live" then return 2
     if name = "events" then return 3
     if name = "vod" then return 4
-    if name = "guide" then return 5
+    if name = "favorites" or name = "guide" then return 5
     if name = "radios" then return 6
     if name = "settings" then return 7
     return 1
@@ -166,6 +172,9 @@ sub switchScreen(screenName as String, params = invalid as Dynamic)
 
     if screenName = "home" then
         node = CreateObject("roSGNode", "HomeScreen")
+        if m.cachedChannels <> invalid then node.channels = m.cachedChannels
+        if m.cachedEpg <> invalid then node.epgMap = m.cachedEpg
+        if m.cachedVod <> invalid then node.vodItems = m.cachedVod
         if m.cachedDestaques <> invalid then
             node.railsData = m.cachedDestaques
             if m.cachedDestaques.Count() > 0 and m.cachedDestaques[0].items.Count() > 0 then
@@ -174,6 +183,7 @@ sub switchScreen(screenName as String, params = invalid as Dynamic)
         end if
         node.observeField("itemSelected", "onHomeItemSelected")
         node.observeField("playRequested", "onHomePlayRequested")
+        node.observeField("tuneRequested", "onSearchTune")
         node.observeField("focusUpRequested", "onScreenFocusUp")
         m.currentScreenNode = node
 
@@ -193,10 +203,20 @@ sub switchScreen(screenName as String, params = invalid as Dynamic)
         node.observeField("focusUpRequested", "onScreenFocusUp")
         m.currentScreenNode = node
 
+    else if screenName = "favorites" then
+        node = CreateObject("roSGNode", "FavoritesScreen")
+        if m.cachedChannels <> invalid then node.channels = m.cachedChannels
+        if m.cachedVod <> invalid then node.vodItems = m.cachedVod
+        node.observeField("tuneRequested", "onSearchTune")
+        node.observeField("itemSelected", "onVodItemSelected")
+        node.observeField("focusUpRequested", "onScreenFocusUp")
+        m.currentScreenNode = node
+
     else if screenName = "ficha" then
         node = CreateObject("roSGNode", "FichaScreen")
         if params <> invalid then node.item = params
         node.observeField("playRequested", "onFichaPlayRequested")
+        node.observeField("focusUpRequested", "onScreenFocusUp")
         m.currentScreenNode = node
 
     else if screenName = "player" then
@@ -424,7 +444,14 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
 
     ' Botão Voltar (Back) retorna para Início (como no TV Box)
     if key = "back" then
-        if m.currentScreenName <> "home" and m.currentScreenName <> "player" then
+        if m.currentScreenName = "ficha" then
+            if m.previousScreenName <> invalid and m.previousScreenName <> "" and m.previousScreenName <> "ficha" and m.previousScreenName <> "player" then
+                switchScreen(m.previousScreenName, m.previousScreenParams)
+            else
+                switchScreen("home")
+            end if
+            return true
+        else if m.currentScreenName <> "home" and m.currentScreenName <> "player" then
             switchScreen("home")
             return true
         else if m.currentScreenName = "home" and m.topNavBar <> invalid and m.topNavBar.visible then

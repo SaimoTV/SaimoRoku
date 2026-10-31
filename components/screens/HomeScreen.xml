@@ -3,29 +3,35 @@
   <interface>
     <field id="featuredItem" type="assocarray" onChange="onFeaturedChange" />
     <field id="railsData" type="array" onChange="onRailsChange" />
+    <field id="channels" type="array" onChange="onRailsChange" />
+    <field id="epgMap" type="assocarray" onChange="onRailsChange" />
+    <field id="vodItems" type="array" onChange="onRailsChange" />
     <field id="itemSelected" type="assocarray" alwaysNotify="true" />
     <field id="playRequested" type="assocarray" alwaysNotify="true" />
+    <field id="tuneRequested" type="assocarray" alwaysNotify="true" />
     <field id="focusUpRequested" type="boolean" alwaysNotify="true" />
   </interface>
 
   <children>
-    <!-- Banner de Destaque -->
+    <!-- Banner de Destaque Dinâmico (Backdrop + Info) -->
     <HeroBanner id="heroBanner" translation="[80, 80]" />
 
-    <!-- Trilhos Horizontais de Conteúdo (RowList) -->
+    <!-- Trilhos Horizontais de Conteúdo Estilo TV Box -->
     <RowList
       id="contentRowList"
       itemComponentName="PosterItem"
       translation="[80, 500]"
-      itemSize="[1760, 290]"
-      rowItemSize="[[160, 280]]"
+      itemSize="[1760, 300]"
+      rowItemSize="[[170, 270]]"
       rowItemSpacing="[[20, 0]]"
-      itemSpacing="[0, 30]"
+      itemSpacing="[0, 35]"
       showRowLabel="[true]"
       rowLabelOffset="[[0, 10]]"
       numRows="4"
+      wrap="false"
     />
   </children>
 
+  <script type="text/brightscript" uri="pkg:/source/utils/Storage.brs" />
   <script type="text/brightscript" uri="pkg:/components/screens/HomeScreen.brs" />
 </component>

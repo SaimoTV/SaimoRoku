@@ -41,14 +41,14 @@
         <Label id="label_3" translation="[0, 11]" width="136" text="Eventos" font="font:SmallBoldSystemFont" color="#94a3b8" horizAlign="center" />
       </Group>
 
-      <!-- 4: Acervo -->
+      <!-- 4: On Demand -->
       <Group id="tab_4" translation="[560, 0]">
-        <Label id="label_4" translation="[0, 11]" width="136" text="Acervo" font="font:SmallBoldSystemFont" color="#94a3b8" horizAlign="center" />
+        <Label id="label_4" translation="[0, 11]" width="136" text="On Demand" font="font:SmallBoldSystemFont" color="#94a3b8" horizAlign="center" />
       </Group>
 
-      <!-- 5: Guia TV -->
+      <!-- 5: Favoritos -->
       <Group id="tab_5" translation="[700, 0]">
-        <Label id="label_5" translation="[0, 11]" width="136" text="Guia TV" font="font:SmallBoldSystemFont" color="#94a3b8" horizAlign="center" />
+        <Label id="label_5" translation="[0, 11]" width="136" text="Favoritos" font="font:SmallBoldSystemFont" color="#94a3b8" horizAlign="center" />
       </Group>
 
       <!-- 6: Rádios -->

@@ -10,8 +10,8 @@ sub init()
     m.vodPosterGrid.observeField("itemSelected", "onPosterSelected")
     m.currentCategoryIdx = 0
     m.focusArea = "chips" ' "chips" ou "grid"
-    m.categories = ["Todos", "Filmes", "Séries", "Animes", "Doramas"]
-    m.chipColors = ["#4FE3D0", "#7AA2FF", "#FFB454", "#A78BFA", "#FF7EB6"]
+    m.categories = ["Filmes", "Séries", "Animes", "Doramas"]
+    m.chipColors = ["#4FE3D0", "#7AA2FF", "#FFB454", "#FF7EB6"]
     m.top.observeField("focusedChild", "onFocusedChildChange")
     updateChipStyles()
 end sub
@@ -46,7 +46,7 @@ sub onCategoryChange()
 end sub
 
 sub updateChipStyles()
-    for i = 0 to 4
+    for i = 0 to 3
         bg = m.top.findNode("chipBg_" + i.ToStr())
         txt = m.top.findNode("chipText_" + i.ToStr())
         border = m.top.findNode("chipBorder_" + i.ToStr())
@@ -67,7 +67,7 @@ sub updateChipStyles()
     end for
 
     if m.focusArea = "chips" then
-        m.chipsHint.text = "[Cima] Menu  |  [Baixo] Navegar capas  |  [OK] Assistir"
+        m.chipsHint.text = "[Cima] Menu  |  [Baixo] Capas  |  [OK] Assistir"
         m.chipsHint.color = "#4FE3D0"
     else
         m.chipsHint.text = "[Voltar] Categorias  |  [Cima] Categorias  |  [OK] Assistir"
@@ -91,9 +91,7 @@ sub applyCategoryFilter()
         isAnime = (Instr(1, itCat, "anime") > 0 or Instr(1, itTitle, "anime") > 0)
         isDorama = (Instr(1, itCat, "dorama") > 0 or Instr(1, itTitle, "dorama") > 0)
 
-        if cat = "Todos" then
-            filtered.Push(it)
-        else if cat = "Filmes" then
+        if cat = "Filmes" then
             if not it.isSeries and not isAnime and not isDorama then
                 filtered.Push(it)
             end if
@@ -183,7 +181,7 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
                 return true
             end if
         else if key = "right" then
-            if m.currentCategoryIdx < 4 then
+            if m.currentCategoryIdx < 3 then
                 m.currentCategoryIdx = m.currentCategoryIdx + 1
                 m.top.selectedCategory = m.categories[m.currentCategoryIdx]
                 return true
