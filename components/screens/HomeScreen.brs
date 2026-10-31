@@ -138,6 +138,19 @@ sub onRowItemFocused()
     rowIndex = coords[0]
     colIndex = coords[1]
 
+    ' Melhor aproveitamento da tela: ao navegar para baixo, oculta o HeroBanner dando espaço total aos trilhos
+    if rowIndex > 0 then
+        if m.heroBanner.visible then
+            m.heroBanner.visible = false
+            m.contentRowList.translation = [80, 100]
+        end if
+    else
+        if not m.heroBanner.visible then
+            m.heroBanner.visible = true
+            m.contentRowList.translation = [80, 480]
+        end if
+    end if
+
     root = m.contentRowList.content
     if root <> invalid and rowIndex < root.getChildCount() then
         rowNode = root.getChild(rowIndex)

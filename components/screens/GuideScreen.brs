@@ -7,6 +7,10 @@ sub init()
     m.selectedChannelHeader = m.top.findNode("selectedChannelHeader")
     m.scheduleList = m.top.findNode("scheduleList")
 
+    m.loadedChannelsCount = 0
+    m.allChannels = []
+    m.guideRootNode = invalid
+
     m.guideChannelList.observeField("itemFocused", "onChannelFocused")
     m.guideChannelList.observeField("itemSelected", "onChannelSelected")
     m.scheduleList.observeField("itemSelected", "onScheduleSelected")
@@ -23,13 +27,30 @@ sub onChannelsChange()
     channels = m.top.channels
     if channels = invalid or channels.Count() = 0 then return
 
-    root = CreateObject("roSGNode", "ContentNode")
-    for each ch in channels
-        node = root.CreateChild("ContentNode")
+    m.allChannels = channels
+    m.loadedChannelsCount = 0
+    m.guideRootNode = CreateObject("roSGNode", "ContentNode")
+    m.guideChannelList.content = m.guideRootNode
+
+    loadMoreChannels(50)
+    updateSchedule(0)
+end sub
+
+sub loadMoreChannels(count as Integer)
+    if m.allChannels = invalid or m.guideRootNode = invalid then return
+    total = m.allChannels.Count()
+    if m.loadedChannelsCount >= total then return
+
+    endIdx = m.loadedChannelsCount + count
+    if endIdx > total then endIdx = total
+
+    for i = m.loadedChannelsCount to endIdx - 1
+        ch = m.allChannels[i]
+        node = m.guideRootNode.CreateChild("ContentNode")
         node.title = ch.number.ToStr() + "   " + ch.name
     end for
-    m.guideChannelList.content = root
-    updateSchedule(0)
+
+    m.loadedChannelsCount = endIdx
 end sub
 
 sub onEpgChange()
@@ -42,6 +63,11 @@ sub onChannelFocused()
     idx = m.guideChannelList.itemFocused
     if idx < 0 then idx = 0
     updateSchedule(idx)
+
+    ' Carregamento sob demanda contínuo: quando o usuário rola até 15 canais do fim da lista, carrega mais 40
+    if m.allChannels <> invalid and m.loadedChannelsCount < m.allChannels.Count() and idx >= (m.loadedChannelsCount - 15) then
+        loadMoreChannels(40)
+    end if
 end sub
 
 sub updateSchedule(idx as Integer)

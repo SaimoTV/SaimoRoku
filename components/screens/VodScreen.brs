@@ -25,6 +25,7 @@ end sub
 
 sub onFocusedChildChange()
     if m.top.isInFocusChain() and not m.vodRowList.isInFocusChain() and not m.heroBanner.isInFocusChain() then
+        m.currentFocus = "chips"
         updateLayoutFocus()
     end if
 end sub

@@ -193,6 +193,10 @@ sub switchScreen(screenName as String, params = invalid as Dynamic)
         if m.cachedEpg <> invalid then node.epgMap = m.cachedEpg
         if params <> invalid and params.channelIndex <> invalid then
             node.currentChannelIndex = params.channelIndex
+            node.openDrawerOnLoad = false
+        else
+            ' Ao abrir a aba Ao Vivo pelo menu, abre primeiro a lista de canais (drawer)
+            node.openDrawerOnLoad = true
         end if
         m.currentScreenNode = node
 
@@ -265,9 +269,7 @@ sub switchScreen(screenName as String, params = invalid as Dynamic)
 
     if m.currentScreenNode <> invalid then
         m.screensContainer.appendChild(m.currentScreenNode)
-        if m.topNavBar = invalid or not m.topNavBar.hasFocus() then
-            m.currentScreenNode.setFocus(true)
-        end if
+        m.currentScreenNode.setFocus(true)
     end if
 
     ' Atualiza visibilidade da barra de navegação (oculta no player de VOD e Live em tela cheia)
@@ -351,14 +353,15 @@ sub onTopNavSelected(evt as Object)
     itemKey = evt.getData()
     if m.currentScreenName <> itemKey then
         switchScreen(itemKey)
-    else
-        if m.currentScreenNode <> invalid then
-            m.currentScreenNode.setFocus(true)
-        end if
+    end if
+    if m.topNavBar <> invalid then m.topNavBar.setFocus(false)
+    if m.currentScreenNode <> invalid then
+        m.currentScreenNode.setFocus(true)
     end if
 end sub
 
 sub onFocusDownFromNav()
+    if m.topNavBar <> invalid then m.topNavBar.setFocus(false)
     if m.currentScreenNode <> invalid then
         m.currentScreenNode.setFocus(true)
     end if

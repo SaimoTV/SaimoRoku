@@ -85,30 +85,40 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
         if m.searchKeyboard <> invalid then m.searchKeyboard.setFocus(true)
     end if
 
-    if key = "up" then
-        if m.searchKeyboard.isInFocusChain() then
-            m.top.focusUpRequested = true
-            return true
-        else if m.resultsList.isInFocusChain() and m.resultsList.itemFocused <= 0 then
-            m.top.focusUpRequested = true
-            return true
-        end if
-    else if key = "right" and m.searchKeyboard.isInFocusChain() then
-        if m.resultsList.content <> invalid and m.resultsList.content.getChildCount() > 0 then
-            m.resultsList.setFocus(true)
-            return true
-        end if
-    else if key = "left" and m.resultsList.isInFocusChain() then
-        m.searchKeyboard.setFocus(true)
-        return true
-    else if key = "left" and m.searchKeyboard.isInFocusChain() then
-        return true
-    else if key = "back" then
-        if m.resultsList.isInFocusChain() then
+    ' Se o foco está na lista de resultados à direita:
+    if m.resultsList.isInFocusChain() then
+        if key = "left" then
             m.searchKeyboard.setFocus(true)
             return true
+        else if key = "back" then
+            m.searchKeyboard.setFocus(true)
+            return true
+        else if key = "up" and m.resultsList.itemFocused <= 0 then
+            m.top.focusUpRequested = true
+            return true
         end if
-        return false ' bubbles to MainScene
+        return false
+    end if
+
+    ' Se o foco está no MiniKeyboard à esquerda:
+    ' NÃO interceptar up, down, left, right durante a digitação para o teclado navegar livremente entre as letras!
+    if m.searchKeyboard.isInFocusChain() then
+        if key = "back" then
+            ' Se há resultados na grade, tecla voltar vai para a lista de resultados
+            if m.resultsList.content <> invalid and m.resultsList.content.getChildCount() > 0 then
+                m.resultsList.setFocus(true)
+                return true
+            else
+                m.top.focusUpRequested = true
+                return true
+            end if
+        else if key = "options" or key = "play" or key = "forward" then
+            ' Atalho rápido para ir direto aos resultados
+            if m.resultsList.content <> invalid and m.resultsList.content.getChildCount() > 0 then
+                m.resultsList.setFocus(true)
+                return true
+            end if
+        end if
     end if
 
     return false

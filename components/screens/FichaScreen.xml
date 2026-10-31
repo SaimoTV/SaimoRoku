@@ -29,7 +29,7 @@
           <Group id="playBtnGroup" translation="[0, 0]">
             <Rectangle id="playBtnBorder" translation="[-3, -3]" width="226" height="56" color="#FFFFFF" visible="false" />
             <Rectangle id="playBtnBg" width="220" height="50" color="#4FE3D0" />
-            <Label id="playBtnText" translation="[0, 12]" width="220" text="Assistir Agora" font="font:MediumBoldSystemFont" color="#0b0e14" horizAlign="center" />
+            <Label id="playBtnText" translation="[0, 12]" width="220" text="▶  Assistir" font="font:MediumBoldSystemFont" color="#0b0e14" horizAlign="center" />
           </Group>
 
           <!-- 1: Botão Continuar -->
