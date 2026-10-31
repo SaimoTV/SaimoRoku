@@ -117,9 +117,9 @@ end sub
 sub updateFavButtonText()
     if m.top.item = invalid then return
     if IsVODFavorite(m.top.item.title) then
-        m.favBtnText.text = "[*] Nos Favoritos"
+        m.favBtnText.text = "Nos favoritos"
     else
-        m.favBtnText.text = "[*] Favoritar"
+        m.favBtnText.text = "Favoritar"
     end if
 end sub
 

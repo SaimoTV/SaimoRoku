@@ -76,10 +76,48 @@ sub loadAllData()
     loader6.observeField("responseRadios", "onRadiosLoaded")
     loader6.control = "run"
     m.loaders.Push(loader6)
+
+    loader7 = CreateObject("roSGNode", "MinhasListasTask")
+    loader7.acao = "carregar"
+    loader7.observeField("canais", "onMinhasCarregadas")
+    loader7.control = "run"
+    m.loaders.Push(loader7)
 end sub
 
 sub onChannelsLoaded(evt as Object)
-    m.cachedChannels = evt.getData()
+    m.canaisCatalogo = evt.getData()
+    juntarCanais()
+end sub
+
+sub onMinhasCarregadas(evt as Object)
+    m.canaisMinhas = evt.getData()
+    if m.canaisMinhas <> invalid and m.canaisMinhas.Count() > 0 then juntarCanais()
+end sub
+
+sub onListasMudaram(evt as Object)
+    dados = evt.getData()
+    m.canaisMinhas = dados.canais
+    juntarCanais()
+end sub
+
+' Os canais das listas do usuário vêm depois do catálogo, em ordem de nome.
+sub juntarCanais()
+    if m.canaisCatalogo = invalid then return
+    todos = []
+    todos.Append(m.canaisCatalogo)
+    if m.canaisMinhas <> invalid and m.canaisMinhas.Count() > 0 then
+        minhas = []
+        minhas.Append(m.canaisMinhas)
+        minhas.SortBy("name", "i")
+        n = todos.Count()
+        for each c in minhas
+            n = n + 1
+            c.number = n
+            c.id = "minha_" + n.ToStr()
+            todos.Push(c)
+        end for
+    end if
+    m.cachedChannels = todos
     if m.currentScreenName = "live" and m.currentScreenNode <> invalid then
         m.currentScreenNode.channels = m.cachedChannels
     else if m.currentScreenName = "home" and m.currentScreenNode <> invalid then
@@ -149,7 +187,7 @@ function screenToNavIndex(name as String) as Integer
     if name = "vod" then return 4
     if name = "favorites" or name = "guide" then return 5
     if name = "radios" then return 6
-    if name = "settings" then return 7
+    if name = "settings" or name = "minhas" then return 7
     return 1
 end function
 
@@ -263,6 +301,13 @@ sub switchScreen(screenName as String, params = invalid as Dynamic)
     else if screenName = "settings" then
         node = CreateObject("roSGNode", "SettingsScreen")
         node.observeField("reloadRequested", "onSettingsReload")
+        node.observeField("minhasListasRequested", "onAbrirMinhasListas")
+        node.observeField("focusUpRequested", "onScreenFocusUp")
+        m.currentScreenNode = node
+
+    else if screenName = "minhas" then
+        node = CreateObject("roSGNode", "MinhasListasScreen")
+        node.observeField("listasMudaram", "onListasMudaram")
         node.observeField("focusUpRequested", "onScreenFocusUp")
         m.currentScreenNode = node
     end if
@@ -377,6 +422,10 @@ end sub
 ' Saimo Connect (Controle Remoto via Celular na Porta 8999)
 ' ====================================================================
 
+sub onAbrirMinhasListas()
+    switchScreen("minhas")
+end sub
+
 sub onConnectCommand(evt as Object)
     cmd = evt.getData()
     if cmd = invalid or cmd.t = invalid then return
@@ -396,6 +445,8 @@ sub onConnectCommand(evt as Object)
         end if
     else if tipo = "key" and cmd.code <> invalid then
         handleVirtualKey(cmd.code)
+    else if tipo = "text" and cmd.value <> invalid then
+        if m.currentScreenName = "minhas" then m.currentScreenNode.textoRecebido = cmd.value
     end if
 end sub
 

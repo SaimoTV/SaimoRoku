@@ -47,7 +47,7 @@ end sub
 
 sub showFavoriteToast(channelName as String, isFav as Boolean)
     if isFav then
-        m.favoriteToastText.text = "[*] " + channelName + " nos Favoritos"
+        m.favoriteToastText.text = "★ " + channelName + " nos Favoritos"
     else
         m.favoriteToastText.text = "[-] " + channelName + " removido dos Favoritos"
     end if

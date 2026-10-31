@@ -8,76 +8,72 @@
   </interface>
 
   <children>
-    <Group id="drawerContainer" translation="[-520, 0]" visible="false">
+    <Group id="drawerContainer" translation="[-800, 0]" visible="false">
       <!-- Fundo do drawer -->
-      <Rectangle width="500" height="1080" color="#0b0e14FA" />
-      <Rectangle translation="[499, 0]" width="2" height="1080" color="#4FE3D0" />
+      <Rectangle width="790" height="1080" color="#0b0e14FA" />
+      <Rectangle translation="[789, 0]" width="2" height="1080" color="#4FE3D0" />
 
       <!-- Cabeçalho -->
       <Label translation="[24, 20]" text="Canais Ao Vivo" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.otf" size="38" /></Label>
-      <Label id="countLabel" translation="[24, 62]" text="0 canais disponíveis" color="#4FE3D0"><Font role="font" uri="pkg:/fonts/Inter-Regular.otf" size="22" /></Label>
+      <Label id="countLabel" translation="[24, 72]" text="0 canais disponíveis" color="#4FE3D0"><Font role="font" uri="pkg:/fonts/Inter-Regular.otf" size="22" /></Label>
 
       <!-- Barra de Busca (Acesso Rápido) -->
-      <Group id="searchBarGroup" translation="[20, 92]">
-        <Rectangle id="searchBarBorder" translation="[-2, -2]" width="464" height="40" color="#4FE3D0" visible="false" />
-        <Rectangle id="searchBarBg" width="460" height="36" color="#1e293b" />
-        <Label id="searchBarLabel" translation="[14, 8]" width="432" text="Buscar canal... (OK para digitar)" color="#94a3b8"><Font role="font" uri="pkg:/fonts/Inter-Regular.otf" size="22" /></Label>
+      <Group id="searchBarGroup" translation="[24, 106]">
+        <Rectangle id="searchBarBorder" translation="[-2, -2]" width="746" height="46" color="#4FE3D0" visible="false" />
+        <Rectangle id="searchBarBg" width="742" height="40" color="#1e293b" />
+        <Label id="searchBarLabel" translation="[14, 8]" width="710" text="Buscar canal... (OK para digitar)" color="#94a3b8"><Font role="font" uri="pkg:/fonts/Inter-Regular.otf" size="22" /></Label>
       </Group>
 
       <!-- Chips de Categorias dos Canais -->
-      <Group id="categoryChipsGroup" translation="[20, 136]">
-        <!-- Chip 0: Todos -->
+      <Group id="categoryChipsGroup" translation="[24, 160]">
         <Group id="chipGroup_0" translation="[0, 0]">
-          <Rectangle id="chipBorder_0" translation="[-2, -2]" width="84" height="34" color="#FFFFFF" visible="true" />
-          <Rectangle id="chipBg_0" width="80" height="30" color="#4FE3D0" />
-          <Label id="chipText_0" translation="[0, 6]" width="80" text="Todos" color="#0b0e14" horizAlign="center"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.otf" size="22" /></Label>
+          <Rectangle id="chipBorder_0" translation="[-3, -3]" width="102" height="46" color="#FFFFFF" visible="true" />
+          <Rectangle id="chipBg_0" width="96" height="40" color="#4FE3D0" />
+          <Label id="chipText_0" width="96" height="40" text="Todos" color="#0b0e14" horizAlign="center" vertAlign="center"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.otf" size="20" /></Label>
         </Group>
-
-        <!-- Chip 1: Favoritos -->
-        <Group id="chipGroup_1" translation="[86, 0]">
-          <Rectangle id="chipBorder_1" translation="[-2, -2]" width="99" height="34" color="#FFFFFF" visible="false" />
-          <Rectangle id="chipBg_1" width="95" height="30" color="#1e293b" />
-          <Label id="chipText_1" translation="[0, 6]" width="95" text="Favoritos" color="#94a3b8" horizAlign="center"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.otf" size="22" /></Label>
+        <Group id="chipGroup_1" translation="[106, 0]">
+          <Rectangle id="chipBorder_1" translation="[-3, -3]" width="128" height="46" color="#FFFFFF" visible="false" />
+          <Rectangle id="chipBg_1" width="122" height="40" color="#1e293b" />
+          <Label id="chipText_1" width="122" height="40" text="Favoritos" color="#94a3b8" horizAlign="center" vertAlign="center"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.otf" size="20" /></Label>
         </Group>
-
-        <!-- Chip 2: Aberta -->
-        <Group id="chipGroup_2" translation="[187, 0]">
-          <Rectangle id="chipBorder_2" translation="[-2, -2]" width="89" height="34" color="#FFFFFF" visible="false" />
-          <Rectangle id="chipBg_2" width="85" height="30" color="#1e293b" />
-          <Label id="chipText_2" translation="[0, 6]" width="85" text="Aberta" color="#94a3b8" horizAlign="center"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.otf" size="22" /></Label>
+        <Group id="chipGroup_2" translation="[238, 0]">
+          <Rectangle id="chipBorder_2" translation="[-3, -3]" width="106" height="46" color="#FFFFFF" visible="false" />
+          <Rectangle id="chipBg_2" width="100" height="40" color="#1e293b" />
+          <Label id="chipText_2" width="100" height="40" text="Aberta" color="#94a3b8" horizAlign="center" vertAlign="center"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.otf" size="20" /></Label>
         </Group>
-
-        <!-- Chip 3: Esportes -->
-        <Group id="chipGroup_3" translation="[278, 0]">
-          <Rectangle id="chipBorder_3" translation="[-2, -2]" width="94" height="34" color="#FFFFFF" visible="false" />
-          <Rectangle id="chipBg_3" width="90" height="30" color="#1e293b" />
-          <Label id="chipText_3" translation="[0, 6]" width="90" text="Esportes" color="#94a3b8" horizAlign="center"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.otf" size="22" /></Label>
+        <Group id="chipGroup_3" translation="[348, 0]">
+          <Rectangle id="chipBorder_3" translation="[-3, -3]" width="124" height="46" color="#FFFFFF" visible="false" />
+          <Rectangle id="chipBg_3" width="118" height="40" color="#1e293b" />
+          <Label id="chipText_3" width="118" height="40" text="Esportes" color="#94a3b8" horizAlign="center" vertAlign="center"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.otf" size="20" /></Label>
         </Group>
-
-        <!-- Chip 4: Filmes -->
-        <Group id="chipGroup_4" translation="[374, 0]">
-          <Rectangle id="chipBorder_4" translation="[-2, -2]" width="90" height="34" color="#FFFFFF" visible="false" />
-          <Rectangle id="chipBg_4" width="86" height="30" color="#1e293b" />
-          <Label id="chipText_4" translation="[0, 6]" width="86" text="Filmes" color="#94a3b8" horizAlign="center"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.otf" size="22" /></Label>
+        <Group id="chipGroup_4" translation="[476, 0]">
+          <Rectangle id="chipBorder_4" translation="[-3, -3]" width="102" height="46" color="#FFFFFF" visible="false" />
+          <Rectangle id="chipBg_4" width="96" height="40" color="#1e293b" />
+          <Label id="chipText_4" width="96" height="40" text="Filmes" color="#94a3b8" horizAlign="center" vertAlign="center"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.otf" size="20" /></Label>
+        </Group>
+        <Group id="chipGroup_5" translation="[582, 0]">
+          <Rectangle id="chipBorder_5" translation="[-3, -3]" width="178" height="46" color="#FFFFFF" visible="false" />
+          <Rectangle id="chipBg_5" width="172" height="40" color="#1e293b" />
+          <Label id="chipText_5" width="172" height="40" text="Minhas listas" color="#94a3b8" horizAlign="center" vertAlign="center"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.otf" size="20" /></Label>
         </Group>
       </Group>
 
       <!-- Mini Teclado de Busca Embutido -->
-      <Group id="keyboardContainer" translation="[20, 136]" visible="false">
+      <Group id="keyboardContainer" translation="[24, 160]" visible="false">
         <MiniKeyboard id="searchKeyboard" />
       </Group>
 
       <!-- Lista de Canais -->
       <LabelList
         id="channelList"
-        translation="[20, 178]"
-        itemSize="[460, 52]"
+        translation="[24, 218]"
+        itemSize="[742, 52]"
         itemSpacing="[0, 4]"
         numRows="14"
         wrap="false"
-        color="#94a3b8"
-        focusedColor="#4FE3D0"
-      />
+        color="#D5DCE5"
+        focusedColor="#0b0e14"
+        focusBitmapBlendColor="#4FE3D0"><Font role="font" uri="pkg:/fonts/Inter-Regular.otf" size="24" /><Font role="focusedFont" uri="pkg:/fonts/Inter-SemiBold.otf" size="24" /></LabelList>
 
       <!-- Rodapé de Ajuda -->
       <Rectangle translation="[20, 1024]" width="460" height="40" color="#111827" />

@@ -4,7 +4,7 @@ Aplicativo oficial 100% nativo para TVs e dispositivos Roku, desenvolvido em **B
 
 ## Recursos
 - **Paridade 1:1 com Android TV Box:**
-  - **Ao Vivo:** Zapping rápido (Cima/Baixo), teclado numérico direto (0-9), mini ZapHUD com programação EPG, Drawer lateral de canais (tecla OK) e Bloqueio Parental com PIN `1010`.
+  - **Ao Vivo:** Zapping rápido (Cima/Baixo), teclado numérico direto (0-9), mini ZapHUD com programação EPG, Drawer lateral de canais (tecla OK) e Bloqueio Parental.
   - **Início (Home):** Hero banner com reprodução em 1 clique e trilhos dinâmicos ("Continuar Assistindo", "Destaques", "Ao Vivo Agora").
   - **Acervo (VOD):** Filtros rápidos por Filmes, Séries, Animes e Doramas com navegação fluida em grade de pôsteres acelerada por GPU.
   - **Ficha Técnica:** Sinopse, ano, nota TMDB, áudio/legendas, e seletor de temporadas/episódios para séries.

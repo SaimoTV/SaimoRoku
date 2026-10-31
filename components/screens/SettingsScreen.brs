@@ -20,21 +20,27 @@ sub populateSettings()
     p = m.prefs
     root = CreateObject("roSGNode", "ContentNode")
 
-    addSettingItem(root, "abrirEm", "Abrir o App em", p.abrirEm)
-    addSettingItem(root, "zeroDelay", "Modo Buffer (Zero Delay)", p.zeroDelay)
-    addSettingItem(root, "audioInteligente", "Áudio Inteligente (Voz nítida)", formatBool(p.audioInteligente))
-    addSettingItem(root, "versaoAudio", "Preferência de Áudio VOD", p.versaoAudio)
-    addSettingItem(root, "pularAutomatico", "Pular Aberturas de Séries (+85s)", formatBool(p.pularAutomatico))
-    addSettingItem(root, "proximoAutomatico", "Próximo Episódio Automático", formatBool(p.proximoAutomatico))
-    addSettingItem(root, "pinParental", "Bloqueio Parental (PIN)", "1010 (Ativo)")
-    addSettingItem(root, "limparCache", "Limpar Cache e Histórico", "Pressione OK para limpar")
+    addSettingItem(root, "minhasListas", "Minhas listas", "")
+    abrir = "Início"
+    if p.abrirEm = "canal" then abrir = "Último canal"
+    addSettingItem(root, "abrirEm", "Abrir o app em", abrir)
+    zero = { off: "Desligado", equilibrado: "Equilibrado", agressivo: "Agressivo" }[p.zeroDelay]
+    addSettingItem(root, "zeroDelay", "Modo Zero Delay", zero)
+    addSettingItem(root, "audioInteligente", "Áudio inteligente (voz nítida)", formatBool(p.audioInteligente))
+    audio = "Dublado"
+    if p.versaoAudio = "leg" then audio = "Legendado"
+    addSettingItem(root, "versaoAudio", "Áudio de filmes e séries", audio)
+    addSettingItem(root, "pularAutomatico", "Pular aberturas de séries", formatBool(p.pularAutomatico))
+    addSettingItem(root, "proximoAutomatico", "Próximo episódio automático", formatBool(p.proximoAutomatico))
+    addSettingItem(root, "limparCache", "Limpar histórico", "")
 
     m.settingsList.content = root
 end sub
 
 sub addSettingItem(root as Object, key as String, label as String, val as String)
     node = root.CreateChild("ContentNode")
-    node.title = label + " : " + UCase(val)
+    node.title = label
+    if val <> "" then node.title = label + ":  " + val
     node.addFields({ settingKey: key })
 end sub
 
@@ -50,7 +56,10 @@ sub onSettingSelected()
         node = root.getChild(idx)
         key = node.settingKey
 
-        if key = "abrirEm" then
+        if key = "minhasListas" then
+            m.top.minhasListasRequested = true
+            return
+        else if key = "abrirEm" then
             if m.prefs.abrirEm = "inicio" then
                 m.prefs.abrirEm = "canal"
             else

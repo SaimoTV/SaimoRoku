@@ -204,3 +204,19 @@ function GetInProgressList() as Object
     end for
     return list
 end function
+
+' ----- Minhas listas (só os dados de cada lista; os canais ficam no cachefs) -----
+function LoadMinhasListas() as Object
+    bruto = GetRegistry().Read("minhas_listas")
+    if bruto <> "" then
+        dados = ParseJson(bruto)
+        if dados <> invalid then return dados
+    end if
+    return []
+end function
+
+sub SaveMinhasListas(listas as Object)
+    reg = GetRegistry()
+    reg.Write("minhas_listas", FormatJson(listas))
+    reg.Flush()
+end sub

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="MinhasListasTask" extends="Task">
+  <interface>
+    <field id="acao" type="string" />
+    <field id="link" type="string" />
+    <field id="nome" type="string" />
+    <field id="listaId" type="string" />
+    <field id="erro" type="string" alwaysNotify="true" />
+    <field id="pronto" type="boolean" alwaysNotify="true" />
+    <field id="canais" type="array" />
+  </interface>
+
+  <script type="text/brightscript" uri="pkg:/source/utils/Storage.brs" />
+  <script type="text/brightscript" uri="pkg:/source/utils/LeitorM3u.brs" />
+  <script type="text/brightscript" uri="pkg:/components/tasks/MinhasListasTask.brs" />
+</component>

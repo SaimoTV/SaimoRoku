@@ -20,7 +20,7 @@ sub init()
 
     m.focusArea = "list" ' "list", "chips", "search", "keyboard"
     m.currentCategoryIdx = 0 ' 0 = Todos, 1 = Favoritos, 2 = Aberta, 3 = Esportes, 4 = Filmes
-    m.chipColors = ["#4FE3D0", "#FFB454", "#7AA2FF", "#38BDF8", "#F472B6"]
+    m.chipColors = ["#4FE3D0", "#FFB454", "#7AA2FF", "#38BDF8", "#F472B6", "#4FE3D0"]
     m.filterQuery = ""
     m.filteredChannels = []
 
@@ -32,7 +32,7 @@ sub onChannelsChange()
 end sub
 
 sub updateCategoryChipsVisuals()
-    for i = 0 to 4
+    for i = 0 to 5
         bg = m.top.findNode("chipBg_" + i.ToStr())
         txt = m.top.findNode("chipText_" + i.ToStr())
         border = m.top.findNode("chipBorder_" + i.ToStr())
@@ -80,6 +80,8 @@ sub populateChannelList()
         else if catIdx = 4 then
             ' Filmes e Séries
             matchCat = (Instr(1, chCat, "filme") > 0 or Instr(1, chCat, "série") > 0 or Instr(1, chCat, "cinema") > 0 or Instr(1, chName, "telecine") > 0 or Instr(1, chName, "hbo") > 0 or Instr(1, chName, "paramount") > 0)
+        else if catIdx = 5 then
+            matchCat = (chCat = "minhas listas")
         end if
 
         if matchCat then
@@ -104,7 +106,7 @@ sub populateChannelList()
         item = content.CreateChild("ContentNode")
         favMark = ""
         if IsChannelFavorite(ch.name) then
-            favMark = "[*] "
+            favMark = "★ "
         end if
         item.title = favMark + ch.number.ToStr() + "   " + ch.name
     end for
@@ -119,13 +121,13 @@ sub onOpenChange()
     isOpen = m.top.isOpen
     m.drawerContainer.visible = isOpen
     if isOpen then
-        m.drawerContainer.translation = [80, 0]
+        m.drawerContainer.translation = [0, 0]
         m.focusArea = "list"
         m.searchBarBorder.visible = false
         m.searchBarBg.color = "#1e293b"
         m.keyboardContainer.visible = false
         m.categoryChipsGroup.visible = true
-        m.channelList.translation = [20, 178]
+        m.channelList.translation = [24, 218]
         m.channelList.numRows = 14
         m.filterQuery = ""
         m.searchKeyboard.text = ""
@@ -201,7 +203,7 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
                 return true
             end if
         else if key = "right" then
-            if m.currentCategoryIdx < 4 then
+            if m.currentCategoryIdx < 5 then
                 m.currentCategoryIdx = m.currentCategoryIdx + 1
                 updateCategoryChipsVisuals()
                 populateChannelList()
@@ -242,7 +244,7 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
             m.searchBarBorder.visible = false
             m.categoryChipsGroup.visible = false
             m.keyboardContainer.visible = true
-            m.channelList.translation = [20, 480]
+            m.channelList.translation = [24, 480]
             m.channelList.numRows = 9
             m.searchKeyboard.setFocus(true)
             return true
@@ -262,7 +264,7 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
         else if key = "back" then
             m.keyboardContainer.visible = false
             m.categoryChipsGroup.visible = true
-            m.channelList.translation = [20, 178]
+            m.channelList.translation = [24, 218]
             m.channelList.numRows = 14
             m.focusArea = "search"
             m.searchBarBorder.visible = true
