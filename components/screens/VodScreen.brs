@@ -1,294 +1,153 @@
 ' ====================================================================
 ' Saimo TV - VodScreen (BrightScript)
-' On Demand idêntico ao Android TV Box (PaginaActivity.kt / OnDemandActivity.kt)
-' HeroBanner cinematográfico + Categorias + Fileiras de Cartões
+' On Demand como na TV Box: cabeçalho que segue o foco, cartões de categoria
+' na primeira fileira e, abaixo, os trilhos da categoria escolhida.
 ' ====================================================================
 
 sub init()
     m.heroBanner = m.top.findNode("heroBanner")
     m.vodRowList = m.top.findNode("vodRowList")
-    m.vodCountLabel = m.top.findNode("vodCountLabel")
-
-    m.heroBanner.observeField("playClicked", "onHeroPlay")
-    m.heroBanner.observeField("detailsClicked", "onHeroDetails")
+    m.heroTimer = m.top.findNode("heroTimer")
+    m.heroTimer.observeField("fire", "aplicarDestaque")
     m.vodRowList.observeField("rowItemSelected", "onRowItemSelected")
     m.vodRowList.observeField("rowItemFocused", "onRowItemFocused")
 
     m.currentCategoryIdx = 0
-    m.currentFocus = "chips" ' "chips", "rows", "hero"
     m.categories = ["Filmes", "Séries", "Animes", "Doramas"]
-    m.chipColors = ["#4FE3D0", "#7AA2FF", "#FFB454", "#FF7EB6"]
-
+    m.cores = ["#4FE3D0", "#7AA2FF", "#FFB454", "#FF7EB6"]
+    m.icones = ["m_movie", "m_live_tv", "m_star", "m_more"]
     m.top.observeField("focusedChild", "onFocusedChildChange")
-    updateChipStyles()
 end sub
 
 sub onFocusedChildChange()
-    if m.top.isInFocusChain() and not m.vodRowList.isInFocusChain() and not m.heroBanner.isInFocusChain() then
-        m.currentFocus = "chips"
-        updateLayoutFocus()
-    end if
-end sub
-
-sub updateLayoutFocus()
-    if m.currentFocus = "rows" then
-        if m.vodRowList <> invalid then m.vodRowList.setFocus(true)
-    else if m.currentFocus = "hero" then
-        if m.heroBanner <> invalid then m.heroBanner.setFocus(true)
-    else
-        ' Foco nos chips
-        if m.vodRowList <> invalid and m.vodRowList.hasFocus() then m.vodRowList.setFocus(false)
-        if m.heroBanner <> invalid and m.heroBanner.hasFocus() then m.heroBanner.setFocus(false)
-        m.top.setFocus(true)
-    end if
-    updateChipStyles()
+    if m.top.isInFocusChain() and not m.vodRowList.isInFocusChain() then m.vodRowList.setFocus(true)
 end sub
 
 sub onItemsChange()
-    applyCategoryFilter()
+    separar()
+    montar()
 end sub
 
 sub onCategoryChange()
     for i = 0 to m.categories.Count() - 1
-        if m.categories[i] = m.top.selectedCategory then
-            m.currentCategoryIdx = i
-            exit for
-        end if
+        if m.categories[i] = m.top.selectedCategory then m.currentCategoryIdx = i
     end for
-    updateChipStyles()
-    applyCategoryFilter()
+    if m.grupos <> invalid then montar()
 end sub
 
-sub updateChipStyles()
-    hasChipFocus = (m.currentFocus = "chips")
-    for i = 0 to 3
-        bg = m.top.findNode("chipBg_" + i.ToStr())
-        txt = m.top.findNode("chipText_" + i.ToStr())
-        border = m.top.findNode("chipBorder_" + i.ToStr())
-
-        if bg <> invalid and txt <> invalid then
-            if i = m.currentCategoryIdx then
-                bg.color = m.chipColors[i]
-                txt.color = "#0b0e14"
-                if border <> invalid then
-                    border.visible = hasChipFocus
-                end if
-            else
-                bg.color = "#1e293b"
-                txt.color = "#94a3b8"
-                if border <> invalid then border.visible = false
-            end if
-        end if
-    end for
-end sub
-
-sub applyCategoryFilter()
+sub separar()
+    m.grupos = [[], [], [], []]
     allItems = m.top.vodItems
-    if allItems = invalid or allItems.Count() = 0 then return
-
-    cat = m.categories[m.currentCategoryIdx]
-    filtered = []
-
+    if allItems = invalid then return
     for each it in allItems
         itCat = ""
         if it.category <> invalid then itCat = LCase(it.category)
         itTitle = ""
         if it.title <> invalid then itTitle = LCase(it.title)
-
-        isAnime = (Instr(1, itCat, "anime") > 0 or Instr(1, itTitle, "anime") > 0)
-        isDorama = (Instr(1, itCat, "dorama") > 0 or Instr(1, itTitle, "dorama") > 0)
-
-        if cat = "Filmes" then
-            if not it.isSeries and not isAnime and not isDorama then
-                filtered.Push(it)
-            end if
-        else if cat = "Séries" then
-            if it.isSeries and not isAnime and not isDorama then
-                filtered.Push(it)
-            end if
-        else if cat = "Animes" then
-            if isAnime then
-                filtered.Push(it)
-            end if
-        else if cat = "Doramas" then
-            if isDorama then
-                filtered.Push(it)
-            end if
+        if Instr(1, itCat, "anime") > 0 or Instr(1, itTitle, "anime") > 0 then
+            m.grupos[2].Push(it)
+        else if Instr(1, itCat, "dorama") > 0 or Instr(1, itTitle, "dorama") > 0 then
+            m.grupos[3].Push(it)
+        else if it.isSeries then
+            m.grupos[1].Push(it)
+        else
+            m.grupos[0].Push(it)
         end if
     end for
-
-    m.vodCountLabel.text = Str(filtered.Count()).Trim() + " títulos disponíveis"
-
-    if filtered.Count() = 0 then return
-
-    ' Monta as Fileiras temáticas estilo TV Box (Em Alta, Populares, Catálogo Completo)
-    rootNode = CreateObject("roSGNode", "ContentNode")
-
-    ' 1. Fileira: Em Alta
-    rowAlta = rootNode.CreateChild("ContentNode")
-    rowAlta.title = "Em Alta no " + cat
-    countAlta = 20
-    if filtered.Count() < countAlta then countAlta = filtered.Count()
-    for i = 0 to countAlta - 1
-        it = filtered[i]
-        itemNode = rowAlta.CreateChild("ContentNode")
-        itemNode.title = it.title
-        if it.poster <> invalid then itemNode.hdPosterUrl = it.poster
-        itemNode.addFields({ rawItem: it })
-    end for
-
-    ' 2. Fileira: Populares e Lançamentos
-    if filtered.Count() > 20 then
-        rowPop = rootNode.CreateChild("ContentNode")
-        rowPop.title = "Recomendados para Você"
-        countPop = 40
-        if filtered.Count() < countPop then countPop = filtered.Count()
-        for i = 20 to countPop - 1
-            it = filtered[i]
-            itemNode = rowPop.CreateChild("ContentNode")
-            itemNode.title = it.title
-            if it.poster <> invalid then itemNode.hdPosterUrl = it.poster
-            itemNode.addFields({ rawItem: it })
-        end for
-    end if
-
-    ' 3. Fileira: Catálogo Geral
-    rowAll = rootNode.CreateChild("ContentNode")
-    rowAll.title = "Todos de A a Z (" + cat + ")"
-    maxAll = 80
-    if filtered.Count() < maxAll then maxAll = filtered.Count()
-    for i = 0 to maxAll - 1
-        it = filtered[i]
-        itemNode = rowAll.CreateChild("ContentNode")
-        itemNode.title = it.title
-        if it.poster <> invalid then itemNode.hdPosterUrl = it.poster
-        itemNode.addFields({ rawItem: it })
-    end for
-
-    m.vodRowList.content = rootNode
-
-    ' Define o destaque inicial do HeroBanner
-    if filtered.Count() > 0 then
-        m.heroBanner.featuredItem = filtered[0]
-    end if
 end sub
 
-sub onRowItemFocused()
-    coords = m.vodRowList.rowItemFocused
-    if coords = invalid or coords.Count() < 2 then return
-    rowIndex = coords[0]
-    colIndex = coords[1]
+function textoTitulos(n as Integer) as String
+    if n = 1 then return "1 título"
+    return n.ToStr() + " títulos"
+end function
 
+sub fileira(raiz as Object, titulo as String, itens as Object, de as Integer, ate as Integer)
+    if ate >= itens.Count() then ate = itens.Count() - 1
+    if de > ate then return
+    linha = raiz.CreateChild("ContentNode")
+    linha.title = titulo
+    for i = de to ate
+        it = itens[i]
+        no = linha.CreateChild("ContentNode")
+        no.title = it.title
+        if it.poster <> invalid then no.hdPosterUrl = it.poster
+        no.addFields({ itemType: "vod", rawItem: it })
+    end for
+end sub
+
+sub montar()
+    if m.grupos = invalid then return
+    raiz = CreateObject("roSGNode", "ContentNode")
+    cats = raiz.CreateChild("ContentNode")
+    cats.title = "Categorias"
+    for i = 0 to 3
+        g = m.grupos[i]
+        capas = []
+        for c = 0 to 3
+            if c < g.Count() and g[c].poster <> invalid then capas.Push(g[c].poster)
+        end for
+        no = cats.CreateChild("ContentNode")
+        no.title = m.categories[i]
+        no.addFields({ itemType: "categoria", indice: i, subTitulo: textoTitulos(g.Count()), cor: m.cores[i], icone: "pkg:/images/icons/" + m.icones[i] + ".png", capas: capas })
+    end for
+
+    g = m.grupos[m.currentCategoryIdx]
+    fileira(raiz, "Em alta", g, 0, 19)
+    fileira(raiz, "Recomendados para você", g, 20, 39)
+    fileira(raiz, "Mais títulos", g, 40, 119)
+
+    AjustarFileiras(m.vodRowList, raiz)
+    m.vodRowList.content = raiz
+    mostrarCategoria(m.currentCategoryIdx)
+end sub
+
+sub mostrarCategoria(i as Integer)
+    m.heroBanner.featuredItem = { title: m.categories[i], genres: textoTitulos(m.grupos[i].Count()), overview: "Lançamentos, clássicos e tudo entre eles, dublados e legendados.", semFundo: true }
+end sub
+
+function noEm(coords as Dynamic) as Dynamic
     root = m.vodRowList.content
-    if root <> invalid and rowIndex < root.getChildCount() then
-        rowNode = root.getChild(rowIndex)
-        if rowNode <> invalid and colIndex < rowNode.getChildCount() then
-            selectedNode = rowNode.getChild(colIndex)
-            if selectedNode <> invalid and selectedNode.rawItem <> invalid then
-                m.heroBanner.featuredItem = selectedNode.rawItem
-            end if
-        end if
+    if root = invalid or coords = invalid or coords.Count() < 2 then return invalid
+    if coords[0] >= root.getChildCount() then return invalid
+    linha = root.getChild(coords[0])
+    if linha = invalid or coords[1] >= linha.getChildCount() then return invalid
+    return linha.getChild(coords[1])
+end function
+
+sub onRowItemFocused()
+    m.heroTimer.control = "stop"
+    m.heroTimer.control = "start"
+end sub
+
+sub aplicarDestaque()
+    no = noEm(m.vodRowList.rowItemFocused)
+    if no = invalid then return
+    if no.itemType = "categoria" then
+        mostrarCategoria(no.indice)
+    else if no.rawItem <> invalid then
+        m.heroBanner.featuredItem = no.rawItem
     end if
 end sub
 
 sub onRowItemSelected()
-    coords = m.vodRowList.rowItemSelected
-    if coords = invalid or coords.Count() < 2 then return
-    rowIndex = coords[0]
-    colIndex = coords[1]
-
-    root = m.vodRowList.content
-    if root <> invalid and rowIndex < root.getChildCount() then
-        rowNode = root.getChild(rowIndex)
-        if rowNode <> invalid and colIndex < rowNode.getChildCount() then
-            selectedNode = rowNode.getChild(colIndex)
-            if selectedNode <> invalid and selectedNode.rawItem <> invalid then
-                m.top.itemSelected = selectedNode.rawItem
-            end if
+    no = noEm(m.vodRowList.rowItemSelected)
+    if no = invalid then return
+    if no.itemType = "categoria" then
+        if no.indice <> m.currentCategoryIdx then
+            m.currentCategoryIdx = no.indice
+            montar()
+            m.vodRowList.jumpToRowItem = [0, no.indice]
         end if
-    end if
-end sub
-
-sub onHeroPlay()
-    if m.heroBanner.featuredItem <> invalid then
-        m.top.playRequested = m.heroBanner.featuredItem
-    end if
-end sub
-
-sub onHeroDetails()
-    if m.heroBanner.featuredItem <> invalid then
-        m.top.itemSelected = m.heroBanner.featuredItem
+    else if no.rawItem <> invalid then
+        m.top.itemSelected = no.rawItem
     end if
 end sub
 
 function onKeyEvent(key as String, press as Boolean) as Boolean
     if not press then return false
-
-    ' 1. Foco nas Fileiras de Cards
-    if m.currentFocus = "rows" then
-        if key = "up" then
-            coords = m.vodRowList.rowItemFocused
-            if coords <> invalid and coords.Count() > 0 and coords[0] = 0 then
-                ' Subiu da primeira fileira -> vai para os chips de categoria
-                m.currentFocus = "chips"
-                updateLayoutFocus()
-                return true
-            end if
-        else if key = "back" then
-            m.currentFocus = "chips"
-            updateLayoutFocus()
-            return true
-        end if
-
-    ' 2. Foco nos Chips de Categorias
-    else if m.currentFocus = "chips" then
-        if key = "left" then
-            if m.currentCategoryIdx > 0 then
-                m.currentCategoryIdx = m.currentCategoryIdx - 1
-                m.top.selectedCategory = m.categories[m.currentCategoryIdx]
-                updateChipStyles()
-                applyCategoryFilter()
-                return true
-            end if
-        else if key = "right" then
-            if m.currentCategoryIdx < 3 then
-                m.currentCategoryIdx = m.currentCategoryIdx + 1
-                m.top.selectedCategory = m.categories[m.currentCategoryIdx]
-                updateChipStyles()
-                applyCategoryFilter()
-                return true
-            end if
-        else if key = "down" then
-            if m.vodRowList.content <> invalid and m.vodRowList.content.getChildCount() > 0 then
-                m.currentFocus = "rows"
-                updateLayoutFocus()
-                return true
-            end if
-        else if key = "up" then
-            ' Sobe para o menu de abas do topo
-            m.top.focusUpRequested = true
-            return true
-        else if key = "OK" then
-            if m.vodRowList.content <> invalid and m.vodRowList.content.getChildCount() > 0 then
-                m.currentFocus = "rows"
-                updateLayoutFocus()
-                return true
-            end if
-        else if key = "back" then
-            return false ' MainScene volta para a Home
-        end if
-
-    ' 3. Foco no HeroBanner
-    else if m.currentFocus = "hero" then
-        if key = "down" then
-            m.currentFocus = "chips"
-            updateLayoutFocus()
-            return true
-        else if key = "up" then
-            m.top.focusUpRequested = true
-            return true
-        end if
+    if key = "up" then
+        m.top.focusUpRequested = true
+        return true
     end if
-
     return false
 end function

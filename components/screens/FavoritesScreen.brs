@@ -30,7 +30,7 @@ sub refreshFavorites()
     m.favoritesRowList.visible = hasAny
 
     totalCount = favChannels.Count() + favVod.Count()
-    m.countLabel.text = totalCount.ToStr() + " itens marcados nos seus favoritos"
+    m.countLabel.text = totalCount.ToStr() + " títulos"
 
     if not hasAny then return
 
@@ -39,7 +39,7 @@ sub refreshFavorites()
     ' 1. Fileira de Canais Favoritos
     if favChannels.Count() > 0 and m.top.channels <> invalid then
         rowChannels = rootNode.CreateChild("ContentNode")
-        rowChannels.title = "Canais Favoritos (" + favChannels.Count().ToStr() + ")"
+        rowChannels.title = "Canais"
 
         for each favName in favChannels
             for each ch in m.top.channels
@@ -59,7 +59,7 @@ sub refreshFavorites()
     ' 2. Fileira de Filmes e Séries Favoritos
     if favVod.Count() > 0 then
         rowVod = rootNode.CreateChild("ContentNode")
-        rowVod.title = "Filmes e Séries Favoritos (" + favVod.Count().ToStr() + ")"
+        rowVod.title = "Filmes e séries"
 
         for each v in favVod
             itemNode = rowVod.CreateChild("ContentNode")
@@ -73,6 +73,7 @@ sub refreshFavorites()
         end for
     end if
 
+    AjustarFileiras(m.favoritesRowList, rootNode)
     m.favoritesRowList.content = rootNode
 end sub
 

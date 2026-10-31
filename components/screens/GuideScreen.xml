@@ -8,7 +8,6 @@
   </interface>
 
   <children>
-    <Rectangle width="1920" height="1080" color="#0b0e14" />
 
     <!-- Coluna Esquerda: Canais -->
     <Group translation="[80, 100]">

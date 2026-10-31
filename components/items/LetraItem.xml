@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="LetraItem" extends="Group">
+  <interface>
+    <field id="itemContent" type="node" onChange="onConteudo" />
+    <field id="focusPercent" type="float" onChange="onFoco" />
+    <field id="gridHasFocus" type="boolean" onChange="onFoco" />
+  </interface>
+  <children>
+    <Poster id="fundo" width="84" height="84" uri="pkg:/images/p_btn.9.png" visible="false" />
+    <Label id="letra" width="84" height="84" horizAlign="center" vertAlign="center" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="32" /></Label>
+  </children>
+  <script type="text/brightscript"><![CDATA[
+sub init()
+    m.fundo = m.top.findNode("fundo")
+    m.letra = m.top.findNode("letra")
+end sub
+sub onConteudo()
+    m.letra.text = m.top.itemContent.title
+end sub
+sub onFoco()
+    f = m.top.focusPercent > 0.5 and m.top.gridHasFocus
+    m.fundo.visible = f
+    if f then m.letra.color = "#0b0e14" else m.letra.color = "#FFFFFF"
+end sub
+  ]]></script>
+</component>

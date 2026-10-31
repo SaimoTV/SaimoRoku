@@ -9,61 +9,29 @@
   </interface>
 
   <children>
-    <Rectangle width="1920" height="1080" color="#0b0e14" />
-
-    <!-- Banner de Destaque Dinâmico Full-Bleed 1920x540 -->
-    <HeroBanner id="heroBanner" translation="[0, 0]" />
-
-    <!-- Barra de Filtros de Categoria (Filmes, Séries, Animes, Doramas) -->
-    <Group id="categoryChipsGroup" translation="[80, 425]">
-      <!-- Chip 0: Filmes (#4FE3D0) -->
-      <Group id="chip_0" translation="[0, 0]">
-        <Rectangle id="chipBorder_0" translation="[-3, -3]" width="146" height="44" color="#FFFFFF" visible="true" />
-        <Rectangle id="chipBg_0" width="140" height="38" color="#4FE3D0" />
-        <Label id="chipText_0" translation="[0, 9]" width="140" text="Filmes" color="#0b0e14" horizAlign="center"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="22" /></Label>
-      </Group>
-
-      <!-- Chip 1: Séries (#7AA2FF) -->
-      <Group id="chip_1" translation="[160, 0]">
-        <Rectangle id="chipBorder_1" translation="[-3, -3]" width="146" height="44" color="#FFFFFF" visible="false" />
-        <Rectangle id="chipBg_1" width="140" height="38" color="#1e293b" />
-        <Label id="chipText_1" translation="[0, 9]" width="140" text="Séries" color="#94a3b8" horizAlign="center"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="22" /></Label>
-      </Group>
-
-      <!-- Chip 2: Animes (#FFB454) -->
-      <Group id="chip_2" translation="[320, 0]">
-        <Rectangle id="chipBorder_2" translation="[-3, -3]" width="146" height="44" color="#FFFFFF" visible="false" />
-        <Rectangle id="chipBg_2" width="140" height="38" color="#1e293b" />
-        <Label id="chipText_2" translation="[0, 9]" width="140" text="Animes" color="#94a3b8" horizAlign="center"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="22" /></Label>
-      </Group>
-
-      <!-- Chip 3: Doramas (#FF7EB6) -->
-      <Group id="chip_3" translation="[480, 0]">
-        <Rectangle id="chipBorder_3" translation="[-3, -3]" width="146" height="44" color="#FFFFFF" visible="false" />
-        <Rectangle id="chipBg_3" width="140" height="38" color="#1e293b" />
-        <Label id="chipText_3" translation="[0, 9]" width="140" text="Doramas" color="#94a3b8" horizAlign="center"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="22" /></Label>
-      </Group>
-
-      <!-- Contador de Títulos e Dica sem Sobreposição -->
-      <Label id="vodCountLabel" translation="[1360, 8]" width="400" text="0 títulos no catálogo" color="#4FE3D0" horizAlign="right"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="22" /></Label>
-    </Group>
-
-    <!-- Fileiras Horizontais de Cards estilo TV Box -->
+    <HeroBanner id="heroBanner" />
     <RowList
       id="vodRowList"
       itemComponentName="PosterItem"
-      translation="[80, 480]"
-      itemSize="[1760, 340]"
-      rowItemSize="[[180, 315]]"
-      rowItemSpacing="[[24, 0]]"
-      itemSpacing="[0, 35]"
+      translation="[100, 430]"
+      itemSize="[1820, 480]"
+      rowHeights="[480]"
+      rowItemSize="[[272, 460]]"
+      rowItemSpacing="[[32, 0]]"
+      itemSpacing="[0, 28]"
       showRowLabel="[true]"
-      rowLabelOffset="[[0, 10]]"
-      numRows="3"
+      rowLabelOffset="[[12, 18]]"
+      rowLabelColor="#FFFFFF"
+      rowFocusAnimationStyle="floatingFocus"
+      vertFocusAnimationStyle="fixedFocus"
+      drawFocusFeedback="false"
+      numRows="2"
       wrap="false"
-    />
+    ><Font role="rowLabelFont" uri="pkg:/fonts/Roboto-Medium.ttf" size="36" /></RowList>
+    <Timer id="heroTimer" duration="0.3" repeat="false" />
   </children>
 
   <script type="text/brightscript" uri="pkg:/source/utils/Storage.brs" />
+  <script type="text/brightscript" uri="pkg:/source/utils/Rows.brs" />
   <script type="text/brightscript" uri="pkg:/components/screens/VodScreen.brs" />
 </component>

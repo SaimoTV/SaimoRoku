@@ -124,20 +124,7 @@ sub onRailsChange()
         end for
     end if
 
-    ' Canais têm cartão 16:9, mais baixo que as capas.
-    alturas = []
-    tamanhos = []
-    for i = 0 to rootNode.getChildCount() - 1
-        linha = rootNode.getChild(i)
-        ehCanal = linha.getChildCount() > 0 and linha.getChild(0).itemType = "channel"
-        if ehCanal then
-            alturas.Push(424) : tamanhos.Push([528, 400])
-        else
-            alturas.Push(480) : tamanhos.Push([272, 460])
-        end if
-    end for
-    m.contentRowList.rowHeights = alturas
-    m.contentRowList.rowItemSize = tamanhos
+    AjustarFileiras(m.contentRowList, rootNode)
     m.contentRowList.content = rootNode
 
 end sub

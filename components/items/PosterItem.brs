@@ -26,14 +26,40 @@ sub modoLargo()
     m.poster.width = 264 : m.poster.height = 220
     m.poster.loadWidth = 264 : m.poster.loadHeight = 220
     m.poster.loadDisplayMode = "scaleToFit"
-    m.title.translation = [18, 304]
+    m.title.translation = [18, 300]
     m.title.width = 492 : m.title.height = 36
     m.title.maxLines = 1
+end sub
+
+sub modoCategoria(item as Object)
+    m.moldura.width = 720 : m.moldura.height = 410
+    m.fundo.visible = false : m.poster.visible = false : m.canto.visible = false
+    m.title.visible = false
+    m.top.findNode("categoria").visible = true
+    m.top.findNode("disco").blendColor = item.cor
+    m.top.findNode("discoIcone").uri = item.icone
+    m.top.findNode("catTitulo").text = item.title
+    m.top.findNode("catSub").text = item.subTitulo
+    capas = m.top.findNode("capas")
+    x = 0
+    for each uri in item.capas
+        c = capas.createChild("Poster")
+        c.translation = [x, 0]
+        c.width = 174 : c.height = 386
+        c.loadWidth = 174 : c.loadHeight = 386
+        c.loadDisplayMode = "scaleToZoom"
+        c.uri = uri
+        x = x + 174
+    end for
 end sub
 
 sub onItemContentChange()
     item = m.top.itemContent
     if item = invalid then return
+    if item.itemType = "categoria" then
+        modoCategoria(item)
+        return
+    end if
 
     if item.itemType = "channel" or item.itemType = "radio" then modoLargo()
     temImagem = item.hdPosterUrl <> invalid and item.hdPosterUrl <> ""

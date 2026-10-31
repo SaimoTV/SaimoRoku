@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="AjusteItem" extends="Group">
+  <interface>
+    <field id="itemContent" type="node" onChange="onConteudo" />
+    <field id="focusPercent" type="float" onChange="onFoco" />
+    <field id="listHasFocus" type="boolean" onChange="onFoco" />
+  </interface>
+  <children>
+    <Poster id="fundo" width="940" height="140" uri="pkg:/images/p_btn.9.png" visible="false" />
+    <Label id="titulo" translation="[30, 24]" width="880" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="34" /></Label>
+    <Label id="valor" translation="[30, 78]" width="880" color="#A8B4C0"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="26" /></Label>
+  </children>
+  <script type="text/brightscript"><![CDATA[
+sub init()
+    m.fundo = m.top.findNode("fundo")
+    m.titulo = m.top.findNode("titulo")
+    m.valor = m.top.findNode("valor")
+end sub
+sub onConteudo()
+    c = m.top.itemContent
+    if c = invalid then return
+    m.titulo.text = c.title
+    m.valor.text = c.description
+end sub
+sub onFoco()
+    f = m.top.focusPercent > 0.5 and m.top.listHasFocus
+    m.fundo.visible = f
+    if f then
+        m.titulo.color = "#0b0e14" : m.valor.color = "#334155"
+    else
+        m.titulo.color = "#FFFFFF" : m.valor.color = "#A8B4C0"
+    end if
+end sub
+  ]]></script>
+</component>

@@ -9,31 +9,34 @@
   </interface>
 
   <children>
-    <Rectangle width="1920" height="1080" color="#0b0e14" />
+    <Rectangle translation="[0, 118]" width="580" height="962" color="#0b0e1466" />
+    <Poster translation="[56, 146]" width="536" height="92" uri="pkg:/images/p_chip.9.png" />
+    <Label id="campo" translation="[84, 146]" width="480" height="92" vertAlign="center" text="" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="34" /></Label>
+    <MarkupGrid id="teclas" translation="[56, 262]" itemComponentName="LetraItem" numColumns="6" numRows="7" itemSize="[84, 84]" itemSpacing="[6, 2]" drawFocusFeedback="false" vertFocusAnimationStyle="floatingFocus" />
 
-    <!-- Teclado Roku Nativo à Esquerda (MiniKeyboard com largura total de 576px) -->
-    <Group translation="[80, 110]">
-      <Label text="DIGITE PARA BUSCAR" color="#4FE3D0"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="22" /></Label>
-      <MiniKeyboard id="searchKeyboard" translation="[0, 36]" />
-    </Group>
-
-    <!-- Resultados à Direita -->
-    <Group translation="[720, 110]">
-      <Rectangle width="1120" height="920" color="#111827" />
-      <Rectangle width="1120" height="3" color="#4FE3D0" />
-      <Label id="resultsHeader" translation="[30, 20]" text="RESULTADOS" color="#4FE3D0"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="22" /></Label>
-
-      <LabelList
-        id="resultsList"
-        translation="[20, 60]"
-        itemSize="[1080, 56]"
-        itemSpacing="[0, 6]"
-        numRows="14"
-        color="#D5DCE5"
-        focusedColor="#0b0e14"
-        focusBitmapBlendColor="#4FE3D0"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="24" /><Font role="focusedFont" uri="pkg:/fonts/Roboto-Medium.ttf" size="24" /></LabelList>
+    <Label id="dica" translation="[640, 440]" width="1240" horizAlign="center" wrap="true" text="Digite o nome: os resultados aparecem enquanto você digita." color="#A8B4C0"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="34" /></Label>
+    <Group translation="[530, -20]">
+    <RowList
+      id="resultados"
+      itemComponentName="PosterItem"
+      translation="[100, 130]"
+      itemSize="[1290, 480]"
+      rowHeights="[480]"
+      rowItemSize="[[272, 460]]"
+      rowItemSpacing="[[32, 0]]"
+      itemSpacing="[0, 28]"
+      showRowLabel="[true]"
+      rowLabelOffset="[[12, 18]]"
+      rowLabelColor="#FFFFFF"
+      rowFocusAnimationStyle="floatingFocus"
+      vertFocusAnimationStyle="fixedFocus"
+      drawFocusFeedback="false"
+      numRows="2"
+      wrap="false"
+    ><Font role="rowLabelFont" uri="pkg:/fonts/Roboto-Medium.ttf" size="36" /></RowList>
     </Group>
   </children>
 
+  <script type="text/brightscript" uri="pkg:/source/utils/Rows.brs" />
   <script type="text/brightscript" uri="pkg:/components/screens/SearchScreen.brs" />
 </component>

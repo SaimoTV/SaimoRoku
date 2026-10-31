@@ -2,48 +2,88 @@
 <component name="RadiosScreen" extends="Group">
   <interface>
     <field id="radios" type="array" onChange="onRadiosChange" />
+    <field id="telaCheia" type="boolean" />
     <field id="focusUpRequested" type="boolean" alwaysNotify="true" />
     <function name="cleanUp" />
   </interface>
 
   <children>
-    <Rectangle width="1920" height="1080" color="#0b0e14" />
-
-    <!-- Lista de Rádios à Esquerda -->
-    <Group translation="[80, 100]">
-      <Rectangle width="560" height="920" color="#111827" />
-      <Rectangle width="560" height="3" color="#FFB454" />
-      <Label translation="[24, 20]" text="ESTAÇÕES DE RÁDIO" color="#FFB454"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="22" /></Label>
-
-      <LabelList
-        id="radiosList"
-        translation="[20, 60]"
-        itemSize="[520, 54]"
-        itemSpacing="[0, 6]"
-        numRows="14"
-        wrap="false"
-        color="#D5DCE5"
-        focusedColor="#0b0e14"
-        focusBitmapBlendColor="#4FE3D0"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="24" /><Font role="focusedFont" uri="pkg:/fonts/Roboto-Medium.ttf" size="24" /></LabelList>
+    <Group id="grade">
+      <HeroBanner id="heroBanner" />
+      <RowList
+      id="radiosRows"
+      itemComponentName="PosterItem"
+      translation="[100, 430]"
+      itemSize="[1820, 480]"
+      rowHeights="[480]"
+      rowItemSize="[[272, 460]]"
+      rowItemSpacing="[[32, 0]]"
+      itemSpacing="[0, 28]"
+      showRowLabel="[true]"
+      rowLabelOffset="[[12, 18]]"
+      rowLabelColor="#FFFFFF"
+      rowFocusAnimationStyle="floatingFocus"
+      vertFocusAnimationStyle="fixedFocus"
+      drawFocusFeedback="false"
+      numRows="2"
+      wrap="false"
+    ><Font role="rowLabelFont" uri="pkg:/fonts/Roboto-Medium.ttf" size="36" /></RowList>
     </Group>
 
-    <!-- Painel de Tocando Agora à Direita -->
-    <Group id="nowPlayingPanel" translation="[680, 100]">
-      <Rectangle width="1160" height="920" color="#111827" />
-      <Rectangle width="1160" height="3" color="#4FE3D0" />
-
-      <!-- Ícone / Logo da Rádio Centralizado -->
-      <Poster id="radioLogo" translation="[440, 140]" width="280" height="280" loadDisplayMode="scaleToFit" />
-
-      <!-- Textos -->
-      <Label id="radioName" translation="[0, 460]" width="1160" text="Selecione uma rádio para ouvir" color="#FFFFFF" horizAlign="center"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="38" /></Label>
-      <Label id="radioGenre" translation="[0, 520]" width="1160" text="" color="#4FE3D0" horizAlign="center"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="26" /></Label>
-      <Label id="radioStatus" translation="[0, 580]" width="1160" text="" color="#94a3b8" horizAlign="center"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="22" /></Label>
+    <!-- Tocando agora, em tela cheia -->
+    <Group id="tocando" visible="false">
+      <Poster translation="[210, 200]" width="560" height="560" uri="pkg:/images/p_chip.9.png" />
+      <Poster id="radioLogo" translation="[360, 350]" width="260" height="260" loadWidth="260" loadHeight="260" loadDisplayMode="scaleToFit" />
+      <Poster translation="[870, 36]" width="240" height="60" uri="pkg:/images/p_branca.9.png" blendColor="#FF4D4F" />
+      <Label translation="[870, 36]" width="240" height="60" horizAlign="center" vertAlign="center" text="AO VIVO" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="28" /></Label>
+      <Label id="radioName" translation="[870, 140]" width="960" height="280" maxLines="2" wrap="true" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="108" /></Label>
+      <Label id="radioGenre" translation="[870, 440]" width="960" color="#4FE3D0"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="42" /></Label>
+      <Group id="barras" translation="[870, 650]">
+        <Rectangle id="barra_0" translation="[0, 0]" width="12" height="20" color="#4FE3D0" />
+        <Rectangle id="barra_1" translation="[20, 0]" width="12" height="20" color="#4FE3D0" />
+        <Rectangle id="barra_2" translation="[40, 0]" width="12" height="20" color="#4FE3D0" />
+        <Rectangle id="barra_3" translation="[60, 0]" width="12" height="20" color="#4FE3D0" />
+        <Rectangle id="barra_4" translation="[80, 0]" width="12" height="20" color="#4FE3D0" />
+        <Rectangle id="barra_5" translation="[100, 0]" width="12" height="20" color="#4FE3D0" />
+        <Rectangle id="barra_6" translation="[120, 0]" width="12" height="20" color="#4FE3D0" />
+        <Rectangle id="barra_7" translation="[140, 0]" width="12" height="20" color="#4FE3D0" />
+        <Rectangle id="barra_8" translation="[160, 0]" width="12" height="20" color="#4FE3D0" />
+        <Rectangle id="barra_9" translation="[180, 0]" width="12" height="20" color="#4FE3D0" />
+        <Rectangle id="barra_10" translation="[200, 0]" width="12" height="20" color="#4FE3D0" />
+        <Rectangle id="barra_11" translation="[220, 0]" width="12" height="20" color="#4FE3D0" />
+        <Rectangle id="barra_12" translation="[240, 0]" width="12" height="20" color="#4FE3D0" />
+        <Rectangle id="barra_13" translation="[260, 0]" width="12" height="20" color="#4FE3D0" />
+        <Rectangle id="barra_14" translation="[280, 0]" width="12" height="20" color="#4FE3D0" />
+        <Rectangle id="barra_15" translation="[300, 0]" width="12" height="20" color="#4FE3D0" />
+        <Rectangle id="barra_16" translation="[320, 0]" width="12" height="20" color="#4FE3D0" />
+        <Rectangle id="barra_17" translation="[340, 0]" width="12" height="20" color="#4FE3D0" />
+        <Rectangle id="barra_18" translation="[360, 0]" width="12" height="20" color="#4FE3D0" />
+        <Rectangle id="barra_19" translation="[380, 0]" width="12" height="20" color="#4FE3D0" />
+        <Rectangle id="barra_20" translation="[400, 0]" width="12" height="20" color="#4FE3D0" />
+        <Rectangle id="barra_21" translation="[420, 0]" width="12" height="20" color="#4FE3D0" />
+        <Rectangle id="barra_22" translation="[440, 0]" width="12" height="20" color="#4FE3D0" />
+        <Rectangle id="barra_23" translation="[460, 0]" width="12" height="20" color="#4FE3D0" />
+        <Rectangle id="barra_24" translation="[480, 0]" width="12" height="20" color="#4FE3D0" />
+        <Rectangle id="barra_25" translation="[500, 0]" width="12" height="20" color="#4FE3D0" />
+        <Rectangle id="barra_26" translation="[520, 0]" width="12" height="20" color="#4FE3D0" />
+        <Rectangle id="barra_27" translation="[540, 0]" width="12" height="20" color="#4FE3D0" />
+        <Rectangle id="barra_28" translation="[560, 0]" width="12" height="20" color="#4FE3D0" />
+        <Rectangle id="barra_29" translation="[580, 0]" width="12" height="20" color="#4FE3D0" />
+        <Rectangle id="barra_30" translation="[600, 0]" width="12" height="20" color="#4FE3D0" />
+        <Rectangle id="barra_31" translation="[620, 0]" width="12" height="20" color="#4FE3D0" />
+        <Rectangle id="barra_32" translation="[640, 0]" width="12" height="20" color="#4FE3D0" />
+        <Rectangle id="barra_33" translation="[660, 0]" width="12" height="20" color="#4FE3D0" />
+        <Rectangle id="barra_34" translation="[680, 0]" width="12" height="20" color="#4FE3D0" />
+        <Rectangle id="barra_35" translation="[700, 0]" width="12" height="20" color="#4FE3D0" />
+      </Group>
+      <Label translation="[0, 980]" width="1920" horizAlign="center" text="cima e baixo trocam de estação  ·  VOLTAR mostra todas as rádios" color="#A8B4C0"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="30" /></Label>
+      <Timer id="barrasTimer" duration="0.2" repeat="true" />
     </Group>
 
-    <!-- Audio Player Nativo de Background -->
+    <Timer id="heroTimer" duration="0.3" repeat="false" />
     <Audio id="radioAudio" />
   </children>
 
+  <script type="text/brightscript" uri="pkg:/source/utils/Rows.brs" />
   <script type="text/brightscript" uri="pkg:/components/screens/RadiosScreen.brs" />
 </component>

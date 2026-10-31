@@ -38,5 +38,6 @@
   </children>
 
   <script type="text/brightscript" uri="pkg:/source/utils/Storage.brs" />
+  <script type="text/brightscript" uri="pkg:/source/utils/Rows.brs" />
   <script type="text/brightscript" uri="pkg:/components/screens/HomeScreen.brs" />
 </component>

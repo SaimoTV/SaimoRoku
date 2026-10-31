@@ -20,7 +20,7 @@ sub populateSettings()
     p = m.prefs
     root = CreateObject("roSGNode", "ContentNode")
 
-    addSettingItem(root, "minhasListas", "Minhas listas", "")
+    addSettingItem(root, "minhasListas", "Minhas listas", "Adicionar listas .m3u pelo link")
     abrir = "Início"
     if p.abrirEm = "canal" then abrir = "Último canal"
     addSettingItem(root, "abrirEm", "Abrir o app em", abrir)
@@ -32,7 +32,7 @@ sub populateSettings()
     addSettingItem(root, "versaoAudio", "Áudio de filmes e séries", audio)
     addSettingItem(root, "pularAutomatico", "Pular aberturas de séries", formatBool(p.pularAutomatico))
     addSettingItem(root, "proximoAutomatico", "Próximo episódio automático", formatBool(p.proximoAutomatico))
-    addSettingItem(root, "limparCache", "Limpar histórico", "")
+    addSettingItem(root, "limparCache", "Limpar histórico", "Apaga o que você estava assistindo")
 
     m.settingsList.content = root
 end sub
@@ -40,13 +40,13 @@ end sub
 sub addSettingItem(root as Object, key as String, label as String, val as String)
     node = root.CreateChild("ContentNode")
     node.title = label
-    if val <> "" then node.title = label + ":  " + val
+    node.description = val
     node.addFields({ settingKey: key })
 end sub
 
 function formatBool(val as Boolean) as String
-    if val then return "Ativado"
-    return "Desativado"
+    if val then return "Ligado"
+    return "Desligado"
 end function
 
 sub onSettingSelected()

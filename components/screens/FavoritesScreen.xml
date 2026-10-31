@@ -9,38 +9,30 @@
   </interface>
 
   <children>
-    <Rectangle width="1920" height="1080" color="#0b0e14" />
-
-    <!-- Cabeçalho -->
-    <Group translation="[80, 85]">
-      <Label text="MEUS FAVORITOS" color="#FFB454"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="22" /></Label>
-      <Label id="countLabel" translation="[0, 24]" text="Seus canais, filmes e séries marcados com estrela" color="#94a3b8"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="22" /></Label>
-    </Group>
-
-    <!-- Trilhos de Favoritos (Canais e VOD) -->
+    <Label translation="[100, 128]" text="Favoritos" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="52" /></Label>
+    <Label id="countLabel" translation="[350, 150]" text="" color="#A8B4C0"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="26" /></Label>
+    <Label id="emptyState" translation="[0, 520]" width="1920" horizAlign="center" wrap="true" text="Nada nos favoritos ainda.&#10;Aperte * num canal ou título para favoritar." color="#A8B4C0"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="34" /></Label>
     <RowList
       id="favoritesRowList"
       itemComponentName="PosterItem"
-      translation="[80, 160]"
-      itemSize="[1760, 340]"
-      rowItemSize="[[180, 315]]"
-      rowItemSpacing="[[24, 0]]"
-      itemSpacing="[0, 35]"
+      translation="[100, 230]"
+      itemSize="[1820, 480]"
+      rowHeights="[480]"
+      rowItemSize="[[272, 460]]"
+      rowItemSpacing="[[32, 0]]"
+      itemSpacing="[0, 28]"
       showRowLabel="[true]"
-      rowLabelOffset="[[0, 10]]"
+      rowLabelOffset="[[12, 18]]"
+      rowLabelColor="#FFFFFF"
+      rowFocusAnimationStyle="floatingFocus"
+      vertFocusAnimationStyle="fixedFocus"
+      drawFocusFeedback="false"
       numRows="2"
       wrap="false"
-    />
-
-    <!-- Estado Vazio (quando não há favoritos) -->
-    <Group id="emptyState" translation="[80, 220]" visible="false">
-      <Rectangle width="1760" height="300" color="#111827" />
-      <Rectangle width="1760" height="3" color="#FFB454" />
-      <Label translation="[40, 60]" width="1680" text="Nenhum favorito adicionado ainda" color="#FFFFFF" horizAlign="center"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="26" /></Label>
-      <Label translation="[40, 120]" width="1680" text="Pressione o botão [*] ou [Replay] no controle remoto enquanto assiste a um canal ou na ficha de um filme/série para adicioná-lo aqui." color="#94a3b8" horizAlign="center" wrap="true"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="22" /></Label>
-    </Group>
+    ><Font role="rowLabelFont" uri="pkg:/fonts/Roboto-Medium.ttf" size="36" /></RowList>
   </children>
 
   <script type="text/brightscript" uri="pkg:/source/utils/Storage.brs" />
+  <script type="text/brightscript" uri="pkg:/source/utils/Rows.brs" />
   <script type="text/brightscript" uri="pkg:/components/screens/FavoritesScreen.brs" />
 </component>

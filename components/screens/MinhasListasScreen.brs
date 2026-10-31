@@ -37,7 +37,12 @@ end sub
 sub preencher(textos as Object)
     raiz = CreateObject("roSGNode", "ContentNode")
     for each t in textos
-        raiz.CreateChild("ContentNode").title = t
+        no = raiz.CreateChild("ContentNode")
+        if Type(t) = "roArray" then
+            no.title = t[0] : no.description = t[1]
+        else
+            no.title = t
+        end if
     end for
     m.lista.content = raiz
     m.lista.jumpToItem = 0
@@ -55,9 +60,9 @@ sub mostrarListas()
     m.listas = LoadMinhasListas()
     textos = ["Adicionar lista"]
     for each l in m.listas
-        linha = l.nome + "  ·  " + l.total.ToStr() + " canais  ·  " + haQuanto(l.atualizadaEm)
+        linha = l.total.ToStr() + " canais  ·  " + haQuanto(l.atualizadaEm)
         if not l.ativa then linha = linha + "  ·  desativada"
-        textos.Push(linha)
+        textos.Push([l.nome, linha])
     end for
     preencher(textos)
     m.painelTeclado.visible = false

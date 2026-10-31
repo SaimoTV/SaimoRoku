@@ -1,125 +1,125 @@
 ' ====================================================================
 ' Saimo TV - SearchScreen (BrightScript)
+' Teclado de letras à esquerda e resultados por fileira, como na TV Box.
 ' ====================================================================
 
 sub init()
-    m.searchKeyboard = m.top.findNode("searchKeyboard")
-    m.resultsHeader = m.top.findNode("resultsHeader")
-    m.resultsList = m.top.findNode("resultsList")
+    m.campo = m.top.findNode("campo")
+    m.teclas = m.top.findNode("teclas")
+    m.resultados = m.top.findNode("resultados")
+    m.dica = m.top.findNode("dica")
+    m.texto = ""
 
-    m.searchKeyboard.observeField("text", "onSearchTextChanged")
-    m.resultsList.observeField("itemSelected", "onResultSelected")
+    raiz = CreateObject("roSGNode", "ContentNode")
+    for each t in "A B C D E F G H I J K L M N O P Q R S T U V W X Y Z 0 1 2 3 4 5 6 7 8 9".Split(" ")
+        raiz.CreateChild("ContentNode").title = t
+    end for
+    for each t in ["_", "<", "X"]
+        raiz.CreateChild("ContentNode").title = t
+    end for
+    m.teclas.content = raiz
+    m.teclas.observeField("itemSelected", "onTecla")
+    m.resultados.observeField("rowItemSelected", "onResultado")
     m.top.observeField("focusedChild", "onFocusedChildChange")
 end sub
 
 sub onFocusedChildChange()
-    if m.top.isInFocusChain() and not m.searchKeyboard.isInFocusChain() and not m.resultsList.isInFocusChain() then
-        if m.searchKeyboard <> invalid then m.searchKeyboard.setFocus(true)
+    if m.top.isInFocusChain() and not m.teclas.isInFocusChain() and not m.resultados.isInFocusChain() then
+        m.teclas.setFocus(true)
     end if
 end sub
 
-sub onSearchTextChanged()
-    query = LCase(m.searchKeyboard.text.Trim())
-    if Len(query) < 2 then
-        m.resultsHeader.text = "DIGITE PELO MENOS 2 LETRAS"
-        m.resultsList.content = invalid
+sub onTecla()
+    t = m.teclas.content.getChild(m.teclas.itemSelected).title
+    if t = "_" then
+        m.texto = m.texto + " "
+    else if t = "<" then
+        if Len(m.texto) > 0 then m.texto = Left(m.texto, Len(m.texto) - 1)
+    else if t = "X" then
+        m.texto = ""
+    else
+        m.texto = m.texto + LCase(t)
+    end if
+    m.campo.text = m.texto
+    buscar()
+end sub
+
+sub buscar()
+    consulta = m.texto.Trim()
+    if consulta = "" then
+        m.resultados.content = invalid
+        m.dica.visible = true
         return
     end if
 
-    root = CreateObject("roSGNode", "ContentNode")
-    count = 0
-
-    ' 1. Busca em canais ao vivo
-    channels = m.top.channels
-    if channels <> invalid then
-        for each ch in channels
-            if Instr(1, LCase(ch.name), query) > 0 then
-                node = root.CreateChild("ContentNode")
-                node.title = "[CANAL] " + ch.number.ToStr() + " - " + ch.name
-                node.addFields({ type: "channel", item: ch })
-                count = count + 1
-                if count >= 30 then exit for
+    raiz = CreateObject("roSGNode", "ContentNode")
+    canais = invalid
+    if m.top.channels <> invalid then
+        for each ch in m.top.channels
+            if Instr(1, LCase(ch.name), consulta) > 0 then
+                if canais = invalid then
+                    canais = raiz.CreateChild("ContentNode")
+                    canais.title = "Canais"
+                end if
+                no = canais.CreateChild("ContentNode")
+                no.title = ch.name
+                if ch.logo <> invalid then no.hdPosterUrl = ch.logo
+                no.addFields({ itemType: "channel", item: ch })
+                if canais.getChildCount() >= 30 then exit for
             end if
         end for
     end if
 
-    ' 2. Busca em VOD (filmes e séries)
-    vodItems = m.top.vodItems
-    if vodItems <> invalid and count < 30 then
-        for each it in vodItems
-            if Instr(1, LCase(it.title), query) > 0 then
-                node = root.CreateChild("ContentNode")
-                tag = "FILME"
-                if it.isSeries then tag = "SÉRIE"
-                node.title = "[" + tag + "] " + it.title
-                node.addFields({ type: "vod", item: it })
-                count = count + 1
-                if count >= 30 then exit for
+    titulos = invalid
+    if m.top.vodItems <> invalid then
+        for each it in m.top.vodItems
+            if Instr(1, LCase(it.title), consulta) > 0 then
+                if titulos = invalid then
+                    titulos = raiz.CreateChild("ContentNode")
+                    titulos.title = "Filmes e séries"
+                end if
+                no = titulos.CreateChild("ContentNode")
+                no.title = it.title
+                if it.poster <> invalid then no.hdPosterUrl = it.poster
+                no.addFields({ itemType: "vod", item: it })
+                if titulos.getChildCount() >= 30 then exit for
             end if
         end for
     end if
 
-    m.resultsHeader.text = count.ToStr() + " RESULTADOS ENCONTRADOS"
-    m.resultsList.content = root
+    m.dica.visible = raiz.getChildCount() = 0
+    if m.dica.visible then m.dica.text = "Nada encontrado."
+    AjustarFileiras(m.resultados, raiz)
+    m.resultados.content = raiz
 end sub
 
-sub onResultSelected()
-    idx = m.resultsList.itemSelected
-    root = m.resultsList.content
-    if root <> invalid and idx >= 0 and idx < root.getChildCount() then
-        node = root.getChild(idx)
-        if node <> invalid then
-            if node.type = "channel" then
-                m.top.tuneRequested = node.item
-            else if node.type = "vod" then
-                m.top.itemSelected = node.item
-            end if
-        end if
+sub onResultado()
+    c = m.resultados.rowItemSelected
+    no = m.resultados.content.getChild(c[0]).getChild(c[1])
+    if no.itemType = "channel" then
+        m.top.tuneRequested = no.item
+    else
+        m.top.itemSelected = no.item
     end if
 end sub
 
 function onKeyEvent(key as String, press as Boolean) as Boolean
     if not press then return false
 
-    if not m.searchKeyboard.isInFocusChain() and not m.resultsList.isInFocusChain() then
-        if m.searchKeyboard <> invalid then m.searchKeyboard.setFocus(true)
-    end if
-
-    ' Se o foco está na lista de resultados à direita:
-    if m.resultsList.isInFocusChain() then
-        if key = "left" then
-            m.searchKeyboard.setFocus(true)
-            return true
-        else if key = "back" then
-            m.searchKeyboard.setFocus(true)
-            return true
-        else if key = "up" and m.resultsList.itemFocused <= 0 then
-            m.top.focusUpRequested = true
+    if m.resultados.isInFocusChain() then
+        if key = "left" or key = "back" then
+            m.teclas.setFocus(true)
             return true
         end if
         return false
     end if
 
-    ' Se o foco está no MiniKeyboard à esquerda:
-    ' NÃO interceptar up, down, left, right durante a digitação para o teclado navegar livremente entre as letras!
-    if m.searchKeyboard.isInFocusChain() then
-        if key = "back" then
-            ' Se há resultados na grade, tecla voltar vai para a lista de resultados
-            if m.resultsList.content <> invalid and m.resultsList.content.getChildCount() > 0 then
-                m.resultsList.setFocus(true)
-                return true
-            else
-                m.top.focusUpRequested = true
-                return true
-            end if
-        else if key = "options" or key = "play" or key = "forward" then
-            ' Atalho rápido para ir direto aos resultados
-            if m.resultsList.content <> invalid and m.resultsList.content.getChildCount() > 0 then
-                m.resultsList.setFocus(true)
-                return true
-            end if
-        end if
+    if key = "right" and m.resultados.content <> invalid then
+        m.resultados.setFocus(true)
+        return true
+    else if key = "up" then
+        m.top.focusUpRequested = true
+        return true
     end if
-
     return false
 end function

@@ -285,6 +285,7 @@ sub switchScreen(screenName as String, params = invalid as Dynamic)
 
     else if screenName = "radios" then
         node = CreateObject("roSGNode", "RadiosScreen")
+        node.observeField("telaCheia", "onRadioTelaCheia")
         if m.cachedRadios <> invalid then node.radios = m.cachedRadios
         node.observeField("focusUpRequested", "onScreenFocusUp")
         m.currentScreenNode = node
@@ -421,6 +422,10 @@ end sub
 ' ====================================================================
 ' Saimo Connect (Controle Remoto via Celular na Porta 8999)
 ' ====================================================================
+
+sub onRadioTelaCheia(evt as Object)
+    m.topNavBar.visible = not evt.getData()
+end sub
 
 sub onAbrirMinhasListas()
     switchScreen("minhas")
