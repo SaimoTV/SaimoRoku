@@ -190,3 +190,6 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
     end if
     return false
 end function
+
+sub cleanUp()
+end sub

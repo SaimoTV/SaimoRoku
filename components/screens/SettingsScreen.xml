@@ -4,6 +4,7 @@
     <field id="minhasListasRequested" type="boolean" alwaysNotify="true" />
     <field id="reloadRequested" type="boolean" value="false" alwaysNotify="true" />
     <field id="focusUpRequested" type="boolean" alwaysNotify="true" />
+    <function name="cleanUp" />
   </interface>
 
   <children>

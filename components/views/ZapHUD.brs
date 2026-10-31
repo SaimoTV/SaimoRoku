@@ -22,14 +22,15 @@ sub onDataChange()
     if m.top.programTitle <> "" then
         m.progLabel.text = m.top.programTitle
     else
-        m.progLabel.text = "Programação não disponível"
+        m.progLabel.text = ""
     end if
 
     pct = m.top.programProgress
     if pct < 0 then pct = 0
     if pct > 1 then pct = 1
-    m.progBar.width = Int(1200 * pct)
+    m.progBar.width = Int(1570 * pct)
 
+    m.top.findNode("horaLabel").text = m.top.linhaHora
     showHUD()
 end sub
 
@@ -37,6 +38,10 @@ sub showHUD()
     m.hudContainer.visible = true
     m.hideTimer.control = "stop"
     m.hideTimer.control = "start"
+end sub
+
+sub alternar()
+    if m.hudContainer.visible then hideHUD() else showHUD()
 end sub
 
 sub hideHUD()

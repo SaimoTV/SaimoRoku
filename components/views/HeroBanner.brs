@@ -21,6 +21,7 @@ sub onItemChange()
     if item = invalid then return
 
     m.titleLabel.text = textoDe(item, "title")
+    m.top.findNode("veu").visible = item.semFundo <> true
     if item.semFundo = true then
         m.backdropPoster.uri = ""
     else if textoDe(item, "backdrop") <> "" then

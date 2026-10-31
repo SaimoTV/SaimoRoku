@@ -227,15 +227,18 @@ sub switchScreen(screenName as String, params = invalid as Dynamic)
 
     else if screenName = "live" then
         node = CreateObject("roSGNode", "LiveScreen")
-        if m.cachedChannels <> invalid then node.channels = m.cachedChannels
-        if m.cachedEpg <> invalid then node.epgMap = m.cachedEpg
         if params <> invalid and params.channelIndex <> invalid then
             node.currentChannelIndex = params.channelIndex
             node.openDrawerOnLoad = false
+            node.telaCheia = true
         else
             ' Ao abrir a aba Ao Vivo pelo menu, abre primeiro a lista de canais (drawer)
             node.openDrawerOnLoad = true
         end if
+        if m.cachedEpg <> invalid then node.epgMap = m.cachedEpg
+        if m.cachedChannels <> invalid then node.channels = m.cachedChannels
+        node.observeField("telaCheia", "onRadioTelaCheia")
+        node.observeField("focusUpRequested", "onScreenFocusUp")
         m.currentScreenNode = node
 
     else if screenName = "vod" then
@@ -319,8 +322,11 @@ sub switchScreen(screenName as String, params = invalid as Dynamic)
     end if
 
     ' Atualiza visibilidade da barra de navegação (oculta no player de VOD e Live em tela cheia)
-    if screenName = "player" or screenName = "live" then
+    if screenName = "player" then
         m.topNavBar.visible = false
+    else if screenName = "live" and m.currentScreenNode.telaCheia then
+        m.topNavBar.visible = false
+        m.topNavBar.selectedIndex = 2
     else
         m.topNavBar.visible = true
         m.topNavBar.selectedIndex = screenToNavIndex(screenName)

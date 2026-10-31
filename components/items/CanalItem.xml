@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="CanalItem" extends="Group">
+  <interface>
+    <field id="itemContent" type="node" onChange="onConteudo" />
+    <field id="focusPercent" type="float" onChange="onFoco" />
+    <field id="listHasFocus" type="boolean" onChange="onFoco" />
+  </interface>
+  <children>
+    <Poster id="moldura" width="810" height="172" uri="pkg:/images/p_foco.9.png" visible="false" />
+    <Label id="numero" width="80" height="172" horizAlign="right" vertAlign="center" color="#A8B4C0"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="34" /></Label>
+    <Poster translation="[104, 30]" width="116" height="112" uri="pkg:/images/p_card.9.png" />
+    <Poster id="logo" translation="[112, 38]" width="100" height="96" loadWidth="100" loadHeight="96" loadDisplayMode="scaleToFit" />
+    <Label id="grupo" translation="[250, 14]" width="530" color="#4FE3D0" visible="false"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="22" /></Label>
+    <Label id="nome" translation="[250, 44]" width="530" height="48" maxLines="1" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="38" /></Label>
+    <Label id="programa" translation="[250, 98]" width="530" maxLines="1" color="#A8B4C0"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="30" /></Label>
+    <Rectangle id="trilho" translation="[250, 142]" width="450" height="6" color="#FFFFFF33" visible="false" />
+    <Rectangle id="barra" translation="[250, 142]" width="0" height="6" color="#4FE3D0" visible="false" />
+  </children>
+  <script type="text/brightscript"><![CDATA[
+sub init()
+    m.moldura = m.top.findNode("moldura")
+    m.grupo = m.top.findNode("grupo")
+end sub
+sub onConteudo()
+    c = m.top.itemContent
+    if c = invalid then return
+    m.top.findNode("numero").text = c.numero
+    m.top.findNode("nome").text = c.title
+    m.grupo.text = c.grupoTexto
+    m.top.findNode("programa").text = c.programa
+    m.top.findNode("logo").uri = c.hdPosterUrl
+    tem = c.progresso > 0
+    m.top.findNode("trilho").visible = tem
+    b = m.top.findNode("barra")
+    b.visible = tem
+    b.width = Int(450 * c.progresso)
+end sub
+sub onFoco()
+    f = m.top.focusPercent > 0.5 and m.top.listHasFocus
+    m.moldura.visible = f
+    m.grupo.visible = f
+end sub
+  ]]></script>
+</component>

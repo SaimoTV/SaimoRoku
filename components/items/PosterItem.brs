@@ -61,7 +61,15 @@ sub onItemContentChange()
         return
     end if
 
-    if item.itemType = "channel" or item.itemType = "radio" then modoLargo()
+    if item.itemType = "channel" or item.itemType = "radio" or item.itemType = "evento" then modoLargo()
+    if item.itemType = "evento" then
+        m.top.findNode("evento").visible = true
+        m.top.findNode("eventoHora").text = item.hora
+        m.top.findNode("eventoJogo").text = item.title
+        m.poster.visible = false
+        m.title.visible = false
+        m.sub.translation = [18, 310]
+    end if
     temImagem = item.hdPosterUrl <> invalid and item.hdPosterUrl <> ""
     if temImagem then
         m.poster.uri = item.hdPosterUrl

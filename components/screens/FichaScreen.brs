@@ -165,12 +165,12 @@ sub updateSeasonTabsVisuals()
 
         if bg <> invalid and txt <> invalid then
             if s = m.currentSeason then
-                bg.color = "#4FE3D0"
+                bg.blendColor = "#FFFFFF"
                 txt.color = "#0b0e14"
                 if border <> invalid then border.visible = (m.focusedArea = "seasons")
             else
-                bg.color = "#1e293b"
-                txt.color = "#94a3b8"
+                bg.blendColor = "#FFFFFF24"
+                txt.color = "#FFFFFF"
                 if border <> invalid then border.visible = false
             end if
         end if
@@ -188,34 +188,34 @@ sub updateFocusVisuals()
 
     ' Cores de destaque nos botões
     if isBtns and m.focusedButton = 0 then
-        m.playBtnBg.color = "#4FE3D0"
+        m.playBtnBg.blendColor = "#FFFFFF"
         m.playBtnText.color = "#0b0e14"
     else
-        m.playBtnBg.color = "#1e293b"
+        m.playBtnBg.blendColor = "#FFFFFF24"
         m.playBtnText.color = "#FFFFFF"
     end if
 
     if isBtns and m.focusedButton = 1 then
-        m.resumeBtnBg.color = "#4FE3D0"
+        m.resumeBtnBg.blendColor = "#FFFFFF"
         m.resumeBtnText.color = "#0b0e14"
     else
-        m.resumeBtnBg.color = "#1e293b"
+        m.resumeBtnBg.blendColor = "#FFFFFF24"
         m.resumeBtnText.color = "#FFFFFF"
     end if
 
     if isBtns and m.focusedButton = 2 then
-        m.versionBtnBg.color = "#4FE3D0"
+        m.versionBtnBg.blendColor = "#FFFFFF"
         m.versionBtnText.color = "#0b0e14"
     else
-        m.versionBtnBg.color = "#1e293b"
+        m.versionBtnBg.blendColor = "#FFFFFF24"
         m.versionBtnText.color = "#FFFFFF"
     end if
 
     if isBtns and m.focusedButton = 3 then
-        m.favBtnBg.color = "#FFB454"
+        m.favBtnBg.blendColor = "#FFFFFF"
         m.favBtnText.color = "#0b0e14"
     else
-        m.favBtnBg.color = "#1e293b"
+        m.favBtnBg.blendColor = "#FFFFFF24"
         m.favBtnText.color = "#FFFFFF"
     end if
 

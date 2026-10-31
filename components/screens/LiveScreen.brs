@@ -8,12 +8,12 @@ sub init()
     m.bufferingGroup = m.top.findNode("bufferingGroup")
     m.zapHud = m.top.findNode("zapHud")
     m.channelDrawer = m.top.findNode("channelDrawer")
-    m.drawerHintGroup = m.top.findNode("drawerHintGroup")
     m.pinModal = m.top.findNode("pinModal")
 
     m.liveVideo.observeField("state", "onVideoState")
     m.channelDrawer.observeField("channelSelected", "onDrawerSelect")
     m.channelDrawer.observeField("isOpen", "onDrawerOpenChange")
+    m.channelDrawer.observeField("focusUpRequested", "onDrawerUp")
     m.pinModal.observeField("isUnlocked", "onPinUnlocked")
     m.top.observeField("focusedChild", "onFocusedChildChange")
 
@@ -56,11 +56,23 @@ sub showFavoriteToast(channelName as String, isFav as Boolean)
     m.favoriteToastTimer.control = "start"
 end sub
 
+sub onDrawerUp()
+    m.top.focusUpRequested = true
+end sub
+
 sub onDrawerOpenChange()
     if m.channelDrawer.isOpen then
-        m.drawerHintGroup.visible = false
+        m.top.telaCheia = false
+        m.liveVideo.translation = [896, 130]
+        m.liveVideo.width = 988
+        m.liveVideo.height = 556
+        m.bufferingGroup.translation = [1240, 400]
     else
-        m.drawerHintGroup.visible = true
+        m.top.telaCheia = true
+        m.liveVideo.translation = [0, 0]
+        m.liveVideo.width = 1920
+        m.liveVideo.height = 1080
+        m.bufferingGroup.translation = [840, 500]
         m.top.setFocus(true)
     end if
 end sub
@@ -79,6 +91,7 @@ sub onChannelsChange()
 end sub
 
 sub onEpgChange()
+    m.channelDrawer.epgMap = m.top.epgMap
     updateHUDInfo()
 end sub
 
@@ -188,6 +201,7 @@ sub updateHUDInfo()
                 pct = 0.5
                 if dur > 0 then pct = (dur - remMin) / dur
                 m.zapHud.programProgress = pct
+                m.zapHud.linhaHora = "faltam " + remMin.ToStr() + " min"
                 exit for
             end if
         end for
@@ -234,8 +248,11 @@ sub onDrawerSelect()
         channels = m.top.channels
         for i = 0 to channels.Count() - 1
             if channels[i].id = sel.id then
-                m.top.currentChannelIndex = i
-                playChannel(i)
+                if i <> m.top.currentChannelIndex then
+                    m.top.currentChannelIndex = i
+                    playChannel(i)
+                end if
+                m.channelDrawer.isOpen = false
                 exit for
             end if
         end for
@@ -275,8 +292,11 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
     else if key = "down" then
         playChannel(m.top.currentChannelIndex + 1)
         return true
-    else if key = "OK" or key = "left" then
-        ' Abre o ChannelDrawer
+    else if key = "OK" then
+        m.zapHud.callFunc("alternar")
+        return true
+    else if key = "left" or key = "back" then
+        ' Abre o painel de canais
         m.channelDrawer.selectedIndex = m.top.currentChannelIndex
         m.channelDrawer.isOpen = true
         m.channelDrawer.setFocus(true)
