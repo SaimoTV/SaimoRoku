@@ -18,6 +18,7 @@ sub executar()
         erro = atualizar(m.top.listaId)
     end if
     if erro = "" then m.top.canais = canaisAtivos()
+    m.top.listas = LoadMinhasListas()
     m.top.erro = erro
     m.top.pronto = true
 end sub

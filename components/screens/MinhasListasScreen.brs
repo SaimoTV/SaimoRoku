@@ -16,6 +16,7 @@ sub init()
     m.botoes.observeField("itemSelected", "onBotao")
     m.modo = "lista" ' lista | acoes | confirmar | link | nome
     m.link = ""
+    m.nome = ""
     m.ocupado = false
     m.top.observeField("focusedChild", "onFocusedChildChange")
     mostrarListas()
@@ -31,6 +32,12 @@ sub onFocusedChildChange()
 end sub
 
 sub focar()
+    t = m.top.findNode("focoTimer")
+    t.observeField("fire", "aplicarFoco")
+    t.control = "start"
+end sub
+
+sub aplicarFoco()
     if m.painelTeclado.visible then m.teclado.setFocus(true) else m.lista.setFocus(true)
 end sub
 
@@ -127,6 +134,7 @@ sub abrirCampo(modo as String)
     end if
     raiz.CreateChild("ContentNode").title = "Cancelar"
     m.botoes.content = raiz
+    m.botoes.jumpToItem = 0
     m.painelLista.visible = false
     m.painelTeclado.visible = true
     m.teclado.setFocus(true)
@@ -171,6 +179,7 @@ sub onPronto()
     m.ocupado = false
     t = m.tarefaAtiva
     m.aviso.text = t.erro
+    if t.listas <> invalid then SaveMinhasListas(t.listas)
     if t.erro = "" then m.top.listasMudaram = { canais: t.canais }
     mostrarListas()
 end sub

@@ -41,14 +41,14 @@
           </Group>
 
           <!-- 2: Botão Versão (Dublado / Legendado) -->
-          <Group id="versionBtnGroup" translation="[632, 0]">
+          <Group id="versionBtnGroup" translation="[316, 0]">
             <Rectangle id="versionBtnBorder" width="0" height="0" visible="false" />
             <Poster id="versionBtnBg" width="300" height="84" uri="pkg:/images/p_btn.9.png" blendColor="#FFFFFF24" />
             <Label id="versionBtnText" width="300" height="84" horizAlign="center" vertAlign="center" text="Versão: Dublado" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="30" /></Label>
           </Group>
 
           <!-- 3: Botão Favoritar -->
-          <Group id="favBtnGroup" translation="[948, 0]">
+          <Group id="favBtnGroup" translation="[632, 0]">
             <Rectangle id="favBtnBorder" width="0" height="0" visible="false" />
             <Poster id="favBtnBg" width="250" height="84" uri="pkg:/images/p_btn.9.png" blendColor="#FFFFFF24" />
             <Label id="favBtnText" width="250" height="84" horizAlign="center" vertAlign="center" text="Favoritar" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="30" /></Label>

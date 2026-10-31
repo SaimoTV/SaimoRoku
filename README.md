@@ -17,6 +17,12 @@ Aplicativo oficial 100% nativo para TVs e dispositivos Roku, desenvolvido em **B
 - **Saimo Connect Integrado:**
   - Servidor socket na porta `8999` com resposta instantânea a `GET /info` e controle remoto pelo aplicativo de celular na rede local Wi-Fi.
 
+## Layout
+Todas as telas seguem a TV Box: mesma fonte (Roboto, em `fonts/`), fundo aurora (`images/fundo.jpg`), abas em pílula com ícones Material, cartões `PosterItem` e medidas em dp × 2. Cantos arredondados vêm dos `images/p_*.9.png`.
+
+## Minhas listas
+Em Ajustes, a pessoa adiciona uma lista `.m3u` pelo link (teclado da TV ou Saimo Connect). Roku não tem seletor de arquivos. O link fica no registro; os canais, no `cachefs:` e são baixados de novo se o sistema limpar. Até 5.000 canais por lista; canais adultos ficam de fora. Código: `source/utils/LeitorM3u.brs`, `components/tasks/MinhasListasTask.brs`, `components/screens/MinhasListasScreen.brs`.
+
 ## Como Gerar o Pacote
 ```bash
 ./build.sh

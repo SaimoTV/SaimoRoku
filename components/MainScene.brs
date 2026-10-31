@@ -103,8 +103,22 @@ end sub
 ' Os canais das listas do usuário vêm depois do catálogo, em ordem de nome.
 sub juntarCanais()
     if m.canaisCatalogo = invalid then return
+    ' Mesma ordem de seções da TV Box; o número segue essa ordem.
     todos = []
-    todos.Append(m.canaisCatalogo)
+    secoes = ["TV Aberta", "Filmes e Séries", "Esportes", "Notícias", "Infantil", "Documentários", "Pluto TV", "24 Horas", "Variedades", "Adulto"]
+    conhecidas = {}
+    for each s in secoes
+        conhecidas[s] = true
+        for each c in m.canaisCatalogo
+            if c.category = s then todos.Push(c)
+        end for
+    end for
+    for each c in m.canaisCatalogo
+        if not conhecidas.DoesExist(c.category) then todos.Push(c)
+    end for
+    for i = 0 to todos.Count() - 1
+        todos[i].number = i + 1
+    end for
     if m.canaisMinhas <> invalid and m.canaisMinhas.Count() > 0 then
         minhas = []
         minhas.Append(m.canaisMinhas)
@@ -319,6 +333,7 @@ sub switchScreen(screenName as String, params = invalid as Dynamic)
     if m.currentScreenNode <> invalid then
         m.screensContainer.appendChild(m.currentScreenNode)
         m.currentScreenNode.setFocus(true)
+        if screenName = "minhas" then m.currentScreenNode.callFunc("focar")
     end if
 
     ' Atualiza visibilidade da barra de navegação (oculta no player de VOD e Live em tela cheia)

@@ -85,6 +85,8 @@ sub onItemChange()
         m.resumeBtnGroup.visible = true
         minRemaining = Int(prog.position / 60)
         m.resumeBtnText.text = "Continuar (" + minRemaining.ToStr() + "m)"
+        m.top.findNode("versionBtnGroup").translation = [632, 0]
+        m.top.findNode("favBtnGroup").translation = [948, 0]
     else
         m.resumeBtnGroup.visible = false
     end if

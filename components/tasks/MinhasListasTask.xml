@@ -8,6 +8,7 @@
     <field id="erro" type="string" alwaysNotify="true" />
     <field id="pronto" type="boolean" alwaysNotify="true" />
     <field id="canais" type="array" />
+    <field id="listas" type="array" />
   </interface>
 
   <script type="text/brightscript" uri="pkg:/source/utils/Storage.brs" />
