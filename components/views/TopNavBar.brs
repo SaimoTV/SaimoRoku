@@ -5,8 +5,8 @@
 ' ====================================================================
 
 sub init()
-    m.tabPill = m.top.findNode("tabPill")
-    m.tabBorder = m.top.findNode("tabBorder")
+    m.pillSel = m.top.findNode("pillSel")
+    m.pillFoco = m.top.findNode("pillFoco")
     m.clockLabel = m.top.findNode("clockLabel")
     m.clockTimer = m.top.findNode("clockTimer")
     m.clockTimer.observeField("fire", "updateClock")
@@ -14,8 +14,8 @@ sub init()
     updateClock()
 
     m.itemNames = ["search", "home", "live", "events", "vod", "favorites", "radios", "settings"]
-    m.tabPositions = [290, 416, 532, 673, 814, 985, 1141, 1272]
-    m.tabWidths = [118, 108, 133, 133, 163, 148, 123, 133]
+    m.tabPositions = [156, 350, 523, 723, 931, 1192, 1419, 1612]
+    m.tabWidths = [192, 171, 198, 206, 259, 225, 191, 80]
 
     m.focusedIndex = 1
     m.top.observeField("focusedChild", "onFocusedChildChange")
@@ -45,40 +45,24 @@ sub onIndexChange()
 end sub
 
 sub updateVisuals()
-    targetIdx = m.focusedIndex
-    if targetIdx < 0 then targetIdx = 0
-    if targetIdx > 7 then targetIdx = 7
+    alvo = m.focusedIndex
+    if alvo < 0 then alvo = 0
+    if alvo > 7 then alvo = 7
+    atual = m.top.selectedIndex
+    temFoco = m.top.hasFocus()
 
-    xPos = m.tabPositions[targetIdx]
-    tWidth = m.tabWidths[targetIdx]
-
-    m.tabPill.translation = [xPos, 14]
-    m.tabPill.width = tWidth
-    m.tabBorder.translation = [xPos, 57]
-    m.tabBorder.width = tWidth
-
-    hasRealFocus = m.top.hasFocus()
-    if hasRealFocus then
-        m.tabPill.color = "#4FE3D0"
-        m.tabBorder.color = "#FFFFFF"
-    else
-        m.tabPill.color = "#162032"
-        m.tabBorder.color = "#4FE3D0"
-    end if
-
-    activeScreenIdx = m.top.selectedIndex
+    m.pillSel.translation = [m.tabPositions[atual], 36]
+    m.pillSel.width = m.tabWidths[atual]
+    m.pillFoco.translation = [m.tabPositions[alvo], 36]
+    m.pillFoco.width = m.tabWidths[alvo]
+    m.pillFoco.visible = temFoco
 
     for i = 0 to 7
-        labelNode = m.top.findNode("label_" + i.ToStr())
-        if labelNode <> invalid then
-            if i = targetIdx and hasRealFocus then
-                labelNode.color = "#0b0e14"
-            else if i = activeScreenIdx then
-                labelNode.color = "#4FE3D0"
-            else
-                labelNode.color = "#94a3b8"
-            end if
-        end if
+        cor = "#FFFFFF"
+        if temFoco and i = alvo then cor = "#0b0e14"
+        m.top.findNode("icon_" + i.ToStr()).blendColor = cor
+        rotulo = m.top.findNode("label_" + i.ToStr())
+        if rotulo <> invalid then rotulo.color = cor
     end for
 end sub
 
@@ -104,9 +88,9 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
         m.top.focusDownRequested = true
         return true
     else if key = "down" then
-        ' Seta para baixo confirma e entra na tela focada
-        m.top.selectedIndex = m.focusedIndex
-        m.top.itemSelected = m.itemNames[m.focusedIndex]
+        ' Volta à tela atual sem trocar de aba, como na TV Box.
+        m.focusedIndex = m.top.selectedIndex
+        updateVisuals()
         m.top.focusDownRequested = true
         return true
     end if

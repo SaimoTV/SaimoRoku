@@ -8,36 +8,33 @@ sub init()
     m.heroBanner = m.top.findNode("heroBanner")
     m.contentRowList = m.top.findNode("contentRowList")
 
-    m.heroBanner.observeField("playClicked", "onHeroPlay")
-    m.heroBanner.observeField("detailsClicked", "onHeroDetails")
     m.contentRowList.observeField("rowItemSelected", "onRowItemSelected")
     m.contentRowList.observeField("rowItemFocused", "onRowItemFocused")
 
     m.heroTimer = m.top.findNode("heroTimer")
     m.heroTimer.observeField("fire", "aplicarDestaque")
 
-    m.currentFocus = "hero" ' "rows" ou "hero"
     m.top.observeField("focusedChild", "onFocusedChildChange")
+    saudar()
+end sub
+
+sub saudar()
+    agora = CreateObject("roDateTime")
+    agora.ToLocalTime()
+    h = agora.GetHours()
+    texto = "Boa noite"
+    if h >= 5 and h < 12 then texto = "Bom dia"
+    if h >= 12 and h < 18 then texto = "Boa tarde"
+    m.heroBanner.featuredItem = { title: texto, genres: "O que vamos assistir?", semFundo: true }
 end sub
 
 sub onFocusedChildChange()
-    if m.top.isInFocusChain() and not m.heroBanner.isInFocusChain() and not m.contentRowList.isInFocusChain() then
-        updateLayoutFocus()
-    end if
-end sub
-
-sub updateLayoutFocus()
-    if m.currentFocus = "rows" then
-        if m.contentRowList <> invalid then m.contentRowList.setFocus(true)
-    else
-        if m.heroBanner <> invalid then m.heroBanner.setFocus(true)
+    if m.top.isInFocusChain() and not m.contentRowList.isInFocusChain() then
+        m.contentRowList.setFocus(true)
     end if
 end sub
 
 sub onFeaturedChange()
-    if m.top.featuredItem <> invalid then
-        m.heroBanner.featuredItem = m.top.featuredItem
-    end if
 end sub
 
 sub onRailsChange()
@@ -47,7 +44,7 @@ sub onRailsChange()
     inProg = GetInProgressList()
     if inProg <> invalid and inProg.Count() > 0 then
         rowProg = rootNode.CreateChild("ContentNode")
-        rowProg.title = "Continue Assistindo"
+        rowProg.title = "Continuar assistindo"
         for each p in inProg
             itemNode = rowProg.CreateChild("ContentNode")
             itemNode.title = p.title
@@ -64,7 +61,7 @@ sub onRailsChange()
     channels = m.top.channels
     if channels <> invalid and channels.Count() > 0 then
         rowLive = rootNode.CreateChild("ContentNode")
-        rowLive.title = "Ao Vivo Agora"
+        rowLive.title = "Ao vivo agora"
         maxChannels = 16
         if channels.Count() < maxChannels then maxChannels = channels.Count()
 
@@ -83,7 +80,7 @@ sub onRailsChange()
                 end for
             end if
 
-            itemNode.title = ch.number.ToStr() + ". " + ch.name
+            itemNode.title = ch.name
             if ch.logo <> invalid and ch.logo <> "" then
                 itemNode.hdPosterUrl = ch.logo
             end if
@@ -99,7 +96,7 @@ sub onRailsChange()
     favVod = LoadFavoriteVOD()
     if favVod <> invalid and favVod.Count() > 0 then
         rowFav = rootNode.CreateChild("ContentNode")
-        rowFav.title = "Meus Favoritos"
+        rowFav.title = "Favoritos"
         for each f in favVod
             itemNode = rowFav.CreateChild("ContentNode")
             itemNode.title = f.title
@@ -134,19 +131,15 @@ sub onRailsChange()
         linha = rootNode.getChild(i)
         ehCanal = linha.getChildCount() > 0 and linha.getChild(0).itemType = "channel"
         if ehCanal then
-            alturas.Push(280) : tamanhos.Push([280, 230])
+            alturas.Push(424) : tamanhos.Push([528, 400])
         else
-            alturas.Push(410) : tamanhos.Push([200, 356])
+            alturas.Push(480) : tamanhos.Push([272, 460])
         end if
     end for
     m.contentRowList.rowHeights = alturas
     m.contentRowList.rowItemSize = tamanhos
     m.contentRowList.content = rootNode
 
-    ' Define o primeiro destaque do hero banner se ainda não definido
-    if m.top.featuredItem = invalid and rails <> invalid and rails.Count() > 0 and rails[0].items.Count() > 0 then
-        m.top.featuredItem = rails[0].items[0]
-    end if
 end sub
 
 sub onRowItemFocused()
@@ -154,19 +147,6 @@ sub onRowItemFocused()
     if coords = invalid or coords.Count() < 2 then return
     rowIndex = coords[0]
     colIndex = coords[1]
-
-    ' Longe do topo, os trilhos ocupam a tela toda.
-    if rowIndex > 0 then
-        if m.heroBanner.visible then
-            m.heroBanner.visible = false
-            m.contentRowList.translation = [80, 100]
-        end if
-    else
-        if not m.heroBanner.visible then
-            m.heroBanner.visible = true
-            m.contentRowList.translation = [80, 640]
-        end if
-    end if
 
     ' Espera o foco parar antes de trocar o destaque: rolar pelos trilhos não
     ' pode baixar uma imagem grande por item.
@@ -189,13 +169,7 @@ sub aplicarDestaque()
         ch = selectedNode.rawChannel
         prog = ""
         if selectedNode.programTitle <> invalid then prog = "Agora: " + selectedNode.programTitle
-        m.heroBanner.featuredItem = {
-            title: ch.name,
-            overview: prog,
-            genres: "Canal ao vivo",
-            poster: ch.logo,
-            semFundo: true
-        }
+        m.heroBanner.featuredItem = { title: ch.name, overview: prog, genres: ch.category, semFundo: true }
     end if
 end sub
 
@@ -221,46 +195,11 @@ sub onRowItemSelected()
     end if
 end sub
 
-sub onHeroPlay()
-    if m.heroBanner.featuredItem <> invalid then
-        m.top.playRequested = m.heroBanner.featuredItem
-    else if m.top.featuredItem <> invalid then
-        m.top.playRequested = m.top.featuredItem
-    end if
-end sub
-
-sub onHeroDetails()
-    if m.heroBanner.featuredItem <> invalid then
-        m.top.itemSelected = m.heroBanner.featuredItem
-    else if m.top.featuredItem <> invalid then
-        m.top.itemSelected = m.top.featuredItem
-    end if
-end sub
-
 function onKeyEvent(key as String, press as Boolean) as Boolean
     if not press then return false
-
-    if key = "down" then
-        if m.currentFocus = "hero" then
-            if m.contentRowList.content <> invalid and m.contentRowList.content.getChildCount() > 0 then
-                m.currentFocus = "rows"
-                updateLayoutFocus()
-                return true
-            end if
-        end if
-    else if key = "up" then
-        if m.currentFocus = "rows" then
-            rowFocused = m.contentRowList.rowItemFocused
-            if rowFocused <> invalid and rowFocused.Count() > 0 and rowFocused[0] = 0 then
-                m.currentFocus = "hero"
-                updateLayoutFocus()
-                return true
-            end if
-        else if m.currentFocus = "hero" then
-            m.top.focusUpRequested = true
-            return true
-        end if
+    if key = "up" then
+        m.top.focusUpRequested = true
+        return true
     end if
-
     return false
 end function

@@ -1,36 +1,53 @@
 ' ====================================================================
 ' Saimo TV - PosterItem (BrightScript para RowList)
-' Capa 2:3 para filmes; cartão 16:9 com o logo inteiro para canais
+' Mesmos cartões da TV Box: capa 2:3 para títulos, cartão largo com o logo
+' inteiro para canais e rádios. A moldura de foco abraça imagem e nome.
 ' ====================================================================
 
 sub init()
+    m.moldura = m.top.findNode("moldura")
+    m.fundo = m.top.findNode("fundo")
+    m.inicial = m.top.findNode("inicial")
     m.poster = m.top.findNode("poster")
+    m.canto = m.top.findNode("canto")
     m.title = m.top.findNode("title")
-    m.focusBorder = m.top.findNode("focusBorder")
-    m.cardBg = m.top.findNode("cardBg")
+    m.sub = m.top.findNode("sub")
     m.progressTrack = m.top.findNode("progressTrack")
     m.progressBar = m.top.findNode("progressBar")
-    m.larguraBarra = 200
+    m.larguraBarra = 248
 end sub
 
-sub modoCanal()
-    m.cardBg.width = 280 : m.cardBg.height = 158
-    m.focusBorder.width = 290 : m.focusBorder.height = 168
-    m.poster.translation = [50, 24]
-    m.poster.width = 180 : m.poster.height = 110
-    m.poster.loadWidth = 180 : m.poster.loadHeight = 110
+sub modoLargo()
+    m.moldura.width = 528 : m.moldura.height = 400
+    m.fundo.width = 504 : m.fundo.height = 280
+    m.canto.visible = false
+    m.inicial.width = 504 : m.inicial.height = 280
+    m.poster.translation = [132, 42]
+    m.poster.width = 264 : m.poster.height = 220
+    m.poster.loadWidth = 264 : m.poster.loadHeight = 220
     m.poster.loadDisplayMode = "scaleToFit"
-    m.title.translation = [0, 168]
-    m.title.width = 280
+    m.title.translation = [18, 304]
+    m.title.width = 492 : m.title.height = 36
+    m.title.maxLines = 1
 end sub
 
 sub onItemContentChange()
     item = m.top.itemContent
     if item = invalid then return
 
-    if item.itemType = "channel" then modoCanal()
-    if item.hdPosterUrl <> invalid then m.poster.uri = item.hdPosterUrl
+    if item.itemType = "channel" or item.itemType = "radio" then modoLargo()
+    temImagem = item.hdPosterUrl <> invalid and item.hdPosterUrl <> ""
+    if temImagem then
+        m.poster.uri = item.hdPosterUrl
+        m.inicial.text = ""
+    else if item.title <> invalid then
+        m.inicial.text = UCase(Left(item.title, 1))
+    end if
     if item.title <> invalid then m.title.text = item.title
+    if item.subTitulo <> invalid and item.subTitulo <> "" then
+        m.sub.text = item.subTitulo
+        m.sub.visible = true
+    end if
 
     ' Barra de progresso para Continue Assistindo
     if item.percent <> invalid and item.percent > 0 then
@@ -47,7 +64,5 @@ sub onItemContentChange()
 end sub
 
 sub onFocusChange()
-    focado = m.top.focusPercent > 0.5 and m.top.rowListHasFocus
-    m.focusBorder.visible = focado
-    if focado then m.title.color = "#FFFFFF" else m.title.color = "#A8B4C0"
+    m.moldura.visible = m.top.focusPercent > 0.5 and m.top.rowListHasFocus
 end sub

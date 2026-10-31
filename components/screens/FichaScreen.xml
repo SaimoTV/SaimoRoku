@@ -18,10 +18,10 @@
 
       <!-- Informações Textuais -->
       <Group translation="[320, 0]">
-        <Label id="titleLabel" width="1200" text="Título" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.otf" size="38" /></Label>
-        <Label id="metaLabel" translation="[0, 55]" width="1000" text="2026 • Full HD" color="#4FE3D0"><Font role="font" uri="pkg:/fonts/Inter-Regular.otf" size="22" /></Label>
-        <Label id="genresLabel" translation="[0, 90]" width="1000" text="Ação, Aventura, Ficção" color="#94a3b8"><Font role="font" uri="pkg:/fonts/Inter-Regular.otf" size="22" /></Label>
-        <Label id="overviewLabel" translation="[0, 130]" width="1140" numLines="4" text="Sinopse detalhada do filme ou série..." color="#cbd5e1" wrap="true"><Font role="font" uri="pkg:/fonts/Inter-Regular.otf" size="22" /></Label>
+        <Label id="titleLabel" width="1200" text="Título" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="38" /></Label>
+        <Label id="metaLabel" translation="[0, 55]" width="1000" text="2026 • Full HD" color="#4FE3D0"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="22" /></Label>
+        <Label id="genresLabel" translation="[0, 90]" width="1000" text="Ação, Aventura, Ficção" color="#94a3b8"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="22" /></Label>
+        <Label id="overviewLabel" translation="[0, 130]" width="1140" numLines="4" text="Sinopse detalhada do filme ou série..." color="#cbd5e1" wrap="true"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="22" /></Label>
 
         <!-- Botões de Ação Idênticos ao TV Box -->
         <Group id="actionsRow" translation="[0, 270]">
@@ -29,28 +29,28 @@
           <Group id="playBtnGroup" translation="[0, 0]">
             <Rectangle id="playBtnBorder" translation="[-3, -3]" width="226" height="56" color="#FFFFFF" visible="false" />
             <Rectangle id="playBtnBg" width="220" height="50" color="#4FE3D0" />
-            <Label id="playBtnText" translation="[0, 12]" width="220" text="▶  Assistir" color="#0b0e14" horizAlign="center"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.otf" size="26" /></Label>
+            <Label id="playBtnText" translation="[0, 12]" width="220" text="▶  Assistir" color="#0b0e14" horizAlign="center"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="26" /></Label>
           </Group>
 
           <!-- 1: Botão Continuar -->
           <Group id="resumeBtnGroup" translation="[240, 0]" visible="false">
             <Rectangle id="resumeBtnBorder" translation="[-3, -3]" width="226" height="56" color="#FFFFFF" visible="false" />
             <Rectangle id="resumeBtnBg" width="220" height="50" color="#1e293b" />
-            <Label id="resumeBtnText" translation="[0, 12]" width="220" text="Continuar" color="#FFFFFF" horizAlign="center"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.otf" size="26" /></Label>
+            <Label id="resumeBtnText" translation="[0, 12]" width="220" text="Continuar" color="#FFFFFF" horizAlign="center"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="26" /></Label>
           </Group>
 
           <!-- 2: Botão Versão (Dublado / Legendado) -->
           <Group id="versionBtnGroup" translation="[480, 0]">
             <Rectangle id="versionBtnBorder" translation="[-3, -3]" width="226" height="56" color="#FFFFFF" visible="false" />
             <Rectangle id="versionBtnBg" width="220" height="50" color="#1e293b" />
-            <Label id="versionBtnText" translation="[0, 12]" width="220" text="Versão: Dublado" color="#FFFFFF" horizAlign="center"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.otf" size="22" /></Label>
+            <Label id="versionBtnText" translation="[0, 12]" width="220" text="Versão: Dublado" color="#FFFFFF" horizAlign="center"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="22" /></Label>
           </Group>
 
           <!-- 3: Botão Favoritar -->
           <Group id="favBtnGroup" translation="[720, 0]">
             <Rectangle id="favBtnBorder" translation="[-3, -3]" width="226" height="56" color="#FFFFFF" visible="false" />
             <Rectangle id="favBtnBg" width="220" height="50" color="#1e293b" />
-            <Label id="favBtnText" translation="[0, 12]" width="220" text="Favoritar" color="#FFFFFF" horizAlign="center"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.otf" size="22" /></Label>
+            <Label id="favBtnText" translation="[0, 12]" width="220" text="Favoritar" color="#FFFFFF" horizAlign="center"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="22" /></Label>
           </Group>
         </Group>
       </Group>
@@ -62,17 +62,17 @@
           <Group id="seasonTab_1" translation="[0, 0]">
             <Rectangle id="seasonBorder_1" translation="[-2, -2]" width="154" height="40" color="#FFFFFF" visible="false" />
             <Rectangle id="seasonBg_1" width="150" height="36" color="#4FE3D0" />
-            <Label id="seasonText_1" translation="[0, 8]" width="150" text="Temporada 1" color="#0b0e14" horizAlign="center"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.otf" size="22" /></Label>
+            <Label id="seasonText_1" translation="[0, 8]" width="150" text="Temporada 1" color="#0b0e14" horizAlign="center"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="22" /></Label>
           </Group>
           <Group id="seasonTab_2" translation="[165, 0]">
             <Rectangle id="seasonBorder_2" translation="[-2, -2]" width="154" height="40" color="#FFFFFF" visible="false" />
             <Rectangle id="seasonBg_2" width="150" height="36" color="#1e293b" />
-            <Label id="seasonText_2" translation="[0, 8]" width="150" text="Temporada 2" color="#94a3b8" horizAlign="center"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.otf" size="22" /></Label>
+            <Label id="seasonText_2" translation="[0, 8]" width="150" text="Temporada 2" color="#94a3b8" horizAlign="center"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="22" /></Label>
           </Group>
           <Group id="seasonTab_3" translation="[330, 0]">
             <Rectangle id="seasonBorder_3" translation="[-2, -2]" width="154" height="40" color="#FFFFFF" visible="false" />
             <Rectangle id="seasonBg_3" width="150" height="36" color="#1e293b" />
-            <Label id="seasonText_3" translation="[0, 8]" width="150" text="Temporada 3" color="#94a3b8" horizAlign="center"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.otf" size="22" /></Label>
+            <Label id="seasonText_3" translation="[0, 8]" width="150" text="Temporada 3" color="#94a3b8" horizAlign="center"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="22" /></Label>
           </Group>
         </Group>
 

@@ -14,14 +14,14 @@
       <Rectangle translation="[789, 0]" width="2" height="1080" color="#4FE3D0" />
 
       <!-- Cabeçalho -->
-      <Label translation="[24, 20]" text="Canais Ao Vivo" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.otf" size="38" /></Label>
-      <Label id="countLabel" translation="[24, 72]" text="0 canais disponíveis" color="#4FE3D0"><Font role="font" uri="pkg:/fonts/Inter-Regular.otf" size="22" /></Label>
+      <Label translation="[24, 20]" text="Canais Ao Vivo" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="38" /></Label>
+      <Label id="countLabel" translation="[24, 72]" text="0 canais disponíveis" color="#4FE3D0"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="22" /></Label>
 
       <!-- Barra de Busca (Acesso Rápido) -->
       <Group id="searchBarGroup" translation="[24, 106]">
         <Rectangle id="searchBarBorder" translation="[-2, -2]" width="746" height="46" color="#4FE3D0" visible="false" />
         <Rectangle id="searchBarBg" width="742" height="40" color="#1e293b" />
-        <Label id="searchBarLabel" translation="[14, 8]" width="710" text="Buscar canal... (OK para digitar)" color="#94a3b8"><Font role="font" uri="pkg:/fonts/Inter-Regular.otf" size="22" /></Label>
+        <Label id="searchBarLabel" translation="[14, 8]" width="710" text="Buscar canal... (OK para digitar)" color="#94a3b8"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="22" /></Label>
       </Group>
 
       <!-- Chips de Categorias dos Canais -->
@@ -29,32 +29,32 @@
         <Group id="chipGroup_0" translation="[0, 0]">
           <Rectangle id="chipBorder_0" translation="[-3, -3]" width="102" height="46" color="#FFFFFF" visible="true" />
           <Rectangle id="chipBg_0" width="96" height="40" color="#4FE3D0" />
-          <Label id="chipText_0" width="96" height="40" text="Todos" color="#0b0e14" horizAlign="center" vertAlign="center"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.otf" size="20" /></Label>
+          <Label id="chipText_0" width="96" height="40" text="Todos" color="#0b0e14" horizAlign="center" vertAlign="center"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="20" /></Label>
         </Group>
         <Group id="chipGroup_1" translation="[106, 0]">
           <Rectangle id="chipBorder_1" translation="[-3, -3]" width="128" height="46" color="#FFFFFF" visible="false" />
           <Rectangle id="chipBg_1" width="122" height="40" color="#1e293b" />
-          <Label id="chipText_1" width="122" height="40" text="Favoritos" color="#94a3b8" horizAlign="center" vertAlign="center"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.otf" size="20" /></Label>
+          <Label id="chipText_1" width="122" height="40" text="Favoritos" color="#94a3b8" horizAlign="center" vertAlign="center"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="20" /></Label>
         </Group>
         <Group id="chipGroup_2" translation="[238, 0]">
           <Rectangle id="chipBorder_2" translation="[-3, -3]" width="106" height="46" color="#FFFFFF" visible="false" />
           <Rectangle id="chipBg_2" width="100" height="40" color="#1e293b" />
-          <Label id="chipText_2" width="100" height="40" text="Aberta" color="#94a3b8" horizAlign="center" vertAlign="center"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.otf" size="20" /></Label>
+          <Label id="chipText_2" width="100" height="40" text="Aberta" color="#94a3b8" horizAlign="center" vertAlign="center"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="20" /></Label>
         </Group>
         <Group id="chipGroup_3" translation="[348, 0]">
           <Rectangle id="chipBorder_3" translation="[-3, -3]" width="124" height="46" color="#FFFFFF" visible="false" />
           <Rectangle id="chipBg_3" width="118" height="40" color="#1e293b" />
-          <Label id="chipText_3" width="118" height="40" text="Esportes" color="#94a3b8" horizAlign="center" vertAlign="center"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.otf" size="20" /></Label>
+          <Label id="chipText_3" width="118" height="40" text="Esportes" color="#94a3b8" horizAlign="center" vertAlign="center"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="20" /></Label>
         </Group>
         <Group id="chipGroup_4" translation="[476, 0]">
           <Rectangle id="chipBorder_4" translation="[-3, -3]" width="102" height="46" color="#FFFFFF" visible="false" />
           <Rectangle id="chipBg_4" width="96" height="40" color="#1e293b" />
-          <Label id="chipText_4" width="96" height="40" text="Filmes" color="#94a3b8" horizAlign="center" vertAlign="center"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.otf" size="20" /></Label>
+          <Label id="chipText_4" width="96" height="40" text="Filmes" color="#94a3b8" horizAlign="center" vertAlign="center"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="20" /></Label>
         </Group>
         <Group id="chipGroup_5" translation="[582, 0]">
           <Rectangle id="chipBorder_5" translation="[-3, -3]" width="178" height="46" color="#FFFFFF" visible="false" />
           <Rectangle id="chipBg_5" width="172" height="40" color="#1e293b" />
-          <Label id="chipText_5" width="172" height="40" text="Minhas listas" color="#94a3b8" horizAlign="center" vertAlign="center"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.otf" size="20" /></Label>
+          <Label id="chipText_5" width="172" height="40" text="Minhas listas" color="#94a3b8" horizAlign="center" vertAlign="center"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="20" /></Label>
         </Group>
       </Group>
 
@@ -73,11 +73,11 @@
         wrap="false"
         color="#D5DCE5"
         focusedColor="#0b0e14"
-        focusBitmapBlendColor="#4FE3D0"><Font role="font" uri="pkg:/fonts/Inter-Regular.otf" size="24" /><Font role="focusedFont" uri="pkg:/fonts/Inter-SemiBold.otf" size="24" /></LabelList>
+        focusBitmapBlendColor="#4FE3D0"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="24" /><Font role="focusedFont" uri="pkg:/fonts/Roboto-Medium.ttf" size="24" /></LabelList>
 
       <!-- Rodapé de Ajuda -->
       <Rectangle translation="[20, 1024]" width="460" height="40" color="#111827" />
-      <Label translation="[28, 1034]" text="[OK] Assistir  |  [Replay] Favoritar  |  [Cima] Filtros" color="#94a3b8"><Font role="font" uri="pkg:/fonts/Inter-Regular.otf" size="22" /></Label>
+      <Label translation="[28, 1034]" text="[OK] Assistir  |  [Replay] Favoritar  |  [Cima] Filtros" color="#94a3b8"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="22" /></Label>
     </Group>
   </children>
 

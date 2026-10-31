@@ -19,13 +19,13 @@
       <Rectangle translation="[0, 760]" width="1920" height="320" color="#000000D9" />
 
       <!-- Topo do OSD: Título e Detalhes -->
-      <Label id="titleLabel" translation="[80, 800]" width="1200" text="Título" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.otf" size="26" /></Label>
-      <Label id="subLabel" translation="[80, 845]" width="1200" text="Detalhes" color="#94a3b8"><Font role="font" uri="pkg:/fonts/Inter-Regular.otf" size="22" /></Label>
+      <Label id="titleLabel" translation="[80, 800]" width="1200" text="Título" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="26" /></Label>
+      <Label id="subLabel" translation="[80, 845]" width="1200" text="Detalhes" color="#94a3b8"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="22" /></Label>
 
       <!-- Botão Pular Abertura (+85s) -->
       <Group id="skipIntroBtn" translation="[1560, 800]" visible="false">
         <Rectangle id="skipIntroBg" width="260" height="50" color="#1e293b" />
-        <Label id="skipIntroText" translation="[0, 12]" width="260" text="Pular Abertura (+85s)" color="#4FE3D0" horizAlign="center"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.otf" size="22" /></Label>
+        <Label id="skipIntroText" translation="[0, 12]" width="260" text="Pular Abertura (+85s)" color="#4FE3D0" horizAlign="center"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="22" /></Label>
       </Group>
 
       <!-- Barra de Progresso / Scrub Bar -->
@@ -36,15 +36,15 @@
       </Group>
 
       <!-- Contadores de Tempo -->
-      <Label id="timeCurrentLabel" translation="[80, 945]" text="00:00" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Inter-Regular.otf" size="22" /></Label>
-      <Label id="timeRemainingLabel" translation="[1720, 945]" width="120" text="-00:00" color="#94a3b8" horizAlign="right"><Font role="font" uri="pkg:/fonts/Inter-Regular.otf" size="22" /></Label>
+      <Label id="timeCurrentLabel" translation="[80, 945]" text="00:00" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="22" /></Label>
+      <Label id="timeRemainingLabel" translation="[1720, 945]" width="120" text="-00:00" color="#94a3b8" horizAlign="right"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="22" /></Label>
 
       <!-- Controles inferiores com botões -->
       <Group id="controlsRow" translation="[80, 990]">
-        <Label id="btnRewind" translation="[0, 0]" text="[&lt;&lt;] -10s" color="#94a3b8"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.otf" size="22" /></Label>
-        <Label id="btnPlayPause" translation="[140, 0]" text="[OK] Pausar" color="#4FE3D0"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.otf" size="22" /></Label>
-        <Label id="btnForward" translation="[290, 0]" text="[&gt;&gt;] +10s" color="#94a3b8"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.otf" size="22" /></Label>
-        <Label id="btnAudio" translation="[440, 0]" text="[*] Opcoes de Audio" color="#94a3b8"><Font role="font" uri="pkg:/fonts/Inter-Regular.otf" size="22" /></Label>
+        <Label id="btnRewind" translation="[0, 0]" text="[&lt;&lt;] -10s" color="#94a3b8"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="22" /></Label>
+        <Label id="btnPlayPause" translation="[140, 0]" text="[OK] Pausar" color="#4FE3D0"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="22" /></Label>
+        <Label id="btnForward" translation="[290, 0]" text="[&gt;&gt;] +10s" color="#94a3b8"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="22" /></Label>
+        <Label id="btnAudio" translation="[440, 0]" text="[*] Opcoes de Audio" color="#94a3b8"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="22" /></Label>
       </Group>
     </Group>
 

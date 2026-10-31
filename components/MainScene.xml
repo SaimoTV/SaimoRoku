@@ -6,7 +6,7 @@
 
   <children>
     <!-- Fundo base da aplicação -->
-    <Rectangle id="sceneBg" width="1920" height="1080" color="#0b0e14" />
+    <Poster id="sceneBg" width="1920" height="1080" loadWidth="1280" loadHeight="720" uri="pkg:/images/fundo.jpg" />
 
     <!-- Container de Telas Ativas -->
     <Group id="screensContainer" />

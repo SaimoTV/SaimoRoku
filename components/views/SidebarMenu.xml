@@ -13,7 +13,7 @@
 
     <!-- Logo no topo -->
     <Poster id="menuLogo" translation="[18, 30]" width="44" height="44" uri="pkg:/images/icon_hd.png" />
-    <Label id="menuLogoText" translation="[75, 40]" text="SAIMO TV" color="#4FE3D0" visible="true"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.otf" size="26" /></Label>
+    <Label id="menuLogoText" translation="[75, 40]" text="SAIMO TV" color="#4FE3D0" visible="true"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="26" /></Label>
 
     <!-- Indicador de foco ativo -->
     <Rectangle id="focusPill" translation="[8, 120]" width="244" height="52" color="#1a2436" />
@@ -24,54 +24,54 @@
       <!-- Item 0: Início -->
       <Group id="item_0" translation="[0, 0]">
         <Poster id="icon_0" translation="[24, 10]" width="32" height="32" uri="pkg:/images/icons/icon_home.png" />
-        <Label id="label_0" translation="[75, 14]" text="Início" color="#FFFFFF" visible="true"><Font role="font" uri="pkg:/fonts/Inter-Regular.otf" size="26" /></Label>
+        <Label id="label_0" translation="[75, 14]" text="Início" color="#FFFFFF" visible="true"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="26" /></Label>
       </Group>
 
       <!-- Item 1: Ao Vivo -->
       <Group id="item_1" translation="[0, 60]">
         <Poster id="icon_1" translation="[24, 10]" width="32" height="32" uri="pkg:/images/icons/icon_live.png" />
-        <Label id="label_1" translation="[75, 14]" text="Ao Vivo" color="#94a3b8" visible="true"><Font role="font" uri="pkg:/fonts/Inter-Regular.otf" size="26" /></Label>
+        <Label id="label_1" translation="[75, 14]" text="Ao Vivo" color="#94a3b8" visible="true"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="26" /></Label>
       </Group>
 
       <!-- Item 2: Acervo -->
       <Group id="item_2" translation="[0, 120]">
         <Poster id="icon_2" translation="[24, 10]" width="32" height="32" uri="pkg:/images/icons/icon_vod.png" />
-        <Label id="label_2" translation="[75, 14]" text="Acervo" color="#94a3b8" visible="true"><Font role="font" uri="pkg:/fonts/Inter-Regular.otf" size="26" /></Label>
+        <Label id="label_2" translation="[75, 14]" text="Acervo" color="#94a3b8" visible="true"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="26" /></Label>
       </Group>
 
       <!-- Item 3: Guia EPG -->
       <Group id="item_3" translation="[0, 180]">
         <Poster id="icon_3" translation="[24, 10]" width="32" height="32" uri="pkg:/images/icons/icon_guide.png" />
-        <Label id="label_3" translation="[75, 14]" text="Guia TV" color="#94a3b8" visible="true"><Font role="font" uri="pkg:/fonts/Inter-Regular.otf" size="26" /></Label>
+        <Label id="label_3" translation="[75, 14]" text="Guia TV" color="#94a3b8" visible="true"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="26" /></Label>
       </Group>
 
       <!-- Item 4: Eventos -->
       <Group id="item_4" translation="[0, 240]">
         <Poster id="icon_4" translation="[24, 10]" width="32" height="32" uri="pkg:/images/icons/icon_events.png" />
-        <Label id="label_4" translation="[75, 14]" text="Eventos" color="#94a3b8" visible="true"><Font role="font" uri="pkg:/fonts/Inter-Regular.otf" size="26" /></Label>
+        <Label id="label_4" translation="[75, 14]" text="Eventos" color="#94a3b8" visible="true"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="26" /></Label>
       </Group>
 
       <!-- Item 5: Rádios -->
       <Group id="item_5" translation="[0, 300]">
         <Poster id="icon_5" translation="[24, 10]" width="32" height="32" uri="pkg:/images/icons/icon_radios.png" />
-        <Label id="label_5" translation="[75, 14]" text="Rádios" color="#94a3b8" visible="true"><Font role="font" uri="pkg:/fonts/Inter-Regular.otf" size="26" /></Label>
+        <Label id="label_5" translation="[75, 14]" text="Rádios" color="#94a3b8" visible="true"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="26" /></Label>
       </Group>
 
       <!-- Item 6: Buscar -->
       <Group id="item_6" translation="[0, 360]">
         <Poster id="icon_6" translation="[24, 10]" width="32" height="32" uri="pkg:/images/icons/icon_search.png" />
-        <Label id="label_6" translation="[75, 14]" text="Buscar" color="#94a3b8" visible="true"><Font role="font" uri="pkg:/fonts/Inter-Regular.otf" size="26" /></Label>
+        <Label id="label_6" translation="[75, 14]" text="Buscar" color="#94a3b8" visible="true"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="26" /></Label>
       </Group>
 
       <!-- Item 7: Ajustes -->
       <Group id="item_7" translation="[0, 420]">
         <Poster id="icon_7" translation="[24, 10]" width="32" height="32" uri="pkg:/images/icons/icon_settings.png" />
-        <Label id="label_7" translation="[75, 14]" text="Ajustes" color="#94a3b8" visible="true"><Font role="font" uri="pkg:/fonts/Inter-Regular.otf" size="26" /></Label>
+        <Label id="label_7" translation="[75, 14]" text="Ajustes" color="#94a3b8" visible="true"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="26" /></Label>
       </Group>
     </Group>
 
     <!-- Versão no rodapé -->
-    <Label id="versionLabel" translation="[18, 1030]" text="v2.6.0" color="#475569" visible="true"><Font role="font" uri="pkg:/fonts/Inter-Regular.otf" size="22" /></Label>
+    <Label id="versionLabel" translation="[18, 1030]" text="v2.6.0" color="#475569" visible="true"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="22" /></Label>
   </children>
 
   <script type="text/brightscript" uri="pkg:/components/views/SidebarMenu.brs" />

@@ -7,63 +7,48 @@
   </interface>
 
   <children>
-    <!-- Fundo da barra superior estilo TV Box -->
-    <Rectangle id="navBg" width="1920" height="74" color="#0b0e14F0" />
-    <Rectangle id="navDivider" translation="[0, 73]" width="1920" height="1" color="#1e293b" />
+    <Poster translation="[80, 40]" width="56" height="56" uri="pkg:/images/icon_hd.png" />
 
-    <!-- Logo no canto esquerdo -->
-    <Poster id="navLogo" translation="[40, 16]" width="42" height="42" uri="pkg:/images/icon_hd.png" />
-    <Label id="navLogoText" translation="[92, 24]" text="SAIMO TV" color="#4FE3D0"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.otf" size="26" /></Label>
+    <!-- Pílula: branca na aba em foco, translúcida na aba da tela atual -->
+    <Poster id="pillSel" translation="[0, 36]" width="100" height="64" uri="pkg:/images/p_sel.9.png" />
+    <Poster id="pillFoco" translation="[0, 36]" width="100" height="64" uri="pkg:/images/p_branca.9.png" visible="false" />
 
-    <!-- Indicador de foco / seleção ativa (Pill) -->
-    <Rectangle id="tabPill" translation="[365, 14]" width="100" height="46" color="#1a2436" />
-    <Rectangle id="tabBorder" translation="[365, 57]" width="100" height="3" color="#4FE3D0" />
-
-    <!-- Abas Horizontais com larguras proporcionais (Sem cortes ...) -->
     <Group id="tabsGroup">
-      <!-- 0: Buscar -->
-      <Group id="tab_0" translation="[290, 14]">
-        <Label id="label_0" translation="[0, 10]" width="118" text="Buscar" color="#94a3b8" horizAlign="center"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.otf" size="22" /></Label>
+      <Group id="tab_0" translation="[156, 36]">
+        <Poster id="icon_0" translation="[22, 14]" width="36" height="36" uri="pkg:/images/icons/m_search.png" blendColor="#FFFFFF" />
+        <Label id="label_0" translation="[70, 0]" height="64" vertAlign="center" text="Buscar" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="32" /></Label>
       </Group>
-
-      <!-- 1: Início -->
-      <Group id="tab_1" translation="[416, 14]">
-        <Label id="label_1" translation="[0, 10]" width="108" text="Início" color="#4FE3D0" horizAlign="center"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.otf" size="22" /></Label>
+      <Group id="tab_1" translation="[350, 36]">
+        <Poster id="icon_1" translation="[22, 14]" width="36" height="36" uri="pkg:/images/icons/m_home.png" blendColor="#FFFFFF" />
+        <Label id="label_1" translation="[70, 0]" height="64" vertAlign="center" text="Início" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="32" /></Label>
       </Group>
-
-      <!-- 2: Ao Vivo -->
-      <Group id="tab_2" translation="[532, 14]">
-        <Label id="label_2" translation="[0, 10]" width="133" text="Ao Vivo" color="#94a3b8" horizAlign="center"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.otf" size="22" /></Label>
+      <Group id="tab_2" translation="[523, 36]">
+        <Poster id="icon_2" translation="[22, 14]" width="36" height="36" uri="pkg:/images/icons/m_live_tv.png" blendColor="#FFFFFF" />
+        <Label id="label_2" translation="[70, 0]" height="64" vertAlign="center" text="Ao vivo" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="32" /></Label>
       </Group>
-
-      <!-- 3: Eventos -->
-      <Group id="tab_3" translation="[673, 14]">
-        <Label id="label_3" translation="[0, 10]" width="133" text="Eventos" color="#94a3b8" horizAlign="center"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.otf" size="22" /></Label>
+      <Group id="tab_3" translation="[723, 36]">
+        <Poster id="icon_3" translation="[22, 14]" width="36" height="36" uri="pkg:/images/icons/m_football.png" blendColor="#FFFFFF" />
+        <Label id="label_3" translation="[70, 0]" height="64" vertAlign="center" text="Eventos" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="32" /></Label>
       </Group>
-
-      <!-- 4: On Demand -->
-      <Group id="tab_4" translation="[814, 14]">
-        <Label id="label_4" translation="[0, 10]" width="163" text="On Demand" color="#94a3b8" horizAlign="center"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.otf" size="22" /></Label>
+      <Group id="tab_4" translation="[931, 36]">
+        <Poster id="icon_4" translation="[22, 14]" width="36" height="36" uri="pkg:/images/icons/m_movie.png" blendColor="#FFFFFF" />
+        <Label id="label_4" translation="[70, 0]" height="64" vertAlign="center" text="On Demand" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="32" /></Label>
       </Group>
-
-      <!-- 5: Favoritos -->
-      <Group id="tab_5" translation="[985, 14]">
-        <Label id="label_5" translation="[0, 10]" width="148" text="Favoritos" color="#94a3b8" horizAlign="center"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.otf" size="22" /></Label>
+      <Group id="tab_5" translation="[1192, 36]">
+        <Poster id="icon_5" translation="[22, 14]" width="36" height="36" uri="pkg:/images/icons/m_star.png" blendColor="#FFFFFF" />
+        <Label id="label_5" translation="[70, 0]" height="64" vertAlign="center" text="Favoritos" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="32" /></Label>
       </Group>
-
-      <!-- 6: Rádios -->
-      <Group id="tab_6" translation="[1141, 14]">
-        <Label id="label_6" translation="[0, 10]" width="123" text="Rádios" color="#94a3b8" horizAlign="center"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.otf" size="22" /></Label>
+      <Group id="tab_6" translation="[1419, 36]">
+        <Poster id="icon_6" translation="[22, 14]" width="36" height="36" uri="pkg:/images/icons/m_radio.png" blendColor="#FFFFFF" />
+        <Label id="label_6" translation="[70, 0]" height="64" vertAlign="center" text="Rádios" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="32" /></Label>
       </Group>
-
-      <!-- 7: Ajustes -->
-      <Group id="tab_7" translation="[1272, 14]">
-        <Label id="label_7" translation="[0, 10]" width="133" text="Ajustes" color="#94a3b8" horizAlign="center"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.otf" size="22" /></Label>
+      <Group id="tab_7" translation="[1612, 36]">
+        <Poster id="icon_7" translation="[22, 14]" width="36" height="36" uri="pkg:/images/icons/m_settings.png" blendColor="#FFFFFF" />
+        
       </Group>
     </Group>
 
-    <!-- Relógio Digital no Canto Direito -->
-    <Label id="clockLabel" translation="[1780, 24]" text="--:--" color="#94a3b8"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.otf" size="22" /></Label>
+    <Label id="clockLabel" translation="[1660, 36]" width="180" height="64" vertAlign="center" horizAlign="right" text="--:--" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="36" /></Label>
     <Timer id="clockTimer" duration="30" repeat="true" />
   </children>
 

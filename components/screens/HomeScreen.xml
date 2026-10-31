@@ -7,8 +7,7 @@
     <field id="epgMap" type="assocarray" onChange="onRailsChange" />
     <field id="vodItems" type="array" onChange="onRailsChange" />
     <field id="itemSelected" type="assocarray" alwaysNotify="true" />
-    <field id="playRequested" type="assocarray" alwaysNotify="true" />
-    <field id="tuneRequested" type="assocarray" alwaysNotify="true" />
+        <field id="tuneRequested" type="assocarray" alwaysNotify="true" />
     <field id="focusUpRequested" type="boolean" alwaysNotify="true" />
   </interface>
 
@@ -20,21 +19,21 @@
     <RowList
       id="contentRowList"
       itemComponentName="PosterItem"
-      translation="[80, 640]"
-      itemSize="[1760, 410]"
-      rowItemSize="[[200, 356]]"
-      rowHeights="[410]"
-      rowItemSpacing="[[28, 0]]"
-      itemSpacing="[0, 24]"
+      translation="[100, 430]"
+      itemSize="[1820, 480]"
+      rowHeights="[480]"
+      rowItemSize="[[272, 460]]"
+      rowItemSpacing="[[32, 0]]"
+      itemSpacing="[0, 28]"
       showRowLabel="[true]"
-      rowLabelOffset="[[0, 14]]"
+      rowLabelOffset="[[12, 18]]"
       rowLabelColor="#FFFFFF"
       rowFocusAnimationStyle="floatingFocus"
+      vertFocusAnimationStyle="fixedFocus"
       drawFocusFeedback="false"
-      numRows="3"
-      vertFocusAnimationStyle="fixedFocusWrap"
+      numRows="2"
       wrap="false"
-    />
+    ><Font role="rowLabelFont" uri="pkg:/fonts/Roboto-Medium.ttf" size="36" /></RowList>
     <Timer id="heroTimer" duration="0.3" repeat="false" />
   </children>
 
