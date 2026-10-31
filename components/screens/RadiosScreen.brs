@@ -55,7 +55,7 @@ end sub
 sub onAudioState()
     state = m.radioAudio.state
     if state = "playing" then
-        m.radioStatus.text = "● TRANSMITINDO AO VIVO"
+        m.radioStatus.text = "[NO AR] Transmitindo Ao Vivo"
     else if state = "buffering" then
         m.radioStatus.text = "Carregando áudio..."
     else if state = "error" then
@@ -70,8 +70,11 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
         if m.radiosList <> invalid then m.radiosList.setFocus(true)
     end if
 
-    if key = "left" then
-        return false ' bubbles to MainScene to open sidebar
+    if key = "up" and m.radiosList.itemFocused <= 0 then
+        m.top.focusUpRequested = true
+        return true
+    else if key = "left" then
+        return true
     else if key = "back" then
         m.radioAudio.control = "stop"
         return false ' bubbles to MainScene

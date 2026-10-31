@@ -11,8 +11,8 @@
     <!-- Container de Telas Ativas -->
     <Group id="screensContainer" />
 
-    <!-- Barra de Navegação Global (Sidebar) -->
-    <SidebarMenu id="sidebarMenu" />
+    <!-- Barra de Navegação Global Superior (Estilo TV Box) -->
+    <TopNavBar id="topNavBar" />
 
     <!-- Tarefa de Carregamento de Dados em Background -->
     <DataLoaderTask id="dataLoader" />

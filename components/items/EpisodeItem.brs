@@ -29,9 +29,9 @@ end sub
 sub onFocusChange()
     if m.top.rowFocusPercent > 0.5 then
         m.focusBorder.visible = true
-        m.title.color = "#FFFFFF"
+        m.title.color = "#4FE3D0"
     else
         m.focusBorder.visible = false
-        m.title.color = "#94a3b8"
+        m.title.color = "#FFFFFF"
     end if
 end sub

@@ -6,11 +6,12 @@
 sub init()
     m.sceneBg = m.top.findNode("sceneBg")
     m.screensContainer = m.top.findNode("screensContainer")
-    m.sidebarMenu = m.top.findNode("sidebarMenu")
+    m.topNavBar = m.top.findNode("topNavBar")
     m.dataLoader = m.top.findNode("dataLoader")
     m.connectServer = m.top.findNode("connectServer")
 
-    m.sidebarMenu.observeField("itemSelected", "onSidebarSelected")
+    m.topNavBar.observeField("itemSelected", "onTopNavSelected")
+    m.topNavBar.observeField("focusDownRequested", "onFocusDownFromNav")
     m.connectServer.observeField("receivedCommand", "onConnectCommand")
 
     ' Observers do DataLoader
@@ -39,11 +40,6 @@ sub init()
     else
         switchScreen("home")
     end if
-
-    ' Foco inicial no menu lateral para navegação instantânea e visível
-    m.sidebarMenu.visible = true
-    m.sidebarMenu.isExpanded = true
-    m.sidebarMenu.setFocus(true)
 end sub
 
 sub loadAllData()
@@ -139,6 +135,18 @@ end sub
 ' Gerenciamento e Transição de Telas
 ' ====================================================================
 
+function screenToNavIndex(name as String) as Integer
+    if name = "search" then return 0
+    if name = "home" then return 1
+    if name = "live" then return 2
+    if name = "events" then return 3
+    if name = "vod" then return 4
+    if name = "guide" then return 5
+    if name = "radios" then return 6
+    if name = "settings" then return 7
+    return 1
+end function
+
 sub switchScreen(screenName as String, params = invalid as Dynamic)
     ' Guarda tela anterior para retorno ao sair do player
     if m.currentScreenName <> "" and m.currentScreenName <> "player" then
@@ -166,8 +174,8 @@ sub switchScreen(screenName as String, params = invalid as Dynamic)
         end if
         node.observeField("itemSelected", "onHomeItemSelected")
         node.observeField("playRequested", "onHomePlayRequested")
+        node.observeField("focusUpRequested", "onScreenFocusUp")
         m.currentScreenNode = node
-        m.sidebarMenu.selectedIndex = 0
 
     else if screenName = "live" then
         node = CreateObject("roSGNode", "LiveScreen")
@@ -177,14 +185,13 @@ sub switchScreen(screenName as String, params = invalid as Dynamic)
             node.currentChannelIndex = params.channelIndex
         end if
         m.currentScreenNode = node
-        m.sidebarMenu.selectedIndex = 1
 
     else if screenName = "vod" then
         node = CreateObject("roSGNode", "VodScreen")
         if m.cachedVod <> invalid then node.vodItems = m.cachedVod
         node.observeField("itemSelected", "onVodItemSelected")
+        node.observeField("focusUpRequested", "onScreenFocusUp")
         m.currentScreenNode = node
-        m.sidebarMenu.selectedIndex = 2
 
     else if screenName = "ficha" then
         node = CreateObject("roSGNode", "FichaScreen")
@@ -203,21 +210,21 @@ sub switchScreen(screenName as String, params = invalid as Dynamic)
         if m.cachedChannels <> invalid then node.channels = m.cachedChannels
         if m.cachedEpg <> invalid then node.epgMap = m.cachedEpg
         node.observeField("tuneRequested", "onGuideTune")
+        node.observeField("focusUpRequested", "onScreenFocusUp")
         m.currentScreenNode = node
-        m.sidebarMenu.selectedIndex = 3
 
     else if screenName = "events" then
         node = CreateObject("roSGNode", "EventsScreen")
         if m.cachedEvents <> invalid then node.events = m.cachedEvents
         node.observeField("tuneRequested", "onEventTune")
+        node.observeField("focusUpRequested", "onScreenFocusUp")
         m.currentScreenNode = node
-        m.sidebarMenu.selectedIndex = 4
 
     else if screenName = "radios" then
         node = CreateObject("roSGNode", "RadiosScreen")
         if m.cachedRadios <> invalid then node.radios = m.cachedRadios
+        node.observeField("focusUpRequested", "onScreenFocusUp")
         m.currentScreenNode = node
-        m.sidebarMenu.selectedIndex = 5
 
     else if screenName = "search" then
         node = CreateObject("roSGNode", "SearchScreen")
@@ -225,26 +232,29 @@ sub switchScreen(screenName as String, params = invalid as Dynamic)
         if m.cachedVod <> invalid then node.vodItems = m.cachedVod
         node.observeField("tuneRequested", "onSearchTune")
         node.observeField("itemSelected", "onSearchVodSelected")
+        node.observeField("focusUpRequested", "onScreenFocusUp")
         m.currentScreenNode = node
-        m.sidebarMenu.selectedIndex = 6
 
     else if screenName = "settings" then
         node = CreateObject("roSGNode", "SettingsScreen")
         node.observeField("reloadRequested", "onSettingsReload")
+        node.observeField("focusUpRequested", "onScreenFocusUp")
         m.currentScreenNode = node
-        m.sidebarMenu.selectedIndex = 7
     end if
 
     if m.currentScreenNode <> invalid then
         m.screensContainer.appendChild(m.currentScreenNode)
-        m.currentScreenNode.setFocus(true)
+        if m.topNavBar = invalid or not m.topNavBar.hasFocus() then
+            m.currentScreenNode.setFocus(true)
+        end if
     end if
 
-    ' Atualiza visibilidade da barra lateral (oculta no player de VOD e Live em tela cheia)
-    if screenName = "player" or (screenName = "live" and not m.sidebarMenu.isExpanded) then
-        m.sidebarMenu.visible = false
+    ' Atualiza visibilidade da barra de navegação (oculta no player de VOD e Live em tela cheia)
+    if screenName = "player" or screenName = "live" then
+        m.topNavBar.visible = false
     else
-        m.sidebarMenu.visible = true
+        m.topNavBar.visible = true
+        m.topNavBar.selectedIndex = screenToNavIndex(screenName)
     end if
 end sub
 
@@ -314,17 +324,28 @@ sub tuneChannelByName(channelName as String)
     switchScreen("live", { channelIndex: 0 })
 end sub
 
-' ----- Sidebar Menu -----
+' ----- Top Navigation Bar (TV Box style) -----
 
-sub onSidebarSelected(evt as Object)
+sub onTopNavSelected(evt as Object)
     itemKey = evt.getData()
-    m.sidebarMenu.isExpanded = false
     if m.currentScreenName <> itemKey then
         switchScreen(itemKey)
     else
         if m.currentScreenNode <> invalid then
             m.currentScreenNode.setFocus(true)
         end if
+    end if
+end sub
+
+sub onFocusDownFromNav()
+    if m.currentScreenNode <> invalid then
+        m.currentScreenNode.setFocus(true)
+    end if
+end sub
+
+sub onScreenFocusUp()
+    if m.topNavBar <> invalid and m.topNavBar.visible then
+        m.topNavBar.setFocus(true)
     end if
 end sub
 
@@ -385,38 +406,29 @@ end sub
 function onKeyEvent(key as String, press as Boolean) as Boolean
     if not press then return false
 
-    ' Se a barra lateral está expandida
-    if m.sidebarMenu.isExpanded then
-        if key = "right" then
-            m.sidebarMenu.isExpanded = false
-            if m.currentScreenNode <> invalid then m.currentScreenNode.setFocus(true)
-            return true
+    ' Se o foco está na barra superior
+    if m.topNavBar <> invalid and m.topNavBar.hasFocus() then
+        if key = "down" then
+            if m.currentScreenNode <> invalid then
+                m.currentScreenNode.setFocus(true)
+                return true
+            end if
         else if key = "back" then
-            m.sidebarMenu.isExpanded = false
-            if m.currentScreenNode <> invalid then m.currentScreenNode.setFocus(true)
-            return true
+            if m.currentScreenName <> "home" then
+                switchScreen("home")
+                return true
+            end if
         end if
         return false
     end if
 
-    ' Se o usuário pressiona "left" e não está em Player de vídeo
-    if key = "left" and m.currentScreenName <> "player" then
-        m.sidebarMenu.visible = true
-        m.sidebarMenu.isExpanded = true
-        m.sidebarMenu.setFocus(true)
-        return true
-    end if
-
-    ' Botão Voltar (Back)
+    ' Botão Voltar (Back) retorna para Início (como no TV Box)
     if key = "back" then
-        if m.currentScreenName <> "home" then
+        if m.currentScreenName <> "home" and m.currentScreenName <> "player" then
             switchScreen("home")
-            if m.currentScreenNode <> invalid then m.currentScreenNode.setFocus(true)
             return true
-        else if not m.sidebarMenu.isExpanded then
-            m.sidebarMenu.visible = true
-            m.sidebarMenu.isExpanded = true
-            m.sidebarMenu.setFocus(true)
+        else if m.currentScreenName = "home" and m.topNavBar <> invalid and m.topNavBar.visible then
+            m.topNavBar.setFocus(true)
             return true
         end if
     end if

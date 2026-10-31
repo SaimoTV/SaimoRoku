@@ -91,7 +91,15 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
         if m.guideChannelList <> invalid then m.guideChannelList.setFocus(true)
     end if
 
-    if key = "right" and m.guideChannelList.isInFocusChain() then
+    if key = "up" then
+        if m.guideChannelList.isInFocusChain() and m.guideChannelList.itemFocused <= 0 then
+            m.top.focusUpRequested = true
+            return true
+        else if m.scheduleList.isInFocusChain() and m.scheduleList.itemFocused <= 0 then
+            m.top.focusUpRequested = true
+            return true
+        end if
+    else if key = "right" and m.guideChannelList.isInFocusChain() then
         if m.scheduleList.content <> invalid and m.scheduleList.content.getChildCount() > 0 then
             m.scheduleList.setFocus(true)
             return true
@@ -100,7 +108,7 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
         m.guideChannelList.setFocus(true)
         return true
     else if key = "left" and m.guideChannelList.isInFocusChain() then
-        return false ' bubbles to MainScene to open sidebar
+        return true
     else if key = "back" then
         if m.scheduleList.isInFocusChain() then
             m.guideChannelList.setFocus(true)

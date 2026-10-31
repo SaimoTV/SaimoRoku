@@ -41,7 +41,7 @@ sub onItemChange()
 
     year = "2026"
     if item.year <> invalid and item.year <> "" then year = item.year
-    m.metaLabel.text = year + " • Full HD • ★ 8.5"
+    m.metaLabel.text = year + " • Full HD • Classificação Livre"
 
     if item.genres <> invalid then
         m.genresLabel.text = item.genres

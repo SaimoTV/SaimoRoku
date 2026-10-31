@@ -96,8 +96,11 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
         if m.settingsList <> invalid then m.settingsList.setFocus(true)
     end if
 
-    if key = "left" then
-        return false ' bubbles to MainScene to open sidebar
+    if key = "up" and m.settingsList.itemFocused <= 0 then
+        m.top.focusUpRequested = true
+        return true
+    else if key = "left" then
+        return true
     else if key = "back" then
         return false ' bubbles to MainScene
     end if

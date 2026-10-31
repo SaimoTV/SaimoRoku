@@ -51,7 +51,7 @@ sub populateChannelList()
         item = content.CreateChild("ContentNode")
         favMark = ""
         if IsChannelFavorite(ch.name) then
-            favMark = "★ "
+            favMark = "[*] "
         end if
         item.title = favMark + ch.number.ToStr() + "   " + ch.name
     end for
@@ -72,7 +72,7 @@ sub onOpenChange()
         m.channelList.numRows = 15
         m.filterQuery = ""
         m.searchKeyboard.text = ""
-        m.searchBarLabel.text = "🔍 Buscar canal... (OK para digitar)"
+        m.searchBarLabel.text = "Buscar canal... (OK para digitar)"
         populateChannelList()
         m.channelList.setFocus(true)
 
@@ -87,9 +87,9 @@ end sub
 sub onSearchTextChanged()
     m.filterQuery = LCase(m.searchKeyboard.text.Trim())
     if m.filterQuery = "" then
-        m.searchBarLabel.text = "🔍 Buscar canal... (OK para digitar)"
+        m.searchBarLabel.text = "Buscar canal... (OK para digitar)"
     else
-        m.searchBarLabel.text = "🔍 " + m.searchKeyboard.text
+        m.searchBarLabel.text = "Buscar: " + m.searchKeyboard.text
     end if
     populateChannelList()
 end sub
@@ -108,8 +108,8 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
 
     ' 1. Foco na Lista de Canais
     if m.focusArea = "list" then
-        if key = "options" then
-            ' Tecla * favorita o canal atual
+        if key = "options" or key = "replay" then
+            ' Tecla * ou Replay favorita o canal atual
             idx = m.channelList.itemFocused
             if idx >= 0 and idx < m.filteredChannels.Count() then
                 ch = m.filteredChannels[idx]
@@ -127,15 +127,10 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
                 m.top.setFocus(true)
                 return true
             end if
-        else if key = "right" or key = "back" then
+        else if key = "right" or key = "back" or key = "left" then
             if m.top.isOpen then
                 m.top.isOpen = false
                 return true
-            end if
-        else if key = "left" then
-            if m.top.isOpen then
-                m.top.isOpen = false
-                return false ' Bubbles para MainScene abrir menu lateral
             end if
         end if
 
@@ -155,15 +150,10 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
             m.channelList.numRows = 9
             m.searchKeyboard.setFocus(true)
             return true
-        else if key = "right" or key = "back" then
+        else if key = "right" or key = "back" or key = "left" then
             if m.top.isOpen then
                 m.top.isOpen = false
                 return true
-            end if
-        else if key = "left" then
-            if m.top.isOpen then
-                m.top.isOpen = false
-                return false
             end if
         end if
 

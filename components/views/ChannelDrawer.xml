@@ -17,11 +17,11 @@
       <Label translation="[24, 20]" text="Canais Ao Vivo" font="font:LargeBoldSystemFont" color="#FFFFFF" />
       <Label id="countLabel" translation="[24, 62]" text="0 canais disponíveis" font="font:SmallSystemFont" color="#4FE3D0" />
 
-      <!-- Barra de Busca (Acesso Rápido com ▲ do canal 1) -->
+      <!-- Barra de Busca (Acesso Rápido com [Cima] do canal 1) -->
       <Group id="searchBarGroup" translation="[20, 92]">
         <Rectangle id="searchBarBorder" translation="[-2, -2]" width="464" height="44" color="#4FE3D0" visible="false" />
         <Rectangle id="searchBarBg" width="460" height="40" color="#1e293b" />
-        <Label id="searchBarLabel" translation="[14, 10]" width="432" text="🔍 Buscar canal... (OK para digitar)" font="font:SmallSystemFont" color="#94a3b8" />
+        <Label id="searchBarLabel" translation="[14, 10]" width="432" text="Buscar canal... (OK para digitar)" font="font:SmallSystemFont" color="#94a3b8" />
       </Group>
 
       <!-- Mini Teclado de Busca Embutido -->
@@ -36,13 +36,14 @@
         itemSize="[460, 54]"
         itemSpacing="[0, 4]"
         numRows="15"
+        wrap="false"
         color="#94a3b8"
         focusedColor="#4FE3D0"
       />
 
       <!-- Rodapé de Ajuda -->
       <Rectangle translation="[20, 1024]" width="460" height="40" color="#111827" />
-      <Label translation="[28, 1034]" text="[OK] Assistir  •  [*] Favoritar  •  ▲ Buscar  •  ▶ Fechar" font="font:SmallSystemFont" color="#94a3b8" />
+      <Label translation="[28, 1034]" text="[OK] Assistir  |  [*] ou [Replay] Favoritar  |  [Cima] Buscar" font="font:SmallSystemFont" color="#94a3b8" />
     </Group>
   </children>
 

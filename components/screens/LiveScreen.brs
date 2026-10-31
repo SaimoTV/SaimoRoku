@@ -22,6 +22,9 @@ sub init()
     m.favoriteToastTimer = m.top.findNode("favoriteToastTimer")
     m.favoriteToastTimer.observeField("fire", "onFavoriteToastTimer")
 
+    m.currentVariantIndex = 0
+    m.tryingProxy = false
+
     m.numberBuffer = ""
     m.numberTimer = CreateObject("roSGNode", "Timer")
     m.numberTimer.duration = 1.2
@@ -44,9 +47,9 @@ end sub
 
 sub showFavoriteToast(channelName as String, isFav as Boolean)
     if isFav then
-        m.favoriteToastText.text = "★ " + channelName + " nos Favoritos"
+        m.favoriteToastText.text = "[*] " + channelName + " nos Favoritos"
     else
-        m.favoriteToastText.text = "☆ " + channelName + " removido dos Favoritos"
+        m.favoriteToastText.text = "[-] " + channelName + " removido dos Favoritos"
     end if
     m.favoriteToast.visible = true
     m.favoriteToastTimer.control = "stop"
@@ -103,21 +106,59 @@ sub playChannel(index as Integer)
         end if
     end if
 
-    if ch.variants <> invalid and ch.variants.Count() > 0 then
-        variantUrl = ch.variants[0].url
+    m.currentVariantIndex = 0
+    m.tryingProxy = false
+    playCurrentVariant()
+    updateHUDInfo()
+end sub
 
-        content = CreateObject("roSGNode", "ContentNode")
-        content.url = variantUrl
-        content.title = ch.name
-        content.streamFormat = "hls"
-        content.live = true
+sub playCurrentVariant()
+    channels = m.top.channels
+    if channels = invalid or m.top.currentChannelIndex >= channels.Count() then return
+    ch = channels[m.top.currentChannelIndex]
+    if ch.variants = invalid or ch.variants.Count() = 0 then return
 
-        m.bufferingGroup.visible = true
-        m.liveVideo.content = content
-        m.liveVideo.control = "play"
-
-        updateHUDInfo()
+    if m.currentVariantIndex >= ch.variants.Count() then
+        ' Todas as fontes foram esgotadas
+        m.bufferingGroup.visible = false
+        m.zapHud.channelName = ch.name + " (Sem sinal)"
+        return
     end if
+
+    v = ch.variants[m.currentVariantIndex]
+    rawUrl = v.url
+    if rawUrl = invalid or rawUrl = "" then
+        tryNextVariant()
+        return
+    end if
+
+    playUrl = rawUrl
+    hasReferer = (v.referer <> invalid and v.referer <> "")
+    isTxt = (Instr(1, LCase(rawUrl), ".txt") > 0)
+
+    ' Se está no modo proxy, ou se a fonte obrigatoriamente precisa de proxy
+    if m.tryingProxy or hasReferer or isTxt then
+        ut = CreateObject("roUrlTransfer")
+        playUrl = "https://saimo-tv.pages.dev/api/proxy?url=" + ut.Escape(rawUrl)
+        if hasReferer then playUrl = playUrl + "&referer=" + ut.Escape(v.referer)
+        if v.userAgent <> invalid and v.userAgent <> "" then playUrl = playUrl + "&ua=" + ut.Escape(v.userAgent)
+    end if
+
+    content = CreateObject("roSGNode", "ContentNode")
+    content.url = playUrl
+    content.title = ch.name
+    content.streamFormat = "hls"
+    content.live = true
+    content.HttpSendClientHeaders = true
+
+    headers = []
+    if hasReferer then headers.Push("Referer: " + v.referer)
+    if v.userAgent <> invalid and v.userAgent <> "" then headers.Push("User-Agent: " + v.userAgent)
+    if headers.Count() > 0 then content.HttpHeaders = headers
+
+    m.bufferingGroup.visible = true
+    m.liveVideo.content = content
+    m.liveVideo.control = "play"
 end sub
 
 sub onPinUnlocked()
@@ -170,16 +211,21 @@ end sub
 
 sub tryNextVariant()
     channels = m.top.channels
-    if channels = invalid then return
+    if channels = invalid or m.top.currentChannelIndex >= channels.Count() then return
     ch = channels[m.top.currentChannelIndex]
-    if ch <> invalid and ch.variants <> invalid and ch.variants.Count() > 1 then
-        content = CreateObject("roSGNode", "ContentNode")
-        content.url = ch.variants[1].url
-        content.streamFormat = "hls"
-        content.live = true
-        m.liveVideo.content = content
-        m.liveVideo.control = "play"
+    if ch.variants = invalid then return
+
+    ' Se ainda não tentou a fonte atual via proxy, tenta via proxy antes de avançar para a próxima fonte
+    if not m.tryingProxy then
+        m.tryingProxy = true
+        playCurrentVariant()
+        return
     end if
+
+    ' Avança para a próxima fonte da lista
+    m.currentVariantIndex = m.currentVariantIndex + 1
+    m.tryingProxy = false
+    playCurrentVariant()
 end sub
 
 sub onDrawerSelect()
@@ -199,7 +245,10 @@ end sub
 sub onNumberTimerFired()
     if m.numberBuffer <> "" then
         targetNum = Val(m.numberBuffer)
-        m.numberBuffer = ""
+        m.currentVariantIndex = 0
+    m.tryingProxy = false
+
+    m.numberBuffer = ""
         channels = m.top.channels
         if channels <> invalid then
             for i = 0 to channels.Count() - 1
@@ -234,8 +283,8 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
         return true
     end if
 
-    ' Botão * (Options) para favoritar / desfavoritar canal
-    if key = "options" then
+    ' Botão * (Options) ou Replay para favoritar / desfavoritar canal
+    if key = "options" or key = "replay" then
         channels = m.top.channels
         if channels <> invalid and m.top.currentChannelIndex < channels.Count() then
             ch = channels[m.top.currentChannelIndex]

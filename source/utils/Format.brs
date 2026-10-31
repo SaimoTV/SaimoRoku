@@ -35,3 +35,8 @@ function StringStartsWith(str as String, prefix as String) as Boolean
     if Len(prefix) > Len(str) then return false
     return Left(str, Len(prefix)) = prefix
 end function
+
+function UrlEncode(raw as String) as String
+    ut = CreateObject("roUrlTransfer")
+    return ut.Escape(raw)
+end function

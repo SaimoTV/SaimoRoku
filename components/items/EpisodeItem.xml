@@ -3,23 +3,27 @@
   <interface>
     <field id="itemContent" type="node" onChange="onItemContentChange" />
     <field id="width" type="float" value="300" />
-    <field id="height" type="float" value="230" />
+    <field id="height" type="float" value="240" />
     <field id="rowFocusPercent" type="float" onChange="onFocusChange" />
   </interface>
 
   <children>
-    <!-- Borda de Foco Dinâmica -->
-    <Rectangle id="focusBorder" translation="[-3, -3]" width="306" height="175" color="#4FE3D0" visible="false" />
+    <!-- Foco de Borda Dinâmica -->
+    <Rectangle id="focusBorder" translation="[-3, -3]" width="306" height="166" color="#4FE3D0" visible="false" />
+
+    <!-- Fundo da Thumbnail -->
+    <Rectangle width="300" height="160" color="#1e293b" />
 
     <!-- Thumbnail 16:9 em alta definição -->
-    <Poster id="thumb" width="300" height="169" loadDisplayMode="scaleToZoom" />
+    <Poster id="thumb" width="300" height="160" loadDisplayMode="scaleToZoom" />
 
-    <!-- Badge do episódio -->
-    <Rectangle translation="[0, 137]" width="300" height="32" color="#000000C0" />
-    <Label id="epBadge" translation="[10, 143]" width="280" font="font:SmallBoldSystemFont" color="#4FE3D0" />
+    <!-- Badge do episódio sobre a miniatura -->
+    <Rectangle translation="[0, 126]" width="300" height="34" color="#000000B0" />
+    <Label id="epBadge" translation="[10, 132]" width="280" font="font:SmallBoldSystemFont" color="#4FE3D0" />
 
     <!-- Título do Episódio abaixo da miniatura -->
-    <Label id="title" translation="[0, 178]" width="300" font="font:SmallSystemFont" color="#cbd5e1" numLines="2" wrap="true" />
+    <Label id="title" translation="[4, 168]" width="292" height="34" font="font:SmallBoldSystemFont" color="#FFFFFF" numLines="1" />
+    <Label id="subInfo" translation="[4, 202]" width="292" height="26" font="font:SmallSystemFont" color="#94a3b8" text="Full HD • Áudio Dublado" />
   </children>
 
   <script type="text/brightscript" uri="pkg:/components/items/EpisodeItem.brs" />

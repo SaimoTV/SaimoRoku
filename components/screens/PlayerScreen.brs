@@ -1,6 +1,6 @@
 ' ====================================================================
 ' Saimo TV - PlayerScreen (BrightScript)
-' Player nativo de VOD, controle de progresso e auto-skip
+' Player nativo de VOD, controle de progresso, fallbacks e proxy
 ' ====================================================================
 
 sub init()
@@ -10,6 +10,11 @@ sub init()
     m.errorLabel = m.top.findNode("errorLabel")
     m.playerOsd = m.top.findNode("playerOsd")
     m.progressTimer = m.top.findNode("progressTimer")
+
+    m.candidateUrls = []
+    m.candidateIdx = 0
+    m.tryingProxy = false
+    m.resumePos = 0
 
     m.videoPlayer.observeField("state", "onVideoState")
     m.videoPlayer.observeField("position", "onVideoPosition")
@@ -39,9 +44,16 @@ sub onPlayItemChange()
         m.playerOsd.isSeries = false
     end if
 
+    m.candidateUrls = []
+    m.candidateIdx = 0
+    m.tryingProxy = false
+    m.resumePos = 0
+    if item.resumePos <> invalid then m.resumePos = item.resumePos
+
     ' Se já tem URL direta, toca imediatamente
     if item.url <> invalid and item.url <> "" then
-        startPlayback(item.url, item.resumePos)
+        m.candidateUrls = [item.url]
+        playCandidate(0, false)
     else
         ' Resolve a URL usando StreamResolverTask
         m.resolverTask = CreateObject("roSGNode", "StreamResolverTask")
@@ -53,9 +65,76 @@ end sub
 
 sub onStreamResolved(evt as Object)
     resolved = evt.getData()
-    if resolved <> invalid and resolved.url <> invalid and resolved.url <> "" then
-        startPlayback(resolved.url, resolved.resumePos)
+    if resolved <> invalid and resolved.candidateUrls <> invalid and resolved.candidateUrls.Count() > 0 then
+        m.candidateUrls = resolved.candidateUrls
+        m.candidateIdx = 0
+        m.tryingProxy = false
+        if resolved.resumePos <> invalid then m.resumePos = resolved.resumePos
+        playCandidate(0, false)
+    else if resolved <> invalid and resolved.url <> invalid and resolved.url <> "" then
+        m.candidateUrls = [resolved.url]
+        m.candidateIdx = 0
+        m.tryingProxy = false
+        if resolved.resumePos <> invalid then m.resumePos = resolved.resumePos
+        playCandidate(0, false)
     else
+        m.bufferingGroup.visible = false
+        m.errorLabel.text = "Vídeo indisponível no momento"
+        m.errorGroup.visible = true
+    end if
+end sub
+
+sub playCandidate(idx as Integer, useProxy as Boolean)
+    if m.candidateUrls = invalid or idx >= m.candidateUrls.Count() then
+        m.bufferingGroup.visible = false
+        m.errorLabel.text = "Vídeo indisponível no momento"
+        m.errorGroup.visible = true
+        return
+    end if
+
+    rawUrl = m.candidateUrls[idx]
+    if rawUrl = invalid or rawUrl = "" then
+        tryNextCandidate()
+        return
+    end if
+
+    playUrl = rawUrl
+    isTxt = (Instr(1, LCase(rawUrl), ".txt") > 0)
+
+    ' Se está no modo proxy ou é .txt e ainda não está com api/proxy
+    if (useProxy or isTxt) and Instr(1, playUrl, "api/proxy") = 0 then
+        ut = CreateObject("roUrlTransfer")
+        playUrl = "https://saimo-tv.pages.dev/api/proxy?url=" + ut.Escape(rawUrl)
+    end if
+
+    startPlayback(playUrl, m.resumePos)
+end sub
+
+sub tryNextCandidate()
+    if m.candidateUrls = invalid or m.candidateUrls.Count() = 0 then
+        m.bufferingGroup.visible = false
+        m.errorLabel.text = "Falha ao reproduzir o vídeo"
+        m.errorGroup.visible = true
+        return
+    end if
+
+    currentUrl = m.candidateUrls[m.candidateIdx]
+
+    ' 1. Tenta a fonte atual via proxy da Cloudflare se ainda não tentou
+    if not m.tryingProxy and Instr(1, currentUrl, "api/proxy") = 0 then
+        m.tryingProxy = true
+        playCandidate(m.candidateIdx, true)
+        return
+    end if
+
+    ' 2. Se o proxy da fonte atual também falhou, avança para a próxima fonte direta
+    m.candidateIdx = m.candidateIdx + 1
+    m.tryingProxy = false
+
+    if m.candidateIdx < m.candidateUrls.Count() then
+        playCandidate(m.candidateIdx, false)
+    else
+        ' Esgotou todos os candidatos
         m.bufferingGroup.visible = false
         m.errorLabel.text = "Vídeo indisponível no momento"
         m.errorGroup.visible = true
@@ -66,9 +145,10 @@ sub startPlayback(streamUrl as String, resumePos as Dynamic)
     content = CreateObject("roSGNode", "ContentNode")
     content.url = streamUrl
     content.title = m.playerOsd.title
+    content.HttpHeaders = ["User-Agent: SaimoTV/2.6.0 (RokuOS)"]
 
     lowerUrl = LCase(streamUrl)
-    if Instr(1, lowerUrl, ".m3u8") > 0 or Instr(1, lowerUrl, "master.txt") > 0 or Instr(1, lowerUrl, "/hls/") > 0 then
+    if Instr(1, lowerUrl, ".m3u8") > 0 or Instr(1, lowerUrl, "master.txt") > 0 or Instr(1, lowerUrl, "/hls/") > 0 or Instr(1, lowerUrl, "api/proxy") > 0 then
         content.streamFormat = "hls"
     else if Instr(1, lowerUrl, ".mkv") > 0 then
         content.streamFormat = "mkv"
@@ -103,14 +183,13 @@ sub onVideoState()
             saveCurrentProgress()
             m.top.exitRequested = true
         else
+            ' Vídeo finalizou sem sequer começar -> falha de stream
             m.bufferingGroup.visible = false
-            m.errorLabel.text = "Falha ao carregar o vídeo"
-            m.errorGroup.visible = true
+            tryNextCandidate()
         end if
     else if state = "error" then
         m.bufferingGroup.visible = false
-        m.errorLabel.text = "Falha ao reproduzir o vídeo"
-        m.errorGroup.visible = true
+        tryNextCandidate()
     end if
 end sub
 

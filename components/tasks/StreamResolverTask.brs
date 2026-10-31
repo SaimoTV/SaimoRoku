@@ -1,6 +1,7 @@
 ' ====================================================================
 ' Saimo TV - StreamResolverTask (BrightScript)
 ' Resolução ultra-rápida de URLs de streaming para filmes e séries
+' Suporte a múltiplas fontes, proxy automático para .txt e fallbacks
 ' ====================================================================
 
 sub init()
@@ -33,27 +34,43 @@ sub resolveStream()
     ' Bases do índice
     bases = getIndiceBases()
 
-    streamUrl = ""
+    candidatesList = []
 
     if isSeries then
-        streamUrl = resolveSeriesStream(title, letter, season, episode, bases)
+        candidatesList = resolveSeriesStream(title, letter, season, episode, bases)
     else
-        streamUrl = resolveMovieStream(title, letter, bases)
+        candidatesList = resolveMovieStream(title, letter, bases)
     end if
 
-    ' Se não encontrou stream em MP4/HLS direto, tenta o endpoint da API se houver id
-    if streamUrl = "" and item <> invalid and item.id <> invalid and item.id.ToStr() <> "" then
+    ' Se não encontrou no catálogo ou precisa de fonte extra, consulta api/stream por id TMDB
+    if item <> invalid and item.id <> invalid and item.id.ToStr() <> "" and item.id.ToStr() <> "0" then
         tipoReq = "movie"
         if isSeries then tipoReq = "series"
         apiUrl = "https://saimo-tv.pages.dev/api/stream?tipo=" + tipoReq + "&id=" + item.id.ToStr() + "&versao=dub"
         if isSeries then apiUrl = apiUrl + "&s=" + season.ToStr() + "&e=" + episode.ToStr()
         resolvedUrl = buildCandidateUrl(apiUrl, bases)
-        if resolvedUrl <> "" then streamUrl = resolvedUrl
+        if resolvedUrl <> "" then
+            ' Adiciona à lista se ainda não estiver nela
+            alreadyIn = false
+            for each c in candidatesList
+                if c = resolvedUrl then
+                    alreadyIn = true
+                    exit for
+                end if
+            end for
+            if not alreadyIn then candidatesList.Push(resolvedUrl)
+        end if
+    end if
+
+    streamUrl = ""
+    if candidatesList.Count() > 0 then
+        streamUrl = candidatesList[0]
     end if
 
     resolved = {
         title: title,
         url: streamUrl,
+        candidateUrls: candidatesList,
         isSeries: isSeries,
         season: season,
         episode: episode,
@@ -118,7 +135,8 @@ function getIndiceBases() as Object
     return bases
 end function
 
-function resolveMovieStream(title as String, letter as String, bases as Object) as String
+function resolveMovieStream(title as String, letter as String, bases as Object) as Object
+    results = []
     url = "https://filmes-saimo.pages.dev/filmes-" + letter + ".txt"
     ut = CreateObject("roUrlTransfer")
     ut.SetUrl(url)
@@ -126,7 +144,7 @@ function resolveMovieStream(title as String, letter as String, bases as Object) 
     ut.AddHeader("User-Agent", "SaimoTV/2.6.0 (RokuOS)")
     ut.RetainBodyOnError(true)
     text = ut.GetToString()
-    if text = "" then return ""
+    if text = "" then return results
 
     lines = text.Split(Chr(10))
     cleanTitle = LCase(title.Trim())
@@ -163,11 +181,11 @@ function resolveMovieStream(title as String, letter as String, bases as Object) 
         end for
     end if
 
-    if targetLine = "" then return ""
+    if targetLine = "" then return results
 
     ' Extrai URLs das fontes (dub ou leg)
     parts = targetLine.Split(Chr(9))
-    if parts.Count() < 2 then return ""
+    if parts.Count() < 2 then return results
 
     for p = 1 to parts.Count() - 1
         part = parts[p]
@@ -178,15 +196,19 @@ function resolveMovieStream(title as String, letter as String, bases as Object) 
             for each c in candidates
                 cand = c.Trim()
                 resolved = buildCandidateUrl(cand, bases)
-                if resolved <> "" then return resolved
+                if resolved <> "" then
+                    results.Push(resolved)
+                end if
             end for
         end if
     end for
 
-    return ""
+    return results
 end function
 
-function resolveSeriesStream(title as String, letter as String, season as Integer, episode as Integer, bases as Object) as String
+function resolveSeriesStream(title as String, letter as String, season as Integer, episode as Integer, bases as Object) as Object
+    results = []
+
     ' 1. Busca índice de pedaços da série em series-<letra>.txt
     url = "https://filmes-saimo.pages.dev/series-" + letter + ".txt"
     ut = CreateObject("roUrlTransfer")
@@ -247,7 +269,9 @@ function resolveSeriesStream(title as String, letter as String, season as Intege
                         for each c in candidates
                             cand = c.Trim()
                             resolved = buildCandidateUrl(cand, bases)
-                            if resolved <> "" then return resolved
+                            if resolved <> "" then
+                                results.Push(resolved)
+                            end if
                         end for
                     end if
                 end if
@@ -255,16 +279,18 @@ function resolveSeriesStream(title as String, letter as String, season as Intege
         end for
     end if
 
+    if results.Count() > 0 then return results
+
     ' 3. Se não achou, tenta em animes e doramas
     animeUrl = "https://filmes-saimo.pages.dev/redeflix/links-animes.txt"
     resolvedAnime = findInRedeflix(animeUrl, cleanTitle, season, episode, bases)
-    if resolvedAnime <> "" then return resolvedAnime
+    if resolvedAnime.Count() > 0 then return resolvedAnime
 
     doramaUrl = "https://filmes-saimo.pages.dev/redeflix/links-doramas.txt"
     resolvedDorama = findInRedeflix(doramaUrl, cleanTitle, season, episode, bases)
-    if resolvedDorama <> "" then return resolvedDorama
+    if resolvedDorama.Count() > 0 then return resolvedDorama
 
-    return ""
+    return results
 end function
 
 function buildCandidateUrl(cand as String, bases as Object) as String
@@ -288,15 +314,26 @@ function buildCandidateUrl(cand as String, bases as Object) as String
         if respText <> "" then
             parsed = ParseJson(respText)
             if parsed <> invalid and parsed.url <> invalid and parsed.url <> "" then
-                return parsed.url
+                finalUrl = parsed.url
+                ' Se a URL final termina em .txt, passa pelo proxy da Cloudflare
+                if Instr(1, LCase(finalUrl), ".txt") > 0 and Instr(1, finalUrl, "api/proxy") = 0 then
+                    ut = CreateObject("roUrlTransfer")
+                    finalUrl = "https://saimo-tv.pages.dev/api/proxy?url=" + ut.Escape(finalUrl)
+                end if
+                return finalUrl
             end if
         end if
-        ' Se a rota api/stream falhou (ex: 404 sem stream), retorna vazio para testar o próximo candidato da lista
         return ""
     end if
 
     if Left(cand, 7) = "http://" or Left(cand, 8) = "https://" then
-        return cand
+        finalUrl = cand
+        ' Se termina em .txt (ex: master.txt de embedplayer2), usa proxy Cloudflare para converter text/plain -> mpegurl
+        if Instr(1, LCase(finalUrl), ".txt") > 0 and Instr(1, finalUrl, "api/proxy") = 0 then
+            ut = CreateObject("roUrlTransfer")
+            finalUrl = "https://saimo-tv.pages.dev/api/proxy?url=" + ut.Escape(finalUrl)
+        end if
+        return finalUrl
     end if
 
     colonIdx = Instr(1, cand, ":")
@@ -310,6 +347,10 @@ function buildCandidateUrl(cand as String, bases as Object) as String
                 if Instr(1, streamPath, ".") = 0 then
                     res = res + ".mp4"
                 end if
+                if Instr(1, LCase(res), ".txt") > 0 and Instr(1, res, "api/proxy") = 0 then
+                    ut = CreateObject("roUrlTransfer")
+                    res = "https://saimo-tv.pages.dev/api/proxy?url=" + ut.Escape(res)
+                end if
                 return res
             end if
         end if
@@ -318,14 +359,15 @@ function buildCandidateUrl(cand as String, bases as Object) as String
     return ""
 end function
 
-function findInRedeflix(url as String, cleanTitle as String, season as Integer, episode as Integer, bases as Object) as String
+function findInRedeflix(url as String, cleanTitle as String, season as Integer, episode as Integer, bases as Object) as Object
+    results = []
     ut = CreateObject("roUrlTransfer")
     ut.SetUrl(url)
     ut.SetCertificatesFile("common:/certs/ca-bundle.crt")
     ut.AddHeader("User-Agent", "SaimoTV/2.6.0 (RokuOS)")
     ut.RetainBodyOnError(true)
     text = ut.GetToString()
-    if text = "" then return ""
+    if text = "" then return results
 
     lines = text.Split(Chr(10))
     inSeries = false
@@ -351,12 +393,14 @@ function findInRedeflix(url as String, cleanTitle as String, season as Integer, 
                     candidates = urlsStr.Split(",")
                     for each c in candidates
                         resolved = buildCandidateUrl(c.Trim(), bases)
-                        if resolved <> "" then return resolved
+                        if resolved <> "" then
+                            results.Push(resolved)
+                        end if
                     end for
                 end if
             end if
         end if
     end for
 
-    return ""
+    return results
 end function

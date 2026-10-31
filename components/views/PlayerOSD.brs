@@ -24,9 +24,9 @@ end sub
 
 sub onStateChange()
     if m.top.isPlaying then
-        m.btnPlayPause.text = "⏸ Pausar"
+        m.btnPlayPause.text = "[OK] Pausar"
     else
-        m.btnPlayPause.text = "▶ Reproduzir"
+        m.btnPlayPause.text = "[OK] Reproduzir"
     end if
 end sub
 

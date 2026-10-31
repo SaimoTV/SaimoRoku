@@ -5,17 +5,18 @@
     <field id="railsData" type="array" onChange="onRailsChange" />
     <field id="itemSelected" type="assocarray" alwaysNotify="true" />
     <field id="playRequested" type="assocarray" alwaysNotify="true" />
+    <field id="focusUpRequested" type="boolean" alwaysNotify="true" />
   </interface>
 
   <children>
     <!-- Banner de Destaque -->
-    <HeroBanner id="heroBanner" translation="[80, 0]" />
+    <HeroBanner id="heroBanner" translation="[80, 80]" />
 
     <!-- Trilhos Horizontais de Conteúdo (RowList) -->
     <RowList
       id="contentRowList"
       itemComponentName="PosterItem"
-      translation="[80, 480]"
+      translation="[80, 500]"
       itemSize="[1760, 290]"
       rowItemSize="[[160, 280]]"
       rowItemSpacing="[[20, 0]]"

@@ -5,34 +5,30 @@
     <field id="vodItems" type="array" />
     <field id="itemSelected" type="assocarray" alwaysNotify="true" />
     <field id="tuneRequested" type="assocarray" alwaysNotify="true" />
+    <field id="focusUpRequested" type="boolean" alwaysNotify="true" />
   </interface>
 
   <children>
     <Rectangle width="1920" height="1080" color="#0b0e14" />
 
-    <!-- Topo -->
-    <Group translation="[100, 40]">
-      <Label text="Buscar no Saimo TV" font="font:LargeBoldSystemFont" color="#FFFFFF" />
-      <Label translation="[0, 45]" text="Pesquise por canais ao vivo, filmes, séries ou animes" font="font:SmallSystemFont" color="#94a3b8" />
-    </Group>
-
-    <!-- Teclado Roku Nativo à Esquerda (MiniKeyboard compacto para busca lado a lado) -->
-    <Group translation="[100, 140]">
-      <MiniKeyboard id="searchKeyboard" />
+    <!-- Teclado Roku Nativo à Esquerda (MiniKeyboard com largura total de 576px) -->
+    <Group translation="[80, 110]">
+      <Label text="DIGITE PARA BUSCAR" font="font:SmallBoldSystemFont" color="#4FE3D0" />
+      <MiniKeyboard id="searchKeyboard" translation="[0, 36]" />
     </Group>
 
     <!-- Resultados à Direita -->
-    <Group translation="[680, 140]">
-      <Rectangle width="1140" height="880" color="#111827" />
-      <Rectangle width="1140" height="3" color="#4FE3D0" />
+    <Group translation="[720, 110]">
+      <Rectangle width="1120" height="920" color="#111827" />
+      <Rectangle width="1120" height="3" color="#4FE3D0" />
       <Label id="resultsHeader" translation="[30, 20]" text="RESULTADOS" font="font:SmallBoldSystemFont" color="#4FE3D0" />
 
       <LabelList
         id="resultsList"
         translation="[20, 60]"
-        itemSize="[1100, 60]"
+        itemSize="[1080, 56]"
         itemSpacing="[0, 6]"
-        numRows="13"
+        numRows="14"
         color="#94a3b8"
         focusedColor="#4FE3D0"
       />

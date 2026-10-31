@@ -1,5 +1,6 @@
 ' ====================================================================
 ' Saimo TV - VodScreen (BrightScript)
+' Acervo de Filmes, Séries, Animes e Doramas estilo TV Box
 ' ====================================================================
 
 sub init()
@@ -9,8 +10,8 @@ sub init()
     m.vodPosterGrid.observeField("itemSelected", "onPosterSelected")
     m.currentCategoryIdx = 0
     m.focusArea = "chips" ' "chips" ou "grid"
-    m.categories = ["Filmes", "Séries", "Animes", "Doramas"]
-    m.chipColors = ["#4FE3D0", "#7AA2FF", "#FFB454", "#FF7EB6"]
+    m.categories = ["Todos", "Filmes", "Séries", "Animes", "Doramas"]
+    m.chipColors = ["#4FE3D0", "#7AA2FF", "#FFB454", "#A78BFA", "#FF7EB6"]
     m.top.observeField("focusedChild", "onFocusedChildChange")
     updateChipStyles()
 end sub
@@ -45,7 +46,7 @@ sub onCategoryChange()
 end sub
 
 sub updateChipStyles()
-    for i = 0 to 3
+    for i = 0 to 4
         bg = m.top.findNode("chipBg_" + i.ToStr())
         txt = m.top.findNode("chipText_" + i.ToStr())
         border = m.top.findNode("chipBorder_" + i.ToStr())
@@ -66,10 +67,10 @@ sub updateChipStyles()
     end for
 
     if m.focusArea = "chips" then
-        m.chipsHint.text = "◀ / ▶ Escolher categoria  •  ▼ [OK] Navegar nos títulos  •  ◀ Menu"
+        m.chipsHint.text = "[Cima] Menu  |  [Baixo] Navegar capas  |  [OK] Assistir"
         m.chipsHint.color = "#4FE3D0"
     else
-        m.chipsHint.text = "[Voltar] Retornar para categorias  •  [OK] Assistir / Detalhes  •  ◀ Menu"
+        m.chipsHint.text = "[Voltar] Categorias  |  [Cima] Categorias  |  [OK] Assistir"
         m.chipsHint.color = "#FFB454"
     end if
 end sub
@@ -90,7 +91,9 @@ sub applyCategoryFilter()
         isAnime = (Instr(1, itCat, "anime") > 0 or Instr(1, itTitle, "anime") > 0)
         isDorama = (Instr(1, itCat, "dorama") > 0 or Instr(1, itTitle, "dorama") > 0)
 
-        if cat = "Filmes" then
+        if cat = "Todos" then
+            filtered.Push(it)
+        else if cat = "Filmes" then
             if not it.isSeries and not isAnime and not isDorama then
                 filtered.Push(it)
             end if
@@ -110,10 +113,10 @@ sub applyCategoryFilter()
     end for
 
     m.filteredList = filtered
-    m.vodCountLabel.text = filtered.Count().ToStr() + " títulos em " + cat
+    m.vodCountLabel.text = Str(filtered.Count()).Trim() + " títulos"
 
-    ' Limita a criação inicial de ContentNodes para fluidez instantânea
-    maxNodes = 140
+    ' Cria ContentNodes para exibição rápida e fluida
+    maxNodes = 200
     if filtered.Count() < maxNodes then maxNodes = filtered.Count()
 
     root = CreateObject("roSGNode", "ContentNode")
@@ -157,17 +160,16 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
                 updateChipStyles()
                 return true
             end if
-        else if key = "left" then
-            ' Se estiver na coluna da esquerda, abre a barra lateral
-            if m.vodPosterGrid.itemFocused mod 7 = 0 then
-                return false ' Bubbles para MainScene abrir menu lateral
-            end if
         end if
         return false
 
     ' Se o foco está nos chips de categoria
     else if m.focusArea = "chips" then
-        if key = "down" or key = "OK" then
+        if key = "up" then
+            ' Sobe para o menu de abas superior
+            m.top.focusUpRequested = true
+            return true
+        else if key = "down" or key = "OK" then
             if m.filteredList <> invalid and m.filteredList.Count() > 0 then
                 m.focusArea = "grid"
                 m.vodPosterGrid.setFocus(true)
@@ -179,15 +181,11 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
                 m.currentCategoryIdx = m.currentCategoryIdx - 1
                 m.top.selectedCategory = m.categories[m.currentCategoryIdx]
                 return true
-            else
-                return false ' Bubbles para MainScene abrir menu lateral
             end if
         else if key = "right" then
-            if m.currentCategoryIdx < 3 then
+            if m.currentCategoryIdx < 4 then
                 m.currentCategoryIdx = m.currentCategoryIdx + 1
                 m.top.selectedCategory = m.categories[m.currentCategoryIdx]
-                return true
-            else
                 return true
             end if
         else if key = "back" then

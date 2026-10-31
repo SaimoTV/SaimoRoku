@@ -85,7 +85,15 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
         if m.searchKeyboard <> invalid then m.searchKeyboard.setFocus(true)
     end if
 
-    if key = "right" and m.searchKeyboard.isInFocusChain() then
+    if key = "up" then
+        if m.searchKeyboard.isInFocusChain() then
+            m.top.focusUpRequested = true
+            return true
+        else if m.resultsList.isInFocusChain() and m.resultsList.itemFocused <= 0 then
+            m.top.focusUpRequested = true
+            return true
+        end if
+    else if key = "right" and m.searchKeyboard.isInFocusChain() then
         if m.resultsList.content <> invalid and m.resultsList.content.getChildCount() > 0 then
             m.resultsList.setFocus(true)
             return true
@@ -94,7 +102,7 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
         m.searchKeyboard.setFocus(true)
         return true
     else if key = "left" and m.searchKeyboard.isInFocusChain() then
-        return false ' bubbles to MainScene to open sidebar
+        return true
     else if key = "back" then
         if m.resultsList.isInFocusChain() then
             m.searchKeyboard.setFocus(true)

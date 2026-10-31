@@ -4,20 +4,15 @@
     <field id="channels" type="array" onChange="onChannelsChange" />
     <field id="epgMap" type="assocarray" onChange="onEpgChange" />
     <field id="tuneRequested" type="assocarray" alwaysNotify="true" />
+    <field id="focusUpRequested" type="boolean" alwaysNotify="true" />
   </interface>
 
   <children>
     <Rectangle width="1920" height="1080" color="#0b0e14" />
 
-    <!-- Cabeçalho -->
-    <Group translation="[100, 40]">
-      <Label text="Guia de Programação" font="font:LargeBoldSystemFont" color="#FFFFFF" />
-      <Label translation="[0, 45]" text="Programação completa e transmissão ao vivo em tempo real" font="font:SmallSystemFont" color="#94a3b8" />
-    </Group>
-
     <!-- Coluna Esquerda: Canais -->
-    <Group translation="[100, 140]">
-      <Rectangle width="460" height="880" color="#111827" />
+    <Group translation="[80, 100]">
+      <Rectangle width="460" height="920" color="#111827" />
       <Rectangle width="460" height="3" color="#4FE3D0" />
       <Label translation="[24, 20]" text="CANAIS" font="font:SmallBoldSystemFont" color="#4FE3D0" />
 
@@ -26,24 +21,26 @@
         translation="[16, 60]"
         itemSize="[428, 54]"
         itemSpacing="[0, 6]"
-        numRows="13"
+        numRows="14"
+        wrap="false"
         color="#94a3b8"
         focusedColor="#4FE3D0"
       />
     </Group>
 
     <!-- Coluna Direita: Grade do Canal Selecionado -->
-    <Group translation="[580, 140]">
-      <Rectangle width="1240" height="880" color="#111827" />
-      <Rectangle width="1240" height="3" color="#7AA2FF" />
+    <Group translation="[560, 100]">
+      <Rectangle width="1280" height="920" color="#111827" />
+      <Rectangle width="1280" height="3" color="#7AA2FF" />
       <Label id="selectedChannelHeader" translation="[30, 20]" text="PROGRAMAÇÃO" font="font:SmallBoldSystemFont" color="#7AA2FF" />
 
       <LabelList
         id="scheduleList"
         translation="[20, 60]"
-        itemSize="[1200, 64]"
-        itemSpacing="[0, 8]"
-        numRows="12"
+        itemSize="[1240, 56]"
+        itemSpacing="[0, 6]"
+        numRows="13"
+        wrap="false"
         color="#cbd5e1"
         focusedColor="#4FE3D0"
       />
