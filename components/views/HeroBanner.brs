@@ -27,7 +27,10 @@ sub onItemChange()
     if item = invalid then return
 
     m.titleLabel.text = item.title
-    if item.backdrop <> invalid and item.backdrop <> "" then
+    ' Canal não tem capa larga: só limpa o fundo, para o logo não ficar esticado.
+    if item.semFundo = true then
+        m.backdropPoster.uri = ""
+    else if item.backdrop <> invalid and item.backdrop <> "" then
         m.backdropPoster.uri = item.backdrop
     else if item.poster <> invalid and item.poster <> "" then
         m.backdropPoster.uri = item.poster
@@ -36,15 +39,15 @@ sub onItemChange()
     if item.genres <> invalid and item.genres <> "" then
         m.genreLabel.text = item.genres
     else if item.year <> invalid and item.year <> "" then
-        m.genreLabel.text = item.year + " • Filmes e Séries • Full HD"
+        m.genreLabel.text = item.year
     else
-        m.genreLabel.text = "Filmes e Séries • Full HD"
+        m.genreLabel.text = ""
     end if
 
     if item.overview <> invalid and item.overview <> "" then
         m.overviewLabel.text = item.overview
     else
-        m.overviewLabel.text = "Disponível em alta definição com opções de áudio dublado e legendado."
+        m.overviewLabel.text = ""
     end if
 end sub
 

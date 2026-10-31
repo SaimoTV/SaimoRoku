@@ -8,12 +8,12 @@
 
   <children>
     <!-- Fundo da barra superior estilo TV Box -->
-    <Rectangle id="navBg" width="1920" height="74" color="#0b0e14" />
+    <Rectangle id="navBg" width="1920" height="74" color="#0b0e14F0" />
     <Rectangle id="navDivider" translation="[0, 73]" width="1920" height="1" color="#1e293b" />
 
     <!-- Logo no canto esquerdo -->
     <Poster id="navLogo" translation="[40, 16]" width="42" height="42" uri="pkg:/images/icon_hd.png" />
-    <Label id="navLogoText" translation="[92, 24]" text="SAIMO TV" font="font:MediumBoldSystemFont" color="#4FE3D0" />
+    <Label id="navLogoText" translation="[92, 24]" text="SAIMO TV" color="#4FE3D0"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.otf" size="26" /></Label>
 
     <!-- Indicador de foco / seleção ativa (Pill) -->
     <Rectangle id="tabPill" translation="[365, 14]" width="100" height="46" color="#1a2436" />
@@ -22,48 +22,48 @@
     <!-- Abas Horizontais com larguras proporcionais (Sem cortes ...) -->
     <Group id="tabsGroup">
       <!-- 0: Buscar -->
-      <Group id="tab_0" translation="[250, 14]">
-        <Label id="label_0" translation="[0, 11]" width="110" text="Buscar" font="font:SmallBoldSystemFont" color="#94a3b8" horizAlign="center" />
+      <Group id="tab_0" translation="[290, 14]">
+        <Label id="label_0" translation="[0, 10]" width="118" text="Buscar" color="#94a3b8" horizAlign="center"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.otf" size="22" /></Label>
       </Group>
 
       <!-- 1: Início -->
-      <Group id="tab_1" translation="[365, 14]">
-        <Label id="label_1" translation="[0, 11]" width="100" text="Início" font="font:SmallBoldSystemFont" color="#4FE3D0" horizAlign="center" />
+      <Group id="tab_1" translation="[416, 14]">
+        <Label id="label_1" translation="[0, 10]" width="108" text="Início" color="#4FE3D0" horizAlign="center"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.otf" size="22" /></Label>
       </Group>
 
       <!-- 2: Ao Vivo -->
-      <Group id="tab_2" translation="[470, 14]">
-        <Label id="label_2" translation="[0, 11]" width="125" text="Ao Vivo" font="font:SmallBoldSystemFont" color="#94a3b8" horizAlign="center" />
+      <Group id="tab_2" translation="[532, 14]">
+        <Label id="label_2" translation="[0, 10]" width="133" text="Ao Vivo" color="#94a3b8" horizAlign="center"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.otf" size="22" /></Label>
       </Group>
 
       <!-- 3: Eventos -->
-      <Group id="tab_3" translation="[600, 14]">
-        <Label id="label_3" translation="[0, 11]" width="125" text="Eventos" font="font:SmallBoldSystemFont" color="#94a3b8" horizAlign="center" />
+      <Group id="tab_3" translation="[673, 14]">
+        <Label id="label_3" translation="[0, 10]" width="133" text="Eventos" color="#94a3b8" horizAlign="center"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.otf" size="22" /></Label>
       </Group>
 
       <!-- 4: On Demand -->
-      <Group id="tab_4" translation="[730, 14]">
-        <Label id="label_4" translation="[0, 11]" width="165" text="On Demand" font="font:SmallBoldSystemFont" color="#94a3b8" horizAlign="center" />
+      <Group id="tab_4" translation="[814, 14]">
+        <Label id="label_4" translation="[0, 10]" width="163" text="On Demand" color="#94a3b8" horizAlign="center"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.otf" size="22" /></Label>
       </Group>
 
       <!-- 5: Favoritos -->
-      <Group id="tab_5" translation="[900, 14]">
-        <Label id="label_5" translation="[0, 11]" width="150" text="Favoritos" font="font:SmallBoldSystemFont" color="#94a3b8" horizAlign="center" />
+      <Group id="tab_5" translation="[985, 14]">
+        <Label id="label_5" translation="[0, 10]" width="148" text="Favoritos" color="#94a3b8" horizAlign="center"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.otf" size="22" /></Label>
       </Group>
 
       <!-- 6: Rádios -->
-      <Group id="tab_6" translation="[1055, 14]">
-        <Label id="label_6" translation="[0, 11]" width="115" text="Rádios" font="font:SmallBoldSystemFont" color="#94a3b8" horizAlign="center" />
+      <Group id="tab_6" translation="[1141, 14]">
+        <Label id="label_6" translation="[0, 10]" width="123" text="Rádios" color="#94a3b8" horizAlign="center"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.otf" size="22" /></Label>
       </Group>
 
       <!-- 7: Ajustes -->
-      <Group id="tab_7" translation="[1175, 14]">
-        <Label id="label_7" translation="[0, 11]" width="115" text="Ajustes" font="font:SmallBoldSystemFont" color="#94a3b8" horizAlign="center" />
+      <Group id="tab_7" translation="[1272, 14]">
+        <Label id="label_7" translation="[0, 10]" width="133" text="Ajustes" color="#94a3b8" horizAlign="center"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.otf" size="22" /></Label>
       </Group>
     </Group>
 
     <!-- Relógio Digital no Canto Direito -->
-    <Label id="clockLabel" translation="[1780, 24]" text="--:--" font="font:SmallBoldSystemFont" color="#94a3b8" />
+    <Label id="clockLabel" translation="[1780, 24]" text="--:--" color="#94a3b8"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.otf" size="22" /></Label>
     <Timer id="clockTimer" duration="30" repeat="true" />
   </children>
 

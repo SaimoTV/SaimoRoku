@@ -8,45 +8,31 @@
   </interface>
 
   <children>
-    <!-- Backdrop Full-Bleed 1920x540 -->
-    <Poster id="backdropPoster" width="1920" height="540" loadDisplayMode="scaleToZoom" />
+    <!-- Imagem de fundo com degradês para o texto ler bem sobre qualquer capa -->
+    <Poster id="backdropPoster" width="1920" height="640" loadDisplayMode="scaleToZoom" loadWidth="1280" loadHeight="427" />
+    <Poster uri="pkg:/images/degrade_lado.png" width="1920" height="640" />
+    <Poster uri="pkg:/images/degrade_baixo.png" width="1920" height="640" />
 
-    <!-- Camadas de Degrade / Véu estilo TV Box (bg_destaque_lado & bg_destaque_baixo) -->
-    <Rectangle width="1920" height="540" color="#0b0e1499" />
-    <Rectangle width="1180" height="540" color="#0b0e14D9" />
-    <Rectangle translation="[0, 450]" width="1920" height="90" color="#0b0e14" />
-
-    <!-- Textos e Metadados -->
-    <Group translation="[80, 75]">
-      <!-- Badge de Destaque -->
-      <Group translation="[0, 0]">
-        <Rectangle id="badgeBg" width="120" height="28" color="#e11d48" />
-        <Label id="badgeText" translation="[0, 5]" width="120" text="EM ALTA" font="font:SmallBoldSystemFont" color="#FFFFFF" horizAlign="center" />
+    <Group translation="[80, 130]">
+      <Group>
+        <Rectangle id="badgeBg" width="112" height="32" color="#FF4D4F" />
+        <Label id="badgeText" width="112" height="32" text="EM ALTA" color="#FFFFFF" horizAlign="center" vertAlign="center"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.otf" size="18" /></Label>
       </Group>
 
-      <!-- Título Grande -->
-      <Label id="titleLabel" translation="[0, 38]" width="1100" text="Título do Destaque" font="font:LargeBoldSystemFont" color="#FFFFFF" />
+      <Label id="titleLabel" translation="[0, 46]" width="1040" height="64" maxLines="1" text="" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.otf" size="52" /></Label>
+      <Label id="genreLabel" translation="[0, 118]" width="1040" text="" color="#4FE3D0"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.otf" size="24" /></Label>
+      <Label id="overviewLabel" translation="[0, 158]" width="860" height="110" numLines="3" wrap="true" lineSpacing="6" text="" color="#D5DCE5"><Font role="font" uri="pkg:/fonts/Inter-Regular.otf" size="24" /></Label>
 
-      <!-- Metadados em Ciano -->
-      <Label id="genreLabel" translation="[0, 98]" width="1100" text="Filmes e Séries • Full HD" font="font:SmallBoldSystemFont" color="#4FE3D0" />
-
-      <!-- Sinopse Detalhada -->
-      <Label id="overviewLabel" translation="[0, 132]" width="1050" numLines="3" text="Disponível em alta definição com opções de áudio dublado e legendado." font="font:SmallSystemFont" color="#cbd5e1" wrap="true" />
-
-      <!-- Botões de Ação do Hero -->
-      <Group id="buttonsRow" translation="[0, 240]">
-        <!-- 0: Assistir -->
-        <Group id="playBtnGroup" translation="[0, 0]">
-          <Rectangle id="playBtnBorder" translation="[-3, -3]" width="216" height="52" color="#FFFFFF" visible="false" />
-          <Rectangle id="playBtnBg" width="210" height="46" color="#4FE3D0" />
-          <Label id="playBtnText" translation="[0, 11]" width="210" text="Assistir Agora" font="font:MediumBoldSystemFont" color="#0b0e14" horizAlign="center" />
+      <Group id="buttonsRow" translation="[0, 290]">
+        <Group id="playBtnGroup">
+          <Rectangle id="playBtnBorder" translation="[-4, -4]" width="238" height="68" color="#FFFFFF" visible="false" />
+          <Rectangle id="playBtnBg" width="230" height="60" color="#4FE3D0" />
+          <Label id="playBtnText" width="230" height="60" text="Assistir" color="#0b0e14" horizAlign="center" vertAlign="center"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.otf" size="26" /></Label>
         </Group>
-
-        <!-- 1: Mais Detalhes -->
-        <Group id="detailsBtnGroup" translation="[230, 0]">
-          <Rectangle id="detailsBtnBorder" translation="[-3, -3]" width="216" height="52" color="#FFFFFF" visible="false" />
-          <Rectangle id="detailsBtnBg" width="210" height="46" color="#1e293b" />
-          <Label id="detailsBtnText" translation="[0, 11]" width="210" text="Mais Detalhes" font="font:MediumBoldSystemFont" color="#FFFFFF" horizAlign="center" />
+        <Group id="detailsBtnGroup" translation="[250, 0]">
+          <Rectangle id="detailsBtnBorder" translation="[-4, -4]" width="238" height="68" color="#FFFFFF" visible="false" />
+          <Rectangle id="detailsBtnBg" width="230" height="60" color="#1e293b" />
+          <Label id="detailsBtnText" width="230" height="60" text="Mais detalhes" color="#FFFFFF" horizAlign="center" vertAlign="center"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.otf" size="26" /></Label>
         </Group>
       </Group>
     </Group>

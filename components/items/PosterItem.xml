@@ -2,27 +2,19 @@
 <component name="PosterItem" extends="Group">
   <interface>
     <field id="itemContent" type="node" onChange="onItemContentChange" />
-    <field id="width" type="float" value="180" />
-    <field id="height" type="float" value="315" />
-    <field id="rowFocusPercent" type="float" onChange="onFocusChange" />
+    <field id="width" type="float" value="200" />
+    <field id="height" type="float" value="356" />
+    <field id="focusPercent" type="float" onChange="onFocusChange" />
+    <field id="rowListHasFocus" type="boolean" onChange="onFocusChange" />
   </interface>
 
   <children>
-    <!-- Borda de Foco Dinâmica com Brilho Ciano estilo TV Box -->
-    <Rectangle id="focusBorder" translation="[-4, -4]" width="188" height="268" color="#4FE3D0" visible="false" />
-
-    <!-- Fundo de Cartão Elegante -->
-    <Rectangle id="cardBg" width="180" height="260" color="#161f30" />
-
-    <!-- Poster em Alta Resolução 2:3 -->
-    <Poster id="poster" width="180" height="260" loadDisplayMode="scaleToZoom" />
-
-    <!-- Barra de Progresso ("Continue Assistindo") -->
-    <Rectangle id="progressTrack" translation="[0, 256]" width="180" height="4" color="#334155" visible="false" />
-    <Rectangle id="progressBar" translation="[0, 256]" width="0" height="4" color="#4FE3D0" visible="false" />
-
-    <!-- Título do Item abaixo da capa com tipografia nítida -->
-    <Label id="title" translation="[2, 268]" width="176" height="42" font="font:SmallBoldSystemFont" color="#94a3b8" numLines="2" wrap="true" />
+    <Rectangle id="focusBorder" translation="[-5, -5]" width="210" height="310" color="#4FE3D0" visible="false" />
+    <Rectangle id="cardBg" width="200" height="300" color="#161f30" />
+    <Poster id="poster" width="200" height="300" loadWidth="200" loadHeight="300" loadDisplayMode="scaleToZoom" />
+    <Rectangle id="progressTrack" translation="[0, 294]" width="200" height="6" color="#334155" visible="false" />
+    <Rectangle id="progressBar" translation="[0, 294]" width="0" height="6" color="#4FE3D0" visible="false" />
+    <Label id="title" translation="[0, 310]" width="200" height="50" numLines="2" wrap="true" color="#A8B4C0"><Font role="font" uri="pkg:/fonts/Inter-Regular.otf" size="20" /></Label>
   </children>
 
   <script type="text/brightscript" uri="pkg:/components/items/PosterItem.brs" />

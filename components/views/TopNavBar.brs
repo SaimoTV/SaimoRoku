@@ -14,8 +14,8 @@ sub init()
     updateClock()
 
     m.itemNames = ["search", "home", "live", "events", "vod", "favorites", "radios", "settings"]
-    m.tabPositions = [250, 365, 470, 600, 730, 900, 1055, 1175]
-    m.tabWidths = [110, 100, 125, 125, 165, 150, 115, 115]
+    m.tabPositions = [290, 416, 532, 673, 814, 985, 1141, 1272]
+    m.tabWidths = [118, 108, 133, 133, 163, 148, 123, 133]
 
     m.focusedIndex = 1
     m.top.observeField("focusedChild", "onFocusedChildChange")

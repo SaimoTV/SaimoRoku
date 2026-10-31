@@ -13,7 +13,10 @@ sub init()
     m.contentRowList.observeField("rowItemSelected", "onRowItemSelected")
     m.contentRowList.observeField("rowItemFocused", "onRowItemFocused")
 
-    m.currentFocus = "rows" ' "rows" ou "hero"
+    m.heroTimer = m.top.findNode("heroTimer")
+    m.heroTimer.observeField("fire", "aplicarDestaque")
+
+    m.currentFocus = "hero" ' "rows" ou "hero"
     m.top.observeField("focusedChild", "onFocusedChildChange")
 end sub
 
@@ -70,7 +73,7 @@ sub onRailsChange()
         for i = 0 to maxChannels - 1
             ch = channels[i]
             itemNode = rowLive.CreateChild("ContentNode")
-            progTitle = "Transmissão Contínua"
+            progTitle = invalid
             if epg <> invalid and epg[ch.name] <> invalid and epg[ch.name].Count() > 0 then
                 for each p in epg[ch.name]
                     if p.isCurrent then
@@ -124,6 +127,20 @@ sub onRailsChange()
         end for
     end if
 
+    ' Canais têm cartão 16:9, mais baixo que as capas.
+    alturas = []
+    tamanhos = []
+    for i = 0 to rootNode.getChildCount() - 1
+        linha = rootNode.getChild(i)
+        ehCanal = linha.getChildCount() > 0 and linha.getChild(0).itemType = "channel"
+        if ehCanal then
+            alturas.Push(280) : tamanhos.Push([280, 230])
+        else
+            alturas.Push(410) : tamanhos.Push([200, 356])
+        end if
+    end for
+    m.contentRowList.rowHeights = alturas
+    m.contentRowList.rowItemSize = tamanhos
     m.contentRowList.content = rootNode
 
     ' Define o primeiro destaque do hero banner se ainda não definido
@@ -138,7 +155,7 @@ sub onRowItemFocused()
     rowIndex = coords[0]
     colIndex = coords[1]
 
-    ' Melhor aproveitamento da tela: ao navegar para baixo, oculta o HeroBanner dando espaço total aos trilhos
+    ' Longe do topo, os trilhos ocupam a tela toda.
     if rowIndex > 0 then
         if m.heroBanner.visible then
             m.heroBanner.visible = false
@@ -147,33 +164,38 @@ sub onRowItemFocused()
     else
         if not m.heroBanner.visible then
             m.heroBanner.visible = true
-            m.contentRowList.translation = [80, 480]
+            m.contentRowList.translation = [80, 640]
         end if
     end if
 
+    ' Espera o foco parar antes de trocar o destaque: rolar pelos trilhos não
+    ' pode baixar uma imagem grande por item.
+    m.focoLinha = rowIndex
+    m.focoColuna = colIndex
+    m.heroTimer.control = "stop"
+    m.heroTimer.control = "start"
+end sub
+
+sub aplicarDestaque()
     root = m.contentRowList.content
-    if root <> invalid and rowIndex < root.getChildCount() then
-        rowNode = root.getChild(rowIndex)
-        if rowNode <> invalid and colIndex < rowNode.getChildCount() then
-            selectedNode = rowNode.getChild(colIndex)
-            if selectedNode <> invalid then
-                if selectedNode.itemType = "vod" and selectedNode.rawItem <> invalid then
-                    m.heroBanner.featuredItem = selectedNode.rawItem
-                else if selectedNode.itemType = "channel" and selectedNode.rawChannel <> invalid then
-                    ch = selectedNode.rawChannel
-                    prog = "Assistir canal ao vivo com transmissão em alta qualidade."
-                    if selectedNode.programTitle <> invalid then prog = "Agora: " + selectedNode.programTitle
-                    m.heroBanner.featuredItem = {
-                        title: ch.name,
-                        overview: prog,
-                        genres: "Canal Ao Vivo • Sinal Digital",
-                        year: ch.number.ToStr(),
-                        poster: ch.logo,
-                        backdrop: ch.logo
-                    }
-                end if
-            end if
-        end if
+    if root = invalid or m.focoLinha >= root.getChildCount() then return
+    rowNode = root.getChild(m.focoLinha)
+    if rowNode = invalid or m.focoColuna >= rowNode.getChildCount() then return
+    selectedNode = rowNode.getChild(m.focoColuna)
+    if selectedNode = invalid then return
+    if selectedNode.itemType = "vod" and selectedNode.rawItem <> invalid then
+        m.heroBanner.featuredItem = selectedNode.rawItem
+    else if selectedNode.itemType = "channel" and selectedNode.rawChannel <> invalid then
+        ch = selectedNode.rawChannel
+        prog = ""
+        if selectedNode.programTitle <> invalid then prog = "Agora: " + selectedNode.programTitle
+        m.heroBanner.featuredItem = {
+            title: ch.name,
+            overview: prog,
+            genres: "Canal ao vivo",
+            poster: ch.logo,
+            semFundo: true
+        }
     end if
 end sub
 

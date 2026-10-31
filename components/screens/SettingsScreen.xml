@@ -29,26 +29,26 @@
     <Group translation="[1220, 100]">
       <Rectangle width="620" height="920" color="#111827" />
       <Rectangle width="620" height="3" color="#7AA2FF" />
-      <Label translation="[30, 24]" text="INFORMAÇÕES DO SISTEMA" font="font:SmallBoldSystemFont" color="#7AA2FF" />
+      <Label translation="[30, 24]" text="INFORMAÇÕES DO SISTEMA" color="#7AA2FF"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.otf" size="22" /></Label>
 
       <!-- Card Saimo Connect -->
       <Group translation="[30, 80]">
         <Rectangle width="560" height="150" color="#1e293b" />
-        <Label translation="[20, 16]" text="Saimo Connect" font="font:MediumBoldSystemFont" color="#4FE3D0" />
-        <Label translation="[20, 52]" text="Controle pelo celular na mesma rede Wi-Fi" font="font:SmallSystemFont" color="#94a3b8" />
-        <Label id="connectStatusLabel" translation="[20, 84]" text="Porta: 8999 | Status: Ativo" font="font:SmallBoldSystemFont" color="#FFFFFF" />
-        <Label translation="[20, 114]" text="Descoberta automática via GET /info" font="font:SmallSystemFont" color="#64748b" />
+        <Label translation="[20, 16]" text="Saimo Connect" color="#4FE3D0"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.otf" size="26" /></Label>
+        <Label translation="[20, 52]" text="Controle pelo celular na mesma rede Wi-Fi" color="#94a3b8"><Font role="font" uri="pkg:/fonts/Inter-Regular.otf" size="22" /></Label>
+        <Label id="connectStatusLabel" translation="[20, 84]" text="Porta: 8999 | Status: Ativo" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.otf" size="22" /></Label>
+        <Label translation="[20, 114]" text="Descoberta automática via GET /info" color="#64748b"><Font role="font" uri="pkg:/fonts/Inter-Regular.otf" size="22" /></Label>
       </Group>
 
       <!-- Card Versão -->
       <Group translation="[30, 260]">
         <Rectangle width="560" height="130" color="#1e293b" />
-        <Label translation="[20, 16]" text="Versão Instalada" font="font:MediumBoldSystemFont" color="#FFFFFF" />
-        <Label translation="[20, 52]" text="Saimo TV para Roku" font="font:SmallSystemFont" color="#94a3b8" />
-        <Label translation="[20, 84]" text="Versão 2.6.0 (Build Nativo)" font="font:MediumBoldSystemFont" color="#4FE3D0" />
+        <Label translation="[20, 16]" text="Versão Instalada" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.otf" size="26" /></Label>
+        <Label translation="[20, 52]" text="Saimo TV para Roku" color="#94a3b8"><Font role="font" uri="pkg:/fonts/Inter-Regular.otf" size="22" /></Label>
+        <Label translation="[20, 84]" text="Versão 2.6.0 (Build Nativo)" color="#4FE3D0"><Font role="font" uri="pkg:/fonts/Inter-SemiBold.otf" size="26" /></Label>
       </Group>
 
-      <Label translation="[30, 420]" width="560" numLines="4" text="Aplicativo nativo desenvolvido em BrightScript e SceneGraph para alta fluidez e resposta instantânea no controle remoto." font="font:SmallSystemFont" color="#475569" wrap="true" />
+      <Label translation="[30, 420]" width="560" numLines="4" text="Aplicativo nativo desenvolvido em BrightScript e SceneGraph para alta fluidez e resposta instantânea no controle remoto." color="#475569" wrap="true"><Font role="font" uri="pkg:/fonts/Inter-Regular.otf" size="22" /></Label>
     </Group>
   </children>
 

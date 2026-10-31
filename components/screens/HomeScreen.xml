@@ -20,16 +20,22 @@
     <RowList
       id="contentRowList"
       itemComponentName="PosterItem"
-      translation="[80, 480]"
-      itemSize="[1760, 340]"
-      rowItemSize="[[180, 315]]"
-      rowItemSpacing="[[24, 0]]"
-      itemSpacing="[0, 35]"
+      translation="[80, 640]"
+      itemSize="[1760, 410]"
+      rowItemSize="[[200, 356]]"
+      rowHeights="[410]"
+      rowItemSpacing="[[28, 0]]"
+      itemSpacing="[0, 24]"
       showRowLabel="[true]"
-      rowLabelOffset="[[0, 10]]"
-      numRows="4"
+      rowLabelOffset="[[0, 14]]"
+      rowLabelColor="#FFFFFF"
+      rowFocusAnimationStyle="floatingFocus"
+      drawFocusFeedback="false"
+      numRows="3"
+      vertFocusAnimationStyle="fixedFocusWrap"
       wrap="false"
     />
+    <Timer id="heroTimer" duration="0.3" repeat="false" />
   </children>
 
   <script type="text/brightscript" uri="pkg:/source/utils/Storage.brs" />
