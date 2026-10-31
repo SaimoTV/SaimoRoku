@@ -200,6 +200,7 @@ sub switchScreen(screenName as String, params = invalid as Dynamic)
         node = CreateObject("roSGNode", "VodScreen")
         if m.cachedVod <> invalid then node.vodItems = m.cachedVod
         node.observeField("itemSelected", "onVodItemSelected")
+        node.observeField("playRequested", "onHomePlayRequested")
         node.observeField("focusUpRequested", "onScreenFocusUp")
         m.currentScreenNode = node
 

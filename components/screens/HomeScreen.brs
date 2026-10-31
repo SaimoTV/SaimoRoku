@@ -13,7 +13,7 @@ sub init()
     m.contentRowList.observeField("rowItemSelected", "onRowItemSelected")
     m.contentRowList.observeField("rowItemFocused", "onRowItemFocused")
 
-    m.currentFocus = "hero" ' "hero" ou "rows"
+    m.currentFocus = "rows" ' "rows" ou "hero"
     m.top.observeField("focusedChild", "onFocusedChildChange")
 end sub
 
@@ -48,13 +48,12 @@ sub onRailsChange()
         for each p in inProg
             itemNode = rowProg.CreateChild("ContentNode")
             itemNode.title = p.title
-            if p.percent <> invalid then
-                itemNode.title = p.title + " (" + p.percent.ToStr() + "%)"
-            end if
+            itemPerc = 0
+            if p.percent <> invalid then itemPerc = p.percent
             if p.poster <> invalid and p.poster <> "" then
                 itemNode.hdPosterUrl = p.poster
             end if
-            itemNode.addFields({ itemType: "vod", rawItem: p })
+            itemNode.addFields({ itemType: "vod", rawItem: p, percent: itemPerc })
         end for
     end if
 

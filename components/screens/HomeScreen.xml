@@ -14,16 +14,16 @@
 
   <children>
     <!-- Banner de Destaque Dinâmico (Backdrop + Info) -->
-    <HeroBanner id="heroBanner" translation="[80, 80]" />
+    <HeroBanner id="heroBanner" translation="[0, 0]" />
 
     <!-- Trilhos Horizontais de Conteúdo Estilo TV Box -->
     <RowList
       id="contentRowList"
       itemComponentName="PosterItem"
-      translation="[80, 500]"
-      itemSize="[1760, 300]"
-      rowItemSize="[[170, 270]]"
-      rowItemSpacing="[[20, 0]]"
+      translation="[80, 480]"
+      itemSize="[1760, 340]"
+      rowItemSize="[[180, 315]]"
+      rowItemSpacing="[[24, 0]]"
       itemSpacing="[0, 35]"
       showRowLabel="[true]"
       rowLabelOffset="[[0, 10]]"
