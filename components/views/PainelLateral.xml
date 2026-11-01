@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="PainelLateral" extends="Group">
+  <interface>
+    <field id="titulo" type="string" />
+    <field id="opcoes" type="array" onChange="onOpcoes" />
+    <field id="escolhido" type="integer" alwaysNotify="true" />
+    <field id="aberto" type="boolean" onChange="onAberto" />
+  </interface>
+  <children>
+    <Group id="painel" visible="false">
+      <Rectangle translation="[880, 0]" width="1040" height="1080" color="#0b0e14F5" />
+      <Label id="tituloLabel" translation="[952, 88]" width="890" maxLines="2" wrap="true" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="56" /></Label>
+      <MarkupList id="lista" translation="[930, 230]" itemComponentName="AjusteItem" itemSize="[940, 140]" itemSpacing="[0, 8]" numRows="5" drawFocusFeedback="false" vertFocusAnimationStyle="floatingFocus" />
+      <Label translation="[952, 1000]" text="OK escolhe  ·  VOLTAR fecha" color="#A8B4C0"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="30" /></Label>
+    </Group>
+    <Timer id="focoTimer" duration="0.1" repeat="false" />
+  </children>
+  <script type="text/brightscript"><![CDATA[
+sub init()
+    m.painel = m.top.findNode("painel")
+    m.lista = m.top.findNode("lista")
+    m.lista.observeField("itemSelected", "onItem")
+    m.top.findNode("focoTimer").observeField("fire", "aplicarFoco")
+end sub
+sub onOpcoes()
+    raiz = CreateObject("roSGNode", "ContentNode")
+    for each o in m.top.opcoes
+        n = raiz.CreateChild("ContentNode")
+        n.title = o.titulo
+        if o.detalhe <> invalid then n.description = o.detalhe
+    end for
+    m.lista.content = raiz
+end sub
+sub onAberto()
+    m.top.findNode("tituloLabel").text = m.top.titulo
+    m.painel.visible = m.top.aberto
+    if m.top.aberto then
+        t = m.top.findNode("focoTimer")
+        t.control = "start"
+    end if
+end sub
+sub aplicarFoco()
+    m.lista.setFocus(true)
+end sub
+sub onItem()
+    m.top.escolhido = m.lista.itemSelected
+end sub
+function onKeyEvent(key as String, press as Boolean) as Boolean
+    if not press then return false
+    if key = "back" or key = "left" then
+        m.top.aberto = false
+        return true
+    end if
+    return true
+end function
+  ]]></script>
+</component>

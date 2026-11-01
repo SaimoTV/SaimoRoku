@@ -105,47 +105,109 @@ sub fetchChannels(baseUrl as String)
 end sub
 
 ' ----- EPG (Guia de Programação) -----
+' guia.txt diz o código de cada canal no meuguia.tv; a página do canal traz a
+' programação. O resultado fica 6 h no cachefs para abrir o app sem esperar.
 sub fetchEpg(baseUrl as String)
-    url = baseUrl + "guia.txt"
-    text = HttpGet(url)
+    cache = "cachefs:/epg.json"
+    agora = CreateObject("roDateTime").AsSeconds()
+    bruto = ReadAsciiFile(cache)
+    if bruto <> "" then
+        dados = ParseJson(bruto)
+        if dados <> invalid and dados.quando <> invalid and agora - dados.quando < 21600 then
+            m.top.responseEpg = dados.mapa
+            return
+        end if
+    end if
+
+    text = HttpGet(baseUrl + "guia.txt")
     if text = "" then return
 
-    lines = text.Split(Chr(10))
-    epgMap = {}
-    nowSec = CreateObject("roDateTime").AsSeconds()
-
-    for each rawLine in lines
-        line = rawLine.Trim()
-        if line = "" then continue for
-        parts = line.Split(Chr(9)) ' separado por tab
-        if parts.Count() < 4 then continue for
-
-        channelName = parts[0].Trim()
-        startSec = Val(parts[1])
-        stopSec = Val(parts[2])
-        title = parts[3].Trim()
-
-        if epgMap[channelName] = invalid then
-            epgMap[channelName] = []
-        end if
-
-        durMin = Int((stopSec - startSec) / 60)
-        remMin = Int((stopSec - nowSec) / 60)
-        if remMin < 0 then remMin = 0
-
-        prog = {
-            title: title,
-            startSec: startSec,
-            stopSec: stopSec,
-            durationMin: durMin,
-            remainingMin: remMin,
-            isCurrent: (nowSec >= startSec and nowSec < stopSec)
-        }
-        epgMap[channelName].Push(prog)
+    fila = []
+    for each rawLine in text.Split(Chr(10))
+        parts = rawLine.Trim().Split(Chr(9))
+        if parts.Count() >= 3 and parts[0] = "meuguia" then fila.Push({ nome: parts[1], codigo: parts[2] })
     end for
 
+    epgMap = {}
+    for i = 0 to fila.Count() - 1
+        c = fila[i]
+        lista = lerMeuGuia(HttpGet("https://meuguia.tv/programacao/canal/" + c.codigo), agora)
+        if lista.Count() > 0 then epgMap[c.nome] = lista
+        ' Mostra aos poucos: quem abre o painel já vê os primeiros canais.
+        if (i + 1) mod 15 = 0 then m.top.responseEpg = epgMap
+    end for
     m.top.responseEpg = epgMap
+    WriteAsciiFile(cache, FormatJson({ quando: agora, mapa: epgMap }))
 end sub
+
+function entre(texto as String, abre as String, fecha as String) as Dynamic
+    p = Instr(1, texto, abre)
+    if p = 0 then return invalid
+    p = p + Len(abre)
+    q = Instr(p, texto, fecha)
+    if q = 0 then return invalid
+    return Mid(texto, p, q - p)
+end function
+
+function doisDigitos(n as Integer) as String
+    t = n.ToStr()
+    if Len(t) < 2 then t = "0" + t
+    return t
+end function
+
+' Itens <li>: cabeçalho do dia e programas com hora e título. O fim de cada um é
+' o início do seguinte. Hora de Brasília (UTC-3).
+function lerMeuGuia(html as String, agora as Integer) as Object
+    if html = "" then return []
+    hoje = CreateObject("roDateTime")
+    hoje.FromSeconds(agora - 10800)
+    ano = hoje.GetYear()
+    mes = hoje.GetMonth()
+    dia = hoje.GetDayOfMonth()
+    programas = []
+    conversor = CreateObject("roDateTime")
+
+    for each item in html.Split("<li")
+        if Instr(1, item, "subheader") > 0 then
+            t = entre(Mid(item, Instr(1, item, "subheader")), ">", "<")
+            if t <> invalid and Instr(1, t, ",") > 0 then
+                d = Mid(t, Instr(1, t, ",") + 1).Trim().Split("/")
+                if d.Count() = 2 then
+                    dia = Val(d[0])
+                    mes = Val(d[1])
+                end if
+            end if
+        else
+            relogio = entre(item, "lileft time'>", "<")
+            if relogio = invalid then relogio = entre(item, "lileft time" + Chr(34) + ">", "<")
+            titulo = entre(item, "<h2>", "</h2>")
+            if relogio <> invalid and titulo <> invalid then
+                hm = relogio.Trim().Split(":")
+                if hm.Count() = 2 then
+                    conversor.FromISO8601String(ano.ToStr() + "-" + doisDigitos(mes) + "-" + doisDigitos(dia) + "T" + doisDigitos(Val(hm[0])) + ":" + doisDigitos(Val(hm[1])) + ":00Z")
+                    inicio = conversor.AsSeconds() + 10800
+                    titulo = titulo.Replace("&amp;", "&").Replace("&#39;", "'").Replace("&quot;", Chr(34)).Trim()
+                    if titulo <> "" then programas.Push({ title: titulo, startSec: inicio })
+                end if
+            end if
+        end if
+    end for
+
+    saida = []
+    for i = 0 to programas.Count() - 1
+        p = programas[i]
+        fim = p.startSec + 3600
+        if i + 1 < programas.Count() then fim = programas[i + 1].startSec
+        ' Só de agora em diante: o resto só ocuparia memória.
+        if fim > agora then
+            dur = Int((fim - p.startSec) / 60)
+            resta = Int((fim - agora) / 60)
+            saida.Push({ title: p.title, startSec: p.startSec, stopSec: fim, durationMin: dur, remainingMin: resta, isCurrent: agora >= p.startSec })
+            if saida.Count() >= 12 then exit for
+        end if
+    end for
+    return saida
+end function
 
 ' ----- Destaques e Trilhos da Home -----
 sub fetchDestaques(baseUrl as String)

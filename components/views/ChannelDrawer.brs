@@ -244,6 +244,10 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
         marcarChips()
         m.top.setFocus(true)
         return true
+    else if key = "right" then
+        i = m.lista.itemFocused
+        if m.filtrados <> invalid and i >= 0 and i < m.filtrados.Count() then m.top.fontesRequested = m.filtrados[i]
+        return true
     else if key = "options" or key = "replay" then
         i = m.lista.itemFocused
         if m.filtrados <> invalid and i >= 0 and i < m.filtrados.Count() then

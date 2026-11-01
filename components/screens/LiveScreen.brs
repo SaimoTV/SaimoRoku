@@ -14,6 +14,10 @@ sub init()
     m.channelDrawer.observeField("channelSelected", "onDrawerSelect")
     m.channelDrawer.observeField("isOpen", "onDrawerOpenChange")
     m.channelDrawer.observeField("focusUpRequested", "onDrawerUp")
+    m.channelDrawer.observeField("fontesRequested", "onDrawerFontes")
+    m.painelFontes = m.top.findNode("painelFontes")
+    m.painelFontes.observeField("escolhido", "onFonteEscolhida")
+    m.painelFontes.observeField("aberto", "onFontesAberto")
     m.pinModal.observeField("isUnlocked", "onPinUnlocked")
     m.top.observeField("focusedChild", "onFocusedChildChange")
 
@@ -54,6 +58,54 @@ sub showFavoriteToast(channelName as String, isFav as Boolean)
     m.favoriteToast.visible = true
     m.favoriteToastTimer.control = "stop"
     m.favoriteToastTimer.control = "start"
+end sub
+
+sub onDrawerFontes()
+    abrirFontes(m.channelDrawer.fontesRequested)
+end sub
+
+' Painel com as fontes do canal: "Fonte N · qualidade", nunca o endereço.
+sub abrirFontes(ch as Object)
+    m.canalFontes = ch
+    opcoes = []
+    for i = 0 to ch.variants.Count() - 1
+        o = { titulo: "Fonte " + (i + 1).ToStr() }
+        q = ch.variants[i].quality
+        if q <> invalid and q <> "Auto" then o.detalhe = q
+        opcoes.Push(o)
+    end for
+    opcoes.Push({ titulo: "Guia de programação", detalhe: "Ver a grade dos canais" })
+    m.painelFontes.titulo = ch.name
+    m.painelFontes.opcoes = opcoes
+    m.painelFontes.aberto = true
+    m.top.telaCheia = true
+end sub
+
+sub onFontesAberto()
+    if m.painelFontes.aberto then return
+    m.top.telaCheia = not m.channelDrawer.isOpen
+    if m.channelDrawer.isOpen then m.channelDrawer.setFocus(true) else m.top.setFocus(true)
+end sub
+
+sub onFonteEscolhida()
+    i = m.painelFontes.escolhido
+    ch = m.canalFontes
+    m.painelFontes.aberto = false
+    if i >= ch.variants.Count() then
+        m.top.guiaRequested = true
+        return
+    end if
+    channels = m.top.channels
+    for c = 0 to channels.Count() - 1
+        if channels[c].name = ch.name then
+            m.top.currentChannelIndex = c
+            exit for
+        end if
+    end for
+    m.currentVariantIndex = i
+    m.tryingProxy = false
+    playCurrentVariant()
+    if m.channelDrawer.isOpen then m.channelDrawer.isOpen = false
 end sub
 
 sub onDrawerUp()
@@ -284,6 +336,13 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
 
     if m.pinModal.isOpen then return false
     if m.channelDrawer.isOpen then return false
+    if m.painelFontes.aberto then return false
+
+    if key = "right" then
+        channels = m.top.channels
+        if channels <> invalid and m.top.currentChannelIndex < channels.Count() then abrirFontes(channels[m.top.currentChannelIndex])
+        return true
+    end if
 
     ' Zapping de canais (Cima/Baixo)
     if key = "up" then

@@ -24,6 +24,8 @@ sub init()
     m.playerOsd.observeField("playPauseRequested", "onOsdPlayPause")
     m.playerOsd.observeField("seekRequested", "onOsdSeek")
     m.playerOsd.observeField("skipIntroRequested", "onOsdSkipIntro")
+    m.top.findNode("painelOpcoes").observeField("escolhido", "onOpcaoEscolhida")
+    m.top.findNode("painelOpcoes").observeField("aberto", "onOpcoesAberto")
 end sub
 
 sub onPlayItemChange()
@@ -264,8 +266,76 @@ sub saveCurrentProgress()
     end if
 end sub
 
+' Tecla *: áudio, legendas e fontes do que está tocando.
+sub abrirOpcoes()
+    m.opcoes = []
+    lista = []
+    faixas = m.videoPlayer.availableAudioTracks
+    if faixas <> invalid then
+        for i = 0 to faixas.Count() - 1
+            t = faixas[i]
+            nome = "Áudio " + (i + 1).ToStr()
+            if t.Language <> invalid and t.Language <> "" then nome = "Áudio: " + t.Language
+            lista.Push({ titulo: nome })
+            m.opcoes.Push({ tipo: "audio", valor: t.Track })
+        end for
+    end if
+    legendas = m.videoPlayer.availableSubtitleTracks
+    if legendas <> invalid then
+        for i = 0 to legendas.Count() - 1
+            t = legendas[i]
+            nome = "Legenda " + (i + 1).ToStr()
+            if t.Language <> invalid and t.Language <> "" then nome = "Legenda: " + t.Language
+            lista.Push({ titulo: nome })
+            m.opcoes.Push({ tipo: "legenda", valor: t.TrackName })
+        end for
+        lista.Push({ titulo: "Sem legenda" })
+        m.opcoes.Push({ tipo: "legenda", valor: "" })
+    end if
+    if m.candidateUrls <> invalid then
+        for i = 0 to m.candidateUrls.Count() - 1
+            lista.Push({ titulo: "Fonte " + (i + 1).ToStr() })
+            m.opcoes.Push({ tipo: "fonte", valor: i })
+        end for
+    end if
+    painel = m.top.findNode("painelOpcoes")
+    painel.titulo = "Opções"
+    painel.opcoes = lista
+    painel.aberto = true
+end sub
+
+sub onOpcaoEscolhida()
+    painel = m.top.findNode("painelOpcoes")
+    o = m.opcoes[painel.escolhido]
+    painel.aberto = false
+    if o.tipo = "audio" then
+        m.videoPlayer.audioTrack = o.valor
+    else if o.tipo = "legenda" then
+        if o.valor = "" then
+            m.videoPlayer.globalCaptionMode = "Off"
+        else
+            m.videoPlayer.globalCaptionMode = "On"
+            m.videoPlayer.subtitleTrack = o.valor
+        end if
+    else
+        m.tryingProxy = false
+        m.candidateIdx = o.valor
+        playCandidate(o.valor, false)
+    end if
+end sub
+
+sub onOpcoesAberto()
+    if not m.top.findNode("painelOpcoes").aberto then m.top.setFocus(true)
+end sub
+
 function onKeyEvent(key as String, press as Boolean) as Boolean
     if not press then return false
+    if m.top.findNode("painelOpcoes").aberto then return false
+
+    if key = "options" then
+        abrirOpcoes()
+        return true
+    end if
 
     if key = "back" then
         saveCurrentProgress()

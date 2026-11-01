@@ -199,7 +199,8 @@ function screenToNavIndex(name as String) as Integer
     if name = "live" then return 2
     if name = "events" then return 3
     if name = "vod" then return 4
-    if name = "favorites" or name = "guide" then return 5
+    if name = "favorites" then return 5
+    if name = "guide" then return 2
     if name = "radios" then return 6
     if name = "settings" or name = "minhas" then return 7
     return 1
@@ -252,6 +253,7 @@ sub switchScreen(screenName as String, params = invalid as Dynamic)
         if m.cachedEpg <> invalid then node.epgMap = m.cachedEpg
         if m.cachedChannels <> invalid then node.channels = m.cachedChannels
         node.observeField("telaCheia", "onRadioTelaCheia")
+        node.observeField("guiaRequested", "onAbrirGuia")
         node.observeField("focusUpRequested", "onScreenFocusUp")
         m.currentScreenNode = node
 
@@ -446,6 +448,10 @@ end sub
 
 sub onRadioTelaCheia(evt as Object)
     m.topNavBar.visible = not evt.getData()
+end sub
+
+sub onAbrirGuia()
+    switchScreen("guide")
 end sub
 
 sub onAbrirMinhasListas()

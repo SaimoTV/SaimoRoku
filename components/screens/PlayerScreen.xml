@@ -29,6 +29,7 @@
 
     <!-- Timer de salvamento de progresso a cada 5 segundos -->
     <Timer id="progressTimer" duration="5.0" repeat="true" />
+    <PainelLateral id="painelOpcoes" />
   </children>
 
   <script type="text/brightscript" uri="pkg:/source/utils/Storage.brs" />
