@@ -44,6 +44,15 @@ sub onRadiosChange()
     end for
 
     root = CreateObject("roSGNode", "ContentNode")
+    ' "Outras" sempre por último.
+    if grupos["Outras"] <> invalid then
+        semOutras = []
+        for each g in ordem
+            if g <> "Outras" then semOutras.Push(g)
+        end for
+        semOutras.Push("Outras")
+        ordem = semOutras
+    end if
     for each g in ordem
         linha = root.CreateChild("ContentNode")
         linha.title = g

@@ -38,7 +38,7 @@ sub init()
 end sub
 
 sub onFocusedChildChange()
-    if m.top.isInFocusChain() then
+    if m.top.isInFocusChain() and not m.painelFontes.aberto then
         if m.channelDrawer.isOpen then
             m.channelDrawer.setFocus(true)
         end if
