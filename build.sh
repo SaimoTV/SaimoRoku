@@ -26,7 +26,7 @@ zip -9 -r "$ZIP_OUTPUT" manifest source components images fonts -x "*.DS_Store" 
 cp -f "$ZIP_OUTPUT" "out/SaimoRoku.zip"
 
 echo "==> Validando integridade do pacote"
-unzip -l "$ZIP_OUTPUT" | head -20
+unzip -tq "$ZIP_OUTPUT"
 
 SIZE=$(du -h "$ZIP_OUTPUT" | cut -f1)
 SHA=$(shasum -a 256 "$ZIP_OUTPUT" | cut -d' ' -f1)
