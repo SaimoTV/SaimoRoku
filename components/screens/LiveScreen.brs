@@ -19,6 +19,8 @@ sub init()
     m.painelFontes.observeField("escolhido", "onFonteEscolhida")
     m.painelFontes.observeField("aberto", "onFontesAberto")
     m.canais = []
+    m.inicioTimer = m.top.findNode("inicioTimer")
+    m.inicioTimer.observeField("fire", "onInicio")
     m.indiceAtual = -1
     m.pedemProxy = {}
     m.ancora = m.top.findNode("ancora")
@@ -292,6 +294,8 @@ sub onDrawerUp()
 end sub
 
 sub onDrawerOpenChange()
+    ' A barra do canal não aparece por cima do painel.
+    m.zapHud.visible = not m.channelDrawer.isOpen
     if m.channelDrawer.isOpen then
         m.top.telaCheia = false
         m.liveVideo.translation = [896, 130]
@@ -309,25 +313,45 @@ sub onDrawerOpenChange()
     end if
 end sub
 
-sub onChannelsChange()
-    ' Campo de nó é copiado inteiro a cada leitura: aqui só se lê uma vez.
-    m.canais = m.top.channels
-    m.channelDrawer.channels = m.canais
-    if m.canais <> invalid and m.canais.Count() > 0 then
-        playChannel(m.top.currentChannelIndex)
+' A árvore vem pronta e por referência: aqui só se monta a lista de ponteiros
+' para o zapping, na ordem dos números.
+sub onArvore()
+    arvore = m.top.arvore
+    if arvore = invalid then return
+    total = 0
+    for i = 0 to arvore.getChildCount() - 1
+        total = total + arvore.getChild(i).getChildCount()
+    end for
+    nos = CreateObject("roArray", total, true)
+    for i = 0 to arvore.getChildCount() - 1
+        secao = arvore.getChild(i)
+        for j = 0 to secao.getChildCount() - 1
+            c = secao.getChild(j)
+            nos[c.number - 1] = c
+        end for
+    end for
+    m.canais = nos
+    m.channelDrawer.selectedIndex = m.top.currentChannelIndex
+    m.channelDrawer.arvore = arvore
+    if m.iniciado = true then
+        updateHUDInfo()
+        return
+    end if
+    if nos.Count() > 0 then
+        m.iniciado = true
         if m.top.openDrawerOnLoad then
-            m.channelDrawer.selectedIndex = m.top.currentChannelIndex
             m.channelDrawer.isOpen = true
             m.channelDrawer.setFocus(true)
+            m.zapHud.visible = false
             m.top.openDrawerOnLoad = false
         end if
+        ' O painel aparece antes: o vídeo entra no quadro seguinte.
+        m.inicioTimer.control = "start"
     end if
 end sub
 
-sub onEpgChange()
-    m.epg = m.top.epgMap
-    m.channelDrawer.epgMap = m.epg
-    updateHUDInfo()
+sub onInicio()
+    playChannel(m.top.currentChannelIndex)
 end sub
 
 sub onChannelIndexChange()
@@ -440,21 +464,13 @@ sub updateHUDInfo()
     m.zapHud.channelName = ch.name
     m.zapHud.channelLogo = ch.logo
 
-    epgMap = m.epg
-    if epgMap <> invalid and epgMap[ch.name] <> invalid then
-        programs = epgMap[ch.name]
-        for each p in programs
-            if p.isCurrent then
-                m.zapHud.programTitle = p.title
-                dur = p.durationMin
-                remMin = p.remainingMin
-                pct = 0.5
-                if dur > 0 then pct = (dur - remMin) / dur
-                m.zapHud.programProgress = pct
-                m.zapHud.linhaHora = "faltam " + remMin.ToStr() + " min"
-                exit for
-            end if
-        end for
+    if ch.programa <> "" then
+        m.zapHud.programTitle = ch.programa
+        agora = CreateObject("roDateTime").AsSeconds()
+        pct = 0.5
+        if ch.fim > ch.ini then pct = (agora - ch.ini) / (ch.fim - ch.ini)
+        m.zapHud.programProgress = pct
+        m.zapHud.linhaHora = "faltam " + Int((ch.fim - agora) / 60).ToStr() + " min"
     else
         m.zapHud.programTitle = "Ao Vivo"
         m.zapHud.programProgress = 0.5
@@ -500,7 +516,7 @@ sub onDrawerSelect()
     if sel <> invalid then
         channels = m.canais
         for i = 0 to channels.Count() - 1
-            if channels[i].id = sel.id then
+            if channels[i].name = sel.name then
                 if i <> m.top.currentChannelIndex then playChannel(i)
                 m.channelDrawer.isOpen = false
                 exit for

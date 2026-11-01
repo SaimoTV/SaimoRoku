@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="ArvoreCanaisTask" extends="Task">
+  <interface>
+    <field id="canais" type="array" />
+    <field id="epg" type="assocarray" />
+    <field id="arvore" type="node" alwaysNotify="true" />
+  </interface>
+  <script type="text/brightscript" uri="pkg:/components/tasks/ArvoreCanaisTask.brs" />
+</component>

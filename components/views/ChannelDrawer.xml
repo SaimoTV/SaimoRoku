@@ -1,14 +1,13 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <component name="ChannelDrawer" extends="Group">
   <interface>
-    <field id="channels" type="array" onChange="onChannelsChange" />
-    <field id="epgMap" type="assocarray" onChange="onEpgChange" />
+    <field id="arvore" type="node" onChange="onArvore" />
     <field id="selectedIndex" type="integer" value="0" />
-    <field id="channelSelected" type="assocarray" alwaysNotify="true" />
+    <field id="channelSelected" type="node" alwaysNotify="true" />
     <field id="isOpen" type="boolean" value="false" onChange="onOpenChange" />
     <field id="focusUpRequested" type="boolean" alwaysNotify="true" />
-    <field id="fontesRequested" type="assocarray" alwaysNotify="true" />
-    <field id="menuRequested" type="assocarray" alwaysNotify="true" />
+    <field id="fontesRequested" type="node" alwaysNotify="true" />
+    <field id="menuRequested" type="node" alwaysNotify="true" />
   </interface>
 
   <children>

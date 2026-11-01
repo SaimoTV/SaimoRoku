@@ -18,7 +18,6 @@ sub init()
     m.secoes = []
     m.secao = 0
     m.area = "lista"
-    m.canais = []
     m.lista.observeField("itemSelected", "onCanal")
     m.lista.observeField("itemFocused", "onFocoCanal")
     m.top.observeField("focusedChild", "onFocusedChildChange")
@@ -28,51 +27,56 @@ sub onFocusedChildChange()
     if m.top.isInFocusChain() and m.area = "lista" and not m.lista.isInFocusChain() then m.lista.setFocus(true)
 end sub
 
-' A programação chega depois: atualiza as linhas sem tirar a pessoa do lugar.
-sub onEpgChange()
-    m.epg = m.top.epgMap
-    if m.canais.Count() = 0 then return
+' Nova árvore (a programação chegou): troca sem tirar a pessoa do lugar.
+sub onArvore()
+    m.arvore = m.top.arvore
+    if m.arvore = invalid then return
     foco = m.lista.itemFocused
+    atualizarSecoes()
     preencher()
     if foco > 0 then m.lista.jumpToItem = foco
 end sub
 
-sub onChannelsChange()
-    ' Campo de nó é copiado inteiro a cada leitura: aqui só se lê uma vez.
-    canais = m.top.channels
-    if canais = invalid then return
-    m.canais = canais
-    vistos = {}
+sub atualizarSecoes()
     ordem = []
-    for each c in canais
-        g = c.category
-        if g = invalid or g = "" then g = "Outros"
-        if not vistos.DoesExist(g) then
-            vistos[g] = true
-            ordem.Push(g)
-        end if
+    for i = 0 to m.arvore.getChildCount() - 1
+        ordem.Push(m.arvore.getChild(i).title)
     end for
-    if LoadFavoriteChannels().Count() > 0 then ordem.Unshift("Favoritos")
+    m.temFavoritos = LoadFavoriteChannels().Count() > 0
+    if m.temFavoritos then ordem.Unshift("Favoritos")
     m.secoes = ordem
     if m.secao >= ordem.Count() then m.secao = 0
     desenharChips()
-    preencher()
 end sub
 
-function atual(canal as Object) as Dynamic
-    mapa = m.epg
-    if mapa = invalid or mapa[canal.name] = invalid then return invalid
-    agora = CreateObject("roDateTime").AsSeconds()
-    programas = mapa[canal.name]
-    for i = 0 to programas.Count() - 1
-        p = programas[i]
-        if agora >= p.startSec and agora < p.stopSec then
-            r = { titulo: p.title, ini: p.startSec, fim: p.stopSec, seguinte: "" }
-            if i + 1 < programas.Count() then r.seguinte = programas[i + 1].title
-            return r
-        end if
+function totalDeCanais() as Integer
+    n = 0
+    for i = 0 to m.arvore.getChildCount() - 1
+        n = n + m.arvore.getChild(i).getChildCount()
     end for
-    return invalid
+    return n
+end function
+
+' Favoritos é a única seção montada na hora: são poucos.
+function noDosFavoritos() as Object
+    nomes = {}
+    for each f in LoadFavoriteChannels()
+        nomes[f] = true
+    end for
+    raiz = CreateObject("roSGNode", "ContentNode")
+    for i = 0 to m.arvore.getChildCount() - 1
+        secao = m.arvore.getChild(i)
+        for j = 0 to secao.getChildCount() - 1
+            c = secao.getChild(j)
+            if nomes.DoesExist(c.title) then
+                no = raiz.CreateChild("ContentNode")
+                no.title = c.title
+                no.hdPosterUrl = c.hdPosterUrl
+                no.addFields({ name: c.name, number: c.number, category: c.category, logo: c.logo, variants: c.variants, numero: c.numero, grupoTexto: c.grupoTexto, programa: c.programa, progresso: c.progresso, ini: c.ini, fim: c.fim, seguinte: c.seguinte })
+            end if
+        end for
+    end for
+    return raiz
 end function
 
 sub desenharChips()
@@ -125,44 +129,26 @@ sub marcarChips()
 end sub
 
 sub preencher()
-    canais = m.canais
-    if m.secoes.Count() = 0 then return
+    if m.arvore = invalid or m.secoes.Count() = 0 then return
     nome = m.secoes[m.secao]
-    favoritos = {}
     if nome = "Favoritos" then
-        for each f in LoadFavoriteChannels()
-            favoritos[f] = true
-        end for
+        conteudo = noDosFavoritos()
+    else
+        indice = m.secao
+        if m.temFavoritos then indice = indice - 1
+        conteudo = m.arvore.getChild(indice)
     end if
-    m.filtrados = []
-    raiz = CreateObject("roSGNode", "ContentNode")
-    for each c in canais
-        if nome = "Favoritos" then
-            entra = favoritos.DoesExist(c.name)
-        else
-            entra = c.category = nome
-        end if
-        if entra then
-            m.filtrados.Push(c)
-            no = raiz.CreateChild("ContentNode")
-            no.title = c.name
-            if c.logo <> invalid then no.hdPosterUrl = c.logo
-            prog = ""
-            pct = 0.0
-            a = atual(c)
-            if a <> invalid then
-                prog = a.titulo
-                d = CreateObject("roDateTime").AsSeconds()
-                if a.fim > a.ini then pct = (d - a.ini) / (a.fim - a.ini)
-            end if
-            no.addFields({ numero: c.number.ToStr(), grupoTexto: UCase(nome), programa: prog, progresso: pct })
-        end if
-    end for
-    m.lista.content = raiz
-    m.contaGrupo.text = m.filtrados.Count().ToStr()
-    m.contaTotal.text = canais.Count().ToStr()
-    if m.filtrados.Count() > 0 then mostrarInfo(m.filtrados[0])
+    m.conteudo = conteudo
+    m.lista.content = conteudo
+    m.contaGrupo.text = conteudo.getChildCount().ToStr()
+    m.contaTotal.text = totalDeCanais().ToStr()
+    if conteudo.getChildCount() > 0 then mostrarInfo(conteudo.getChild(0))
 end sub
+
+function canalEm(i as Integer) as Dynamic
+    if m.conteudo = invalid or i < 0 or i >= m.conteudo.getChildCount() then return invalid
+    return m.conteudo.getChild(i)
+end function
 
 function hora(seg as Integer) as String
     d = CreateObject("roDateTime")
@@ -176,24 +162,23 @@ function hora(seg as Integer) as String
 end function
 
 sub mostrarInfo(c as Object)
-    m.infoCanal.text = c.number.ToStr() + "  " + c.name
-    a = atual(c)
-    if a = invalid then
+    m.infoCanal.text = c.numero + "  " + c.title
+    if c.programa = "" then
         m.infoPrograma.text = "Ao vivo"
         m.infoHora.text = ""
         m.infoSeguir.text = ""
         return
     end if
-    m.infoPrograma.text = a.titulo
-    faltam = Int((a.fim - CreateObject("roDateTime").AsSeconds()) / 60)
-    m.infoHora.text = hora(a.ini) + " – " + hora(a.fim) + "  ·  faltam " + faltam.ToStr() + " min"
+    m.infoPrograma.text = c.programa
+    faltam = Int((c.fim - CreateObject("roDateTime").AsSeconds()) / 60)
+    m.infoHora.text = hora(c.ini) + " – " + hora(c.fim) + "  ·  faltam " + faltam.ToStr() + " min"
     m.infoSeguir.text = ""
-    if a.seguinte <> "" then m.infoSeguir.text = "A seguir: " + a.seguinte
+    if c.seguinte <> "" then m.infoSeguir.text = "A seguir: " + c.seguinte
 end sub
 
 sub onFocoCanal()
-    i = m.lista.itemFocused
-    if m.filtrados <> invalid and i >= 0 and i < m.filtrados.Count() then mostrarInfo(m.filtrados[i])
+    c = canalEm(m.lista.itemFocused)
+    if c <> invalid then mostrarInfo(c)
 end sub
 
 sub onOpenChange()
@@ -201,31 +186,33 @@ sub onOpenChange()
     if m.top.isOpen then
         m.area = "lista"
         marcarChips()
-        canais = m.canais
-        if canais <> invalid and m.top.selectedIndex < canais.Count() and m.secoes.Count() > 0 then
-            c = canais[m.top.selectedIndex]
-            for i = 0 to m.secoes.Count() - 1
-                if m.secoes[i] = c.category and i <> m.secao then
-                    m.secao = i
-                    preencher()
-                    marcarChips()
-                end if
-            end for
-            if m.filtrados <> invalid then
-                for i = 0 to m.filtrados.Count() - 1
-                    if m.filtrados[i].name = c.name then m.lista.jumpToItem = i
+        if m.arvore <> invalid and m.secoes.Count() > 0 then
+            ' Abre na seção e no canal que estão tocando.
+            n = m.top.selectedIndex
+            base = 0
+            if m.temFavoritos then base = 1
+            for i = 0 to m.arvore.getChildCount() - 1
+                secao = m.arvore.getChild(i)
+                for j = 0 to secao.getChildCount() - 1
+                    if secao.getChild(j).number = n + 1 then
+                        if m.secao <> i + base then
+                            m.secao = i + base
+                            preencher()
+                            marcarChips()
+                        end if
+                        m.lista.jumpToItem = j
+                        exit for
+                    end if
                 end for
-            end if
+            end for
         end if
         m.lista.setFocus(true)
     end if
 end sub
 
 sub onCanal()
-    i = m.lista.itemSelected
-    if m.filtrados <> invalid and i >= 0 and i < m.filtrados.Count() then
-        m.top.channelSelected = m.filtrados[i]
-    end if
+    c = canalEm(m.lista.itemSelected)
+    if c <> invalid then m.top.channelSelected = c
 end sub
 
 function onKeyEvent(key as String, press as Boolean) as Boolean
@@ -263,18 +250,19 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
         m.top.setFocus(true)
         return true
     else if key = "right" then
-        i = m.lista.itemFocused
-        if m.filtrados <> invalid and i >= 0 and i < m.filtrados.Count() then m.top.fontesRequested = m.filtrados[i]
+        c = canalEm(m.lista.itemFocused)
+        if c <> invalid then m.top.fontesRequested = c
         return true
     else if key = "options" then
-        i = m.lista.itemFocused
-        if m.filtrados <> invalid and i >= 0 and i < m.filtrados.Count() then m.top.menuRequested = m.filtrados[i]
+        c = canalEm(m.lista.itemFocused)
+        if c <> invalid then m.top.menuRequested = c
         return true
     else if key = "replay" then
-        i = m.lista.itemFocused
-        if m.filtrados <> invalid and i >= 0 and i < m.filtrados.Count() then
-            ToggleFavoriteChannel(m.filtrados[i].name)
-            onChannelsChange()
+        c = canalEm(m.lista.itemFocused)
+        if c <> invalid then
+            ToggleFavoriteChannel(c.title)
+            atualizarSecoes()
+            preencher()
         end if
         return true
     end if

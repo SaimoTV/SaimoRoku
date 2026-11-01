@@ -31,7 +31,7 @@ function HttpGet(url as String) as String
     ut = CreateObject("roUrlTransfer")
     ut.SetUrl(url)
     ut.SetCertificatesFile("common:/certs/ca-bundle.crt")
-    ut.AddHeader("User-Agent", "SaimoTV/2.6.4 (RokuOS)")
+    ut.AddHeader("User-Agent", "SaimoTV/2.6.5 (RokuOS)")
     ut.RetainBodyOnError(true)
     return ut.GetToString()
 end function
@@ -273,36 +273,42 @@ end sub
 ' ----- Eventos Esportivos -----
 sub fetchEvents(baseUrl as String)
     events = []
-    parsed = ParseJson(HttpGet("https://embedtv.cc/api/events"))
+    texto = HttpGet("https://embedtv.cc/api/events")
+    ' Fora do ar ela devolve página ou nada: vai o caminho do site.
+    if Left(texto.Trim(), 1) <> "[" then texto = HttpGet("https://saimo-tv.pages.dev/api/events")
+    parsed = invalid
+    if Left(texto.Trim(), 1) = "[" then parsed = ParseJson(texto)
     if parsed <> invalid and type(parsed) = "roArray" then
         d = CreateObject("roDateTime")
         agora = d.AsSeconds()
         for each ev in parsed
-            if ev.players <> invalid and ev.players.Count() > 0 and ev.teams <> invalid and ev.time_start <> invalid then
-                ' Só data e hora; o deslocamento -03:00 vai à mão.
-                d.FromISO8601String(Left(ev.time_start, 19) + "Z")
-                inicio = d.AsSeconds() + 10800
-                d.FromISO8601String(Left(ev.time_end, 19) + "Z")
-                fim = d.AsSeconds() + 10800
-                if fim > agora then
-                    events.Push({
-                        homeTeam: ev.teams.home.name,
-                        awayTeam: ev.teams.away.name,
-                        homeLogo: ev.teams.home.image.Replace("w_34,h_34", "w_256,h_256"),
-                        awayLogo: ev.teams.away.image.Replace("w_34,h_34", "w_256,h_256"),
-                        league: ev.league.name,
-                        timeStr: Mid(ev.time_start, 12, 5),
-                        aoVivo: agora >= inicio,
-                        slugs: ev.players,
-                        channelName: "",
-                        score: ""
-                    })
-                end if
-            end if
+            jogo = lerJogo(ev, d, agora)
+            if jogo <> invalid then events.Push(jogo)
         end for
     end if
     m.top.responseEvents = events
 end sub
+
+' Campo faltando só descarta o jogo: erro aqui derrubaria a tarefa.
+function lerJogo(ev as Object, d as Object, agora as Integer) as Dynamic
+    if ev.players = invalid or ev.players.Count() = 0 or ev.teams = invalid or ev.time_start = invalid then return invalid
+    if ev.teams.home = invalid or ev.teams.away = invalid or ev.teams.home.name = invalid or ev.teams.away.name = invalid then return invalid
+    d.FromISO8601String(Left(ev.time_start, 19) + "Z")
+    inicio = d.AsSeconds() + 10800
+    fim = inicio + 7200
+    if ev.time_end <> invalid then
+        d.FromISO8601String(Left(ev.time_end, 19) + "Z")
+        fim = d.AsSeconds() + 10800
+    end if
+    if fim <= agora then return invalid
+    casa = ""
+    fora = ""
+    if ev.teams.home.image <> invalid then casa = ev.teams.home.image.Replace("w_34,h_34", "w_256,h_256")
+    if ev.teams.away.image <> invalid then fora = ev.teams.away.image.Replace("w_34,h_34", "w_256,h_256")
+    liga = ""
+    if ev.league <> invalid and ev.league.name <> invalid then liga = ev.league.name
+    return { homeTeam: ev.teams.home.name, awayTeam: ev.teams.away.name, homeLogo: casa, awayLogo: fora, league: liga, timeStr: Mid(ev.time_start, 12, 5), aoVivo: agora >= inicio, slugs: ev.players, channelName: "", score: "" }
+end function
 
 ' Mesmos estilos da TV Box: a ordem conta, rádio que cabe em dois fica no primeiro.
 function estiloDaRadio(nome as String) as String

@@ -140,9 +140,8 @@ sub juntarCanais()
         if i < 16 then m.canaisInicio.Push(c)
     end for
     juntarEventos()
-    if m.currentScreenName = "live" and m.currentScreenNode <> invalid then
-        m.currentScreenNode.channels = m.cachedChannels
-    else if m.currentScreenName = "home" and m.currentScreenNode <> invalid then
+    montarArvore()
+    if m.currentScreenName = "home" and m.currentScreenNode <> invalid then
         m.currentScreenNode.channels = m.canaisInicio
     else if m.currentScreenName = "favorites" and m.currentScreenNode <> invalid then
         m.currentScreenNode.channels = m.cachedChannels
@@ -153,11 +152,26 @@ end sub
 
 sub onEpgLoaded(evt as Object)
     m.cachedEpg = evt.getData()
-    if m.currentScreenName = "live" and m.currentScreenNode <> invalid then
-        m.currentScreenNode.epgMap = m.cachedEpg
-    else if m.currentScreenName = "home" and m.currentScreenNode <> invalid then
+    montarArvore()
+    if m.currentScreenName = "home" and m.currentScreenNode <> invalid then
         m.currentScreenNode.epgMap = m.cachedEpg
     end if
+end sub
+
+' Árvore do Ao vivo: montada em segundo plano quando os dados mudam, não no clique.
+sub montarArvore()
+    if m.cachedChannels = invalid then return
+    t = CreateObject("roSGNode", "ArvoreCanaisTask")
+    t.canais = m.cachedChannels
+    if m.cachedEpg <> invalid then t.epg = m.cachedEpg
+    t.observeField("arvore", "onArvorePronta")
+    m.tarefaArvore = t
+    t.control = "run"
+end sub
+
+sub onArvorePronta(evt as Object)
+    m.arvoreCanais = evt.getData()
+    if m.currentScreenName = "live" and m.currentScreenNode <> invalid then m.currentScreenNode.arvore = m.arvoreCanais
 end sub
 
 sub onDestaquesLoaded(evt as Object)
@@ -281,8 +295,7 @@ sub switchScreen(screenName as String, params = invalid as Dynamic)
             ' Ao abrir a aba Ao Vivo pelo menu, abre primeiro a lista de canais (drawer)
             node.openDrawerOnLoad = true
         end if
-        if m.cachedEpg <> invalid then node.epgMap = m.cachedEpg
-        if m.cachedChannels <> invalid then node.channels = m.cachedChannels
+        if m.arvoreCanais <> invalid then node.arvore = m.arvoreCanais
         node.observeField("telaCheia", "onRadioTelaCheia")
         node.observeField("guiaRequested", "onAbrirGuia")
         node.observeField("sairRequested", "onSairDoApp")

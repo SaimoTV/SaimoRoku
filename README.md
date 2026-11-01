@@ -1,4 +1,4 @@
-# Saimo TV para Roku (v2.6.4)
+# Saimo TV para Roku (v2.6.5)
 
 Aplicativo oficial 100% nativo para TVs e dispositivos Roku, desenvolvido em **BrightScript** e **SceneGraph** para máxima performance, baixíssimo consumo de memória e resposta instantânea ao controle remoto.
 
@@ -31,6 +31,9 @@ Segurar OK na tela cheia (ou `*`, na lista de canais) abre Canais, Guia, Canal a
 
 ## Desempenho
 Pensado para sticks de 512 MB. Campo de nó é copiado inteiro a cada leitura: cada tela lê `channels` e `epgMap` uma vez e guarda em `m`. Canais tocam direto da fonte, sem proxy; o proxy é a segunda tentativa, e o servidor que só abriu por ele fica lembrado na sessão. Fonte que não abre em 8 s é trocada. O guia baixa em segundo plano depois de 15 s e fica 6 h no `cachefs:`.
+
+## Desempenho do Ao vivo
+`components/tasks/ArvoreCanaisTask.brs` monta a árvore seção > canal em segundo plano. Campo de lista é copiado inteiro a cada passagem; nó vai por referência. Por isso `LiveScreen` e `ChannelDrawer` recebem só `arvore`: nunca passe a lista de canais ou a programação por campo na hora do clique.
 
 ## Como Gerar o Pacote
 ```bash

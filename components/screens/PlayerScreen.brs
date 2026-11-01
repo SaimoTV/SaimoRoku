@@ -154,7 +154,7 @@ sub startPlayback(streamUrl as String, resumePos as Dynamic)
     content.url = streamUrl
     content.title = m.playerOsd.title
     
-    headers = ["User-Agent: SaimoTV/2.6.4 (RokuOS)", "Accept: */*"]
+    headers = ["User-Agent: SaimoTV/2.6.5 (RokuOS)", "Accept: */*"]
     if Instr(1, LCase(streamUrl), "embedplayer2.xyz") > 0 then
         headers.Push("Referer: https://embedplayer2.xyz/")
     end if

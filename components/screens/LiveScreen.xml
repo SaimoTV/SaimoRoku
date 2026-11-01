@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <component name="LiveScreen" extends="Group">
   <interface>
-    <field id="channels" type="array" onChange="onChannelsChange" />
-    <field id="epgMap" type="assocarray" onChange="onEpgChange" />
+    <field id="arvore" type="node" onChange="onArvore" />
     <field id="currentChannelIndex" type="integer" value="0" onChange="onChannelIndexChange" />
     <field id="openDrawerOnLoad" type="boolean" value="false" />
     <field id="telaCheia" type="boolean" />
@@ -37,6 +36,7 @@
 
     <Rectangle id="fundoFontes" width="1040" height="1080" color="#0b0e14" visible="false" />
     <PainelLateral id="painelFontes" />
+    <Timer id="inicioTimer" duration="0.05" repeat="false" />
     <Timer id="holdTimer" duration="0.6" repeat="false" />
     <Timer id="zapTimer" duration="0.4" repeat="false" />
     <Timer id="vigiaTimer" duration="8" repeat="false" />
