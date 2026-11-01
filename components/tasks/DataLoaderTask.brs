@@ -270,40 +270,56 @@ end sub
 
 ' ----- Eventos Esportivos -----
 sub fetchEvents(baseUrl as String)
-    url = "https://saimo-tv.pages.dev/eventos-extra.json"
-    text = HttpGet(url)
     events = []
-
-    if text <> "" and text <> "[]" then
-        parsed = ParseJson(text)
-        if parsed <> invalid and type(parsed) = "roArray" then
-            for each ev in parsed
-                home = ""
-                away = ""
-                if ev.mandante <> invalid then home = ev.mandante
-                if ev.visitante <> invalid then away = ev.visitante
-                league = ""
-                if ev.campeonato <> invalid then league = ev.campeonato
-                timeStr = ""
-                if ev.hora <> invalid then timeStr = ev.hora
-                channelName = ""
-                if ev.canal <> invalid then channelName = ev.canal
-
-                item = {
-                    homeTeam: home,
-                    awayTeam: away,
-                    league: league,
-                    timeStr: timeStr,
-                    channelName: channelName,
-                    score: ""
-                }
-                events.Push(item)
-            end for
-        end if
+    parsed = ParseJson(HttpGet("https://embedtv.cc/api/events"))
+    if parsed <> invalid and type(parsed) = "roArray" then
+        d = CreateObject("roDateTime")
+        agora = d.AsSeconds()
+        for each ev in parsed
+            if ev.players <> invalid and ev.players.Count() > 0 and ev.teams <> invalid and ev.time_start <> invalid then
+                ' Só data e hora; o deslocamento -03:00 vai à mão.
+                d.FromISO8601String(Left(ev.time_start, 19) + "Z")
+                inicio = d.AsSeconds() + 10800
+                d.FromISO8601String(Left(ev.time_end, 19) + "Z")
+                fim = d.AsSeconds() + 10800
+                if fim > agora then
+                    events.Push({
+                        homeTeam: ev.teams.home.name,
+                        awayTeam: ev.teams.away.name,
+                        homeLogo: ev.teams.home.image.Replace("w_34,h_34", "w_256,h_256"),
+                        awayLogo: ev.teams.away.image.Replace("w_34,h_34", "w_256,h_256"),
+                        league: ev.league.name,
+                        timeStr: Mid(ev.time_start, 12, 5),
+                        aoVivo: agora >= inicio,
+                        slugs: ev.players,
+                        channelName: "",
+                        score: ""
+                    })
+                end if
+            end if
+        end for
     end if
-
     m.top.responseEvents = events
 end sub
+
+' Mesmos estilos da TV Box: a ordem conta, rádio que cabe em dois fica no primeiro.
+function estiloDaRadio(nome as String) as String
+    n = LCase(nome) + " "
+    estilos = [
+        { t: "Rock", p: ["rock", "metal", "kiss", "punk"] },
+        { t: "Notícias e esporte", p: ["news", "noticia", "cbn", "gaucha", "itatiaia", "tupi", "esporte", "jornal", "bandnews", "radio globo", "eldorado", "bandeirantes"] },
+        { t: "Gospel e católicas", p: ["gospel", "evangel", "catolic", "crista", "louvor", "aleluia", "cancao nova", "novo tempo", "aparecida", "fe ", "deus", "jesus", "igreja", "biblia"] },
+        { t: "Pop e hits", p: ["pop", "hits", "dance", "mix", "jovem pan", "transamerica", "energia", "eletro", "club", "pulse", "top"] },
+        { t: "Sertanejo, MPB e samba", p: ["sertanej", "mpb", "samba", "pagode", "forro", "nativa", "caipira", "brega", "axe", "piseiro", "moda de viola"] },
+        { t: "Clássica e jazz", p: ["classic", "jazz", "cultura", "educativa", "universit", "instrumental", "blues", "lounge"] }
+    ]
+    for each e in estilos
+        for each palavra in e.p
+            if Instr(1, n, palavra) > 0 then return e.t
+        end for
+    end for
+    return "Outras"
+end function
 
 ' ----- Rádios -----
 sub fetchRadios(baseUrl as String)
@@ -323,7 +339,7 @@ sub fetchRadios(baseUrl as String)
             streamUrl = parts[1].Trim()
             logo = ""
             if parts.Count() >= 3 then logo = parts[2].Trim()
-            genre = "Ao Vivo"
+            genre = estiloDaRadio(name)
 
             item = {
                 name: name,

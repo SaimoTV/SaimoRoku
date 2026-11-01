@@ -14,7 +14,7 @@ sub init()
     for each t in "A B C D E F G H I J K L M N O P Q R S T U V W X Y Z 0 1 2 3 4 5 6 7 8 9".Split(" ")
         raiz.CreateChild("ContentNode").title = t
     end for
-    for each t in ["_", "<", "X"]
+    for each t in ["espaço", "apagar", "limpar"]
         raiz.CreateChild("ContentNode").title = t
     end for
     m.teclas.content = raiz
@@ -31,11 +31,11 @@ end sub
 
 sub onTecla()
     t = m.teclas.content.getChild(m.teclas.itemSelected).title
-    if t = "_" then
+    if t = "espaço" then
         m.texto = m.texto + " "
-    else if t = "<" then
+    else if t = "apagar" then
         if Len(m.texto) > 0 then m.texto = Left(m.texto, Len(m.texto) - 1)
-    else if t = "X" then
+    else if t = "limpar" then
         m.texto = ""
     else
         m.texto = m.texto + LCase(t)

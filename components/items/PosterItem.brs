@@ -65,16 +65,16 @@ sub onItemContentChange()
     if item.itemType = "evento" then
         m.top.findNode("evento").visible = true
         m.top.findNode("eventoHora").text = item.hora
-        m.top.findNode("eventoJogo").text = item.title
+        m.top.findNode("eventoCasa").uri = item.casa
+        m.top.findNode("eventoFora").uri = item.fora
         m.poster.visible = false
-        m.title.visible = false
-        m.sub.translation = [18, 310]
+        m.sub.translation = [18, 340]
     end if
     temImagem = item.hdPosterUrl <> invalid and item.hdPosterUrl <> ""
     if temImagem then
         m.poster.uri = item.hdPosterUrl
         m.inicial.text = ""
-    else if item.title <> invalid then
+    else if item.title <> invalid and item.itemType <> "evento" then
         m.inicial.text = UCase(Left(item.title, 1))
     end if
     if item.title <> invalid then m.title.text = item.title

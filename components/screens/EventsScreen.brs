@@ -20,13 +20,29 @@ sub onEventsChange()
     if events = invalid then return
     m.top.findNode("vazio").visible = events.Count() = 0
     root = CreateObject("roSGNode", "ContentNode")
-    linha = root.CreateChild("ContentNode")
-    linha.title = "Hoje"
+    vivos = invalid
+    breve = invalid
     for each ev in events
+        if ev.aoVivo then
+            if vivos = invalid then
+                vivos = root.CreateChild("ContentNode")
+                vivos.title = "Ao vivo agora"
+            end if
+            linha = vivos
+        else
+            if breve = invalid then
+                breve = CreateObject("roSGNode", "ContentNode")
+                breve.title = "Começa em breve"
+            end if
+            linha = breve
+        end if
         no = linha.CreateChild("ContentNode")
         no.title = ev.homeTeam + " x " + ev.awayTeam
-        no.addFields({ itemType: "evento", hora: ev.timeStr, subTitulo: ev.channelName + "  ·  " + ev.league, rawEvent: ev })
+        selo = ev.timeStr
+        if ev.aoVivo then selo = "AO VIVO"
+        no.addFields({ itemType: "evento", hora: selo, casa: ev.homeLogo, fora: ev.awayLogo, subTitulo: ev.channelName + "  ·  " + ev.league, rawEvent: ev })
     end for
+    if breve <> invalid then root.appendChild(breve)
     m.rows.content = root
 end sub
 

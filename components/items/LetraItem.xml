@@ -7,7 +7,7 @@
   </interface>
   <children>
     <Poster id="fundo" width="84" height="84" uri="pkg:/images/p_btn.9.png" visible="false" />
-    <Label id="letra" width="84" height="84" horizAlign="center" vertAlign="center" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="32" /></Label>
+    <Label id="letra" width="84" height="84" horizAlign="center" vertAlign="center" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="20" /></Label>
   </children>
   <script type="text/brightscript"><![CDATA[
 sub init()

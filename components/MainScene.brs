@@ -132,6 +132,7 @@ sub juntarCanais()
         end for
     end if
     m.cachedChannels = todos
+    juntarEventos()
     if m.currentScreenName = "live" and m.currentScreenNode <> invalid then
         m.currentScreenNode.channels = m.cachedChannels
     else if m.currentScreenName = "home" and m.currentScreenNode <> invalid then
@@ -175,8 +176,34 @@ sub onVodLoaded(evt as Object)
     end if
 end sub
 
+' O jogo diz o canal por um apelido (premiere-2); só entra jogo com canal nosso.
+function canalDoJogo(players as Object) as String
+    if m.cachedChannels = invalid or players.Count() = 0 then return ""
+    partes = players[0].Split("/")
+    apelido = LCase(partes[partes.Count() - 1]).Replace("-", "").Replace(" ", "")
+    if apelido = "" then return ""
+    for each c in m.cachedChannels
+        if LCase(c.name).Replace(" ", "") = apelido then return c.name
+    end for
+    for each c in m.cachedChannels
+        if Instr(1, LCase(c.name).Replace(" ", ""), apelido) > 0 then return c.name
+    end for
+    return ""
+end function
+
 sub onEventsLoaded(evt as Object)
-    m.cachedEvents = evt.getData()
+    m.eventosCrus = evt.getData()
+    juntarEventos()
+end sub
+
+sub juntarEventos()
+    if m.eventosCrus = invalid then return
+    saida = []
+    for each ev in m.eventosCrus
+        ev.channelName = canalDoJogo(ev.slugs)
+        if ev.channelName <> "" then saida.Push(ev)
+    end for
+    m.cachedEvents = saida
     if m.currentScreenName = "events" and m.currentScreenNode <> invalid then
         m.currentScreenNode.events = m.cachedEvents
     end if
@@ -338,6 +365,8 @@ sub switchScreen(screenName as String, params = invalid as Dynamic)
         if screenName = "minhas" then m.currentScreenNode.callFunc("focar")
     end if
 
+    avisarCelular()
+
     ' Atualiza visibilidade da barra de navegação (oculta no player de VOD e Live em tela cheia)
     if screenName = "player" then
         m.topNavBar.visible = false
@@ -450,6 +479,11 @@ sub onRadioTelaCheia(evt as Object)
     m.topNavBar.visible = not evt.getData()
 end sub
 
+sub avisarCelular()
+    tela = m.currentScreenName
+    m.connectServer.saida = FormatJson({ t: "state", mode: "idle", screen: tela, channel: "", playing: tela = "live" or tela = "player", multi: false, active: 0, screens: [], tvAudio: "tv", phoneAudio: [] })
+end sub
+
 sub onAbrirGuia()
     switchScreen("guide")
 end sub
@@ -479,6 +513,8 @@ sub onConnectCommand(evt as Object)
         handleVirtualKey(cmd.code)
     else if tipo = "text" and cmd.value <> invalid then
         if m.currentScreenName = "minhas" then m.currentScreenNode.textoRecebido = cmd.value
+    else if tipo = "fonte" or tipo = "sync" then
+        avisarCelular()
     end if
 end sub
 

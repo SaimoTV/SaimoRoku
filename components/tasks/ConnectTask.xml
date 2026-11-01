@@ -6,6 +6,7 @@
     <field id="receivedCommand" type="assocarray" />
     <field id="activeClients" type="integer" value="0" />
     <field id="status" type="string" />
+    <field id="saida" type="string" alwaysNotify="true" />
   </interface>
 
   <script type="text/brightscript" uri="pkg:/components/tasks/ConnectTask.brs" />
