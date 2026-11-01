@@ -1,4 +1,4 @@
-# Saimo TV para Roku (v2.6.1)
+# Saimo TV para Roku (v2.6.2)
 
 Aplicativo oficial 100% nativo para TVs e dispositivos Roku, desenvolvido em **BrightScript** e **SceneGraph** para máxima performance, baixíssimo consumo de memória e resposta instantânea ao controle remoto.
 
@@ -22,6 +22,12 @@ Todas as telas seguem a TV Box: mesma fonte (Roboto, em `fonts/`), fundo aurora 
 
 ## Minhas listas
 Em Ajustes, a pessoa adiciona uma lista `.m3u` pelo link (teclado da TV ou Saimo Connect). Roku não tem seletor de arquivos. O link fica no registro; os canais, no `cachefs:` e são baixados de novo se o sistema limpar. Até 5.000 canais por lista; canais adultos ficam de fora. Código: `source/utils/LeitorM3u.brs`, `components/tasks/MinhasListasTask.brs`, `components/screens/MinhasListasScreen.brs`.
+
+## Menu do canal
+Segurar OK na tela cheia (ou `*`, na lista de canais) abre Canais, Guia, Canal anterior, Favoritar, Áudio e legenda, Fontes e Timer de sono.
+
+## Saimo Connect
+`components/tasks/ConnectTask.brs` responde `/info` e fala WebSocket em `/ws`, no protocolo da TV Box. As teclas do celular entram pelo ECP local (`127.0.0.1:8060`). O simulador não abre sockets: isto só roda em Roku de verdade.
 
 ## Como Gerar o Pacote
 ```bash

@@ -7,6 +7,7 @@
     <field id="openDrawerOnLoad" type="boolean" value="false" />
     <field id="telaCheia" type="boolean" />
     <field id="guiaRequested" type="boolean" alwaysNotify="true" />
+    <field id="sairRequested" type="boolean" alwaysNotify="true" />
     <field id="focusUpRequested" type="boolean" alwaysNotify="true" />
     <function name="cleanUp" />
   </interface>
@@ -36,6 +37,8 @@
 
     <Rectangle id="fundoFontes" width="1040" height="1080" color="#0b0e14" visible="false" />
     <PainelLateral id="painelFontes" />
+    <Timer id="holdTimer" duration="0.6" repeat="false" />
+    <Timer id="sonoTimer" repeat="false" />
 
     <!-- Modal de PIN Parental -->
     <PinModal id="pinModal" />

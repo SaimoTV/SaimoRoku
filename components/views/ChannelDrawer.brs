@@ -248,7 +248,11 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
         i = m.lista.itemFocused
         if m.filtrados <> invalid and i >= 0 and i < m.filtrados.Count() then m.top.fontesRequested = m.filtrados[i]
         return true
-    else if key = "options" or key = "replay" then
+    else if key = "options" then
+        i = m.lista.itemFocused
+        if m.filtrados <> invalid and i >= 0 and i < m.filtrados.Count() then m.top.menuRequested = m.filtrados[i]
+        return true
+    else if key = "replay" then
         i = m.lista.itemFocused
         if m.filtrados <> invalid and i >= 0 and i < m.filtrados.Count() then
             ToggleFavoriteChannel(m.filtrados[i].name)

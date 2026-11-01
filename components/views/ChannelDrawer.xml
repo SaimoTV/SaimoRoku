@@ -8,6 +8,7 @@
     <field id="isOpen" type="boolean" value="false" onChange="onOpenChange" />
     <field id="focusUpRequested" type="boolean" alwaysNotify="true" />
     <field id="fontesRequested" type="assocarray" alwaysNotify="true" />
+    <field id="menuRequested" type="assocarray" alwaysNotify="true" />
   </interface>
 
   <children>
@@ -22,7 +23,7 @@
       </Group>
 
       <MarkupList id="channelList" translation="[20, 342]" itemComponentName="CanalItem" itemSize="[810, 172]" itemSpacing="[0, 4]" numRows="3" drawFocusFeedback="false" vertFocusAnimationStyle="floatingFocus" />
-      <Label translation="[60, 950]" width="760" wrap="true" numLines="2" text="OK assiste  ·  esquerda: seções  ·  direita: fontes  ·  * favorita" color="#A8B4C0"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="28" /></Label>
+      <Label translation="[60, 950]" width="760" wrap="true" numLines="2" text="OK assiste  ·  esquerda: seções  ·  direita: fontes  ·  * menu" color="#A8B4C0"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="28" /></Label>
 
       <!-- Prévia: o vídeo fica por baixo, nesta janela -->
       <Poster translation="[944, 708]" width="880" height="290" uri="pkg:/images/p_chip.9.png" />

@@ -281,6 +281,7 @@ sub switchScreen(screenName as String, params = invalid as Dynamic)
         if m.cachedChannels <> invalid then node.channels = m.cachedChannels
         node.observeField("telaCheia", "onRadioTelaCheia")
         node.observeField("guiaRequested", "onAbrirGuia")
+        node.observeField("sairRequested", "onSairDoApp")
         node.observeField("focusUpRequested", "onScreenFocusUp")
         m.currentScreenNode = node
 
@@ -487,6 +488,10 @@ end sub
 
 sub onGuiaVoltar()
     switchScreen("live")
+end sub
+
+sub onSairDoApp()
+    m.top.sairDoApp = true
 end sub
 
 sub onAbrirGuia()

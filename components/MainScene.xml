@@ -2,6 +2,7 @@
 <component name="MainScene" extends="Scene">
   <interface>
     <field id="deepLink" type="assocarray" onChange="onDeepLinkChange" />
+    <field id="sairDoApp" type="boolean" alwaysNotify="true" />
   </interface>
 
   <children>

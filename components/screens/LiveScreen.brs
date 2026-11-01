@@ -18,6 +18,11 @@ sub init()
     m.painelFontes = m.top.findNode("painelFontes")
     m.painelFontes.observeField("escolhido", "onFonteEscolhida")
     m.painelFontes.observeField("aberto", "onFontesAberto")
+    m.holdTimer = m.top.findNode("holdTimer")
+    m.holdTimer.observeField("fire", "onHold")
+    m.sonoTimer = m.top.findNode("sonoTimer")
+    m.sonoTimer.observeField("fire", "onSono")
+    m.channelDrawer.observeField("menuRequested", "onDrawerMenu")
     m.pinModal.observeField("isUnlocked", "onPinUnlocked")
     m.top.observeField("focusedChild", "onFocusedChildChange")
 
@@ -60,12 +65,17 @@ sub showFavoriteToast(channelName as String, isFav as Boolean)
     m.favoriteToastTimer.control = "start"
 end sub
 
+sub onDrawerMenu()
+    abrirMenu(m.channelDrawer.menuRequested)
+end sub
+
 sub onDrawerFontes()
     abrirFontes(m.channelDrawer.fontesRequested)
 end sub
 
 ' Painel com as fontes do canal: "Fonte N · qualidade", nunca o endereço.
 sub abrirFontes(ch as Object)
+    m.modoPainel = "fontes"
     m.canalFontes = ch
     opcoes = []
     for i = 0 to ch.variants.Count() - 1
@@ -98,8 +108,136 @@ sub onFontesAberto()
     if m.channelDrawer.isOpen then m.channelDrawer.setFocus(true) else m.top.setFocus(true)
 end sub
 
+' Segurar OK (ou *): tudo o que se pode fazer com o canal, como na TV Box.
+sub abrirMenu(ch as Object)
+    m.modoPainel = "menu"
+    m.canalFontes = ch
+    fav = "Favoritar"
+    if IsChannelFavorite(ch.name) then fav = "Tirar dos favoritos"
+    m.acoes = [
+        { id: "canais", titulo: "Canais" },
+        { id: "guia", titulo: "Guia de programação" }
+    ]
+    if m.canalAnterior <> invalid then m.acoes.Push({ id: "anterior", titulo: "Voltar para " + m.canalAnterior })
+    m.acoes.Push({ id: "favorito", titulo: fav })
+    m.acoes.Push({ id: "audio", titulo: "Áudio e legenda" })
+    if ch.variants.Count() > 1 then m.acoes.Push({ id: "fontes", titulo: "Trocar fonte", detalhe: ch.variants.Count().ToStr() + " fontes" })
+    m.acoes.Push({ id: "timer", titulo: "Timer de sono" })
+    mostrarPainel(ch.name, "", m.acoes)
+end sub
+
+sub mostrarPainel(titulo as String, ajuda as String, opcoes as Object)
+    m.painelFontes.titulo = titulo
+    m.painelFontes.ajuda = ajuda
+    m.painelFontes.opcoes = opcoes
+    m.liveVideo.translation = [32, 262]
+    m.liveVideo.width = 988
+    m.liveVideo.height = 556
+    m.painelFontes.aberto = true
+    m.top.telaCheia = true
+end sub
+
+sub onHold()
+    m.holdUsado = true
+    channels = m.top.channels
+    if channels <> invalid and m.top.currentChannelIndex < channels.Count() then abrirMenu(channels[m.top.currentChannelIndex])
+end sub
+
+sub onSono()
+    m.liveVideo.control = "stop"
+    m.top.sairRequested = true
+end sub
+
+sub executarMenu(i as Integer)
+    a = m.acoes[i]
+    ch = m.canalFontes
+    if a.id = "canais" then
+        m.painelFontes.aberto = false
+        m.channelDrawer.selectedIndex = m.top.currentChannelIndex
+        m.channelDrawer.isOpen = true
+        m.channelDrawer.setFocus(true)
+    else if a.id = "guia" then
+        m.painelFontes.aberto = false
+        m.top.guiaRequested = true
+    else if a.id = "anterior" then
+        m.painelFontes.aberto = false
+        channels = m.top.channels
+        for c = 0 to channels.Count() - 1
+            if channels[c].name = m.canalAnterior then
+                playChannel(c)
+                exit for
+            end if
+        end for
+    else if a.id = "favorito" then
+        ToggleFavoriteChannel(ch.name)
+        showFavoriteToast(ch.name, IsChannelFavorite(ch.name))
+        m.painelFontes.aberto = false
+    else if a.id = "fontes" then
+        abrirFontes(ch)
+    else if a.id = "audio" then
+        m.modoPainel = "audio"
+        m.faixas = []
+        lista = []
+        faixas = m.liveVideo.availableAudioTracks
+        if faixas <> invalid then
+            for f = 0 to faixas.Count() - 1
+                t = faixas[f]
+                nome = "Áudio " + (f + 1).ToStr()
+                if t.Language <> invalid and t.Language <> "" then nome = "Áudio: " + t.Language
+                lista.Push({ titulo: nome })
+                m.faixas.Push({ tipo: "audio", valor: t.Track })
+            end for
+        end if
+        legendas = m.liveVideo.availableSubtitleTracks
+        if legendas <> invalid then
+            for f = 0 to legendas.Count() - 1
+                t = legendas[f]
+                nome = "Legenda " + (f + 1).ToStr()
+                if t.Language <> invalid and t.Language <> "" then nome = "Legenda: " + t.Language
+                lista.Push({ titulo: nome })
+                m.faixas.Push({ tipo: "legenda", valor: t.TrackName })
+            end for
+        end if
+        lista.Push({ titulo: "Sem legenda" })
+        m.faixas.Push({ tipo: "legenda", valor: "" })
+        mostrarPainel("Áudio e legenda", "", lista)
+    else if a.id = "timer" then
+        m.modoPainel = "timer"
+        m.minutos = [0, 30, 60, 90, 120]
+        lista = [{ titulo: "Desligado" }]
+        for each q in [30, 60, 90, 120]
+            lista.Push({ titulo: q.ToStr() + " minutos" })
+        end for
+        mostrarPainel("Timer de sono", "", lista)
+    end if
+end sub
+
 sub onFonteEscolhida()
     i = m.painelFontes.escolhido
+    if m.modoPainel = "menu" then
+        executarMenu(i)
+        return
+    else if m.modoPainel = "timer" then
+        m.painelFontes.aberto = false
+        m.sonoTimer.control = "stop"
+        if m.minutos[i] > 0 then
+            m.sonoTimer.duration = m.minutos[i] * 60
+            m.sonoTimer.control = "start"
+        end if
+        return
+    else if m.modoPainel = "audio" then
+        f = m.faixas[i]
+        m.painelFontes.aberto = false
+        if f.tipo = "audio" then
+            m.liveVideo.audioTrack = f.valor
+        else if f.valor = "" then
+            m.liveVideo.globalCaptionMode = "Off"
+        else
+            m.liveVideo.globalCaptionMode = "On"
+            m.liveVideo.subtitleTrack = f.valor
+        end if
+        return
+    end if
     ch = m.canalFontes
     m.painelFontes.aberto = false
     if i >= ch.variants.Count() then
@@ -182,6 +320,8 @@ sub playChannel(index as Integer)
         end if
     end if
 
+    if m.ultimoCanal <> invalid and m.ultimoCanal <> ch.name then m.canalAnterior = m.ultimoCanal
+    m.ultimoCanal = ch.name
     m.currentVariantIndex = 0
     m.tryingProxy = false
     playCurrentVariant()
@@ -343,6 +483,16 @@ sub onNumberTimerFired()
 end sub
 
 function onKeyEvent(key as String, press as Boolean) as Boolean
+    ' OK curto mostra a barra do canal; segurado, abre o menu.
+    if key = "OK" and not press then
+        if m.okSolto = true then
+            m.okSolto = false
+            m.holdTimer.control = "stop"
+            if not m.holdUsado then m.zapHud.callFunc("alternar")
+            return true
+        end if
+        return false
+    end if
     if not press then return false
 
     if m.pinModal.isOpen then return false
@@ -363,7 +513,9 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
         playChannel(m.top.currentChannelIndex + 1)
         return true
     else if key = "OK" then
-        m.zapHud.callFunc("alternar")
+        m.holdUsado = false
+        m.okSolto = true
+        m.holdTimer.control = "start"
         return true
     else if key = "left" or key = "back" then
         ' Abre o painel de canais
@@ -373,8 +525,13 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
         return true
     end if
 
-    ' Botão Replay, Play ou * para favoritar / desfavoritar canal
-    if key = "replay" or key = "play" or key = "options" then
+    if key = "options" then
+        onHold()
+        return true
+    end if
+
+    ' Botão Replay ou Play para favoritar / desfavoritar canal
+    if key = "replay" or key = "play" then
         channels = m.top.channels
         if channels <> invalid and m.top.currentChannelIndex < channels.Count() then
             ch = channels[m.top.currentChannelIndex]

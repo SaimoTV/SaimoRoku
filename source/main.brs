@@ -11,6 +11,7 @@ sub Main(args as Dynamic)
 
     ' Cria a cena principal
     scene = screen.CreateScene("MainScene")
+    scene.observeField("sairDoApp", m.port)
     screen.Show()
 
     ' Passa argumentos de deep linking (se houver, ex.: do Saimo Connect)
@@ -27,6 +28,9 @@ sub Main(args as Dynamic)
             if msg.isScreenClosed() then
                 exit while
             end if
+        else if msgType = "roSGNodeEvent" then
+            ' Timer de sono: fecha o app
+            exit while
         else if msgType = "roSocketEvent" then
             ' Eventos de socket tratados no contexto global se necessário
         end if
