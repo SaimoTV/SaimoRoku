@@ -31,7 +31,7 @@ function HttpGet(url as String) as String
     ut = CreateObject("roUrlTransfer")
     ut.SetUrl(url)
     ut.SetCertificatesFile("common:/certs/ca-bundle.crt")
-    ut.AddHeader("User-Agent", "SaimoTV/2.6.5 (RokuOS)")
+    ut.AddHeader("User-Agent", "SaimoTV/2.6.4 (RokuOS)")
     ut.RetainBodyOnError(true)
     return ut.GetToString()
 end function

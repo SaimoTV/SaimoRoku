@@ -9,7 +9,7 @@
 
   <children>
     <Label translation="[124, 240]" text="Ajustes" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="60" /></Label>
-    <Label translation="[124, 340]" text="Saimo TV 2.6.5" color="#A8B4C0"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="28" /></Label>
+    <Label translation="[124, 340]" text="Saimo TV 2.6.4" color="#A8B4C0"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="28" /></Label>
     <Label translation="[124, 380]" width="580" text="Saimo Connect: controle pelo celular na mesma rede Wi-Fi." wrap="true" numLines="2" color="#A8B4C0"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="28" /></Label>
     <Label translation="[884, 244]" text="REPRODUÇÃO" color="#4FE3D0"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="24" /></Label>
     <MarkupList id="settingsList" translation="[854, 284]" itemComponentName="AjusteItem" itemSize="[940, 140]" itemSpacing="[0, 12]" numRows="5" drawFocusFeedback="false" vertFocusAnimationStyle="floatingFocus" />

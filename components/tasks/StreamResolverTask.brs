@@ -110,7 +110,7 @@ function getIndiceBases() as Object
     ut = CreateObject("roUrlTransfer")
     ut.SetUrl(url)
     ut.SetCertificatesFile("common:/certs/ca-bundle.crt")
-    ut.AddHeader("User-Agent", "SaimoTV/2.6.5 (RokuOS)")
+    ut.AddHeader("User-Agent", "SaimoTV/2.6.4 (RokuOS)")
     ut.RetainBodyOnError(true)
     text = ut.GetToString()
 
@@ -141,7 +141,7 @@ function resolveMovieStream(title as String, letter as String, bases as Object) 
     ut = CreateObject("roUrlTransfer")
     ut.SetUrl(url)
     ut.SetCertificatesFile("common:/certs/ca-bundle.crt")
-    ut.AddHeader("User-Agent", "SaimoTV/2.6.5 (RokuOS)")
+    ut.AddHeader("User-Agent", "SaimoTV/2.6.4 (RokuOS)")
     ut.RetainBodyOnError(true)
     text = ut.GetToString()
     if text = "" then return results
@@ -214,7 +214,7 @@ function resolveSeriesStream(title as String, letter as String, season as Intege
     ut = CreateObject("roUrlTransfer")
     ut.SetUrl(url)
     ut.SetCertificatesFile("common:/certs/ca-bundle.crt")
-    ut.AddHeader("User-Agent", "SaimoTV/2.6.5 (RokuOS)")
+    ut.AddHeader("User-Agent", "SaimoTV/2.6.4 (RokuOS)")
     ut.RetainBodyOnError(true)
     text = ut.GetToString()
 
@@ -308,7 +308,7 @@ function buildCandidateUrl(cand as String, bases as Object) as String
         utJson = CreateObject("roUrlTransfer")
         utJson.SetUrl(jsonUrl)
         utJson.SetCertificatesFile("common:/certs/ca-bundle.crt")
-        utJson.AddHeader("User-Agent", "SaimoTV/2.6.5 (RokuOS)")
+        utJson.AddHeader("User-Agent", "SaimoTV/2.6.4 (RokuOS)")
         utJson.RetainBodyOnError(true)
         respText = utJson.GetToString()
         if respText <> "" then
@@ -364,7 +364,7 @@ function findInRedeflix(url as String, cleanTitle as String, season as Integer, 
     ut = CreateObject("roUrlTransfer")
     ut.SetUrl(url)
     ut.SetCertificatesFile("common:/certs/ca-bundle.crt")
-    ut.AddHeader("User-Agent", "SaimoTV/2.6.5 (RokuOS)")
+    ut.AddHeader("User-Agent", "SaimoTV/2.6.4 (RokuOS)")
     ut.RetainBodyOnError(true)
     text = ut.GetToString()
     if text = "" then return results

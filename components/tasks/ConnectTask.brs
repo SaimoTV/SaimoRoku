@@ -91,7 +91,7 @@ end sub
 sub handleClientData(conn as Object, data as String)
     ' Descoberta: o celular só aceita quem responde app = saimo-tv
     if Instr(1, data, "GET /info") > 0 then
-        info = { app: "saimo-tv", id: idDaTv(), name: nomeDaTv(), version: "2.6.5", port: m.top.port, multi: false }
+        info = { app: "saimo-tv", id: idDaTv(), name: nomeDaTv(), version: "2.6.4", port: m.top.port, multi: false }
         corpo = FormatJson(info)
         q = Chr(13) + Chr(10)
         enviar(conn, "HTTP/1.1 200 OK" + q + "Content-Type: application/json" + q + "Access-Control-Allow-Origin: *" + q + "Content-Length: " + Len(corpo).ToStr() + q + "Connection: close" + q + q + corpo)

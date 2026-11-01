@@ -1,4 +1,4 @@
-# Saimo TV para Roku (v2.6.5)
+# Saimo TV para Roku (v2.6.4)
 
 Aplicativo oficial 100% nativo para TVs e dispositivos Roku, desenvolvido em **BrightScript** e **SceneGraph** para máxima performance, baixíssimo consumo de memória e resposta instantânea ao controle remoto.
 
