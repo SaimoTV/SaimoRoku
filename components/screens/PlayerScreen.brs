@@ -154,7 +154,7 @@ sub startPlayback(streamUrl as String, resumePos as Dynamic)
     content.url = streamUrl
     content.title = m.playerOsd.title
     
-    headers = ["User-Agent: SaimoTV/2.6.2 (RokuOS)", "Accept: */*"]
+    headers = ["User-Agent: SaimoTV/2.6.3 (RokuOS)", "Accept: */*"]
     if Instr(1, LCase(streamUrl), "embedplayer2.xyz") > 0 then
         headers.Push("Referer: https://embedplayer2.xyz/")
     end if
@@ -178,6 +178,7 @@ sub startPlayback(streamUrl as String, resumePos as Dynamic)
     m.videoPlayer.control = "play"
     m.progressTimer.control = "start"
     m.playerOsd.isOpen = true
+    if not m.top.findNode("painelOpcoes").aberto then m.top.setFocus(true)
 end sub
 
 sub onVideoState()
@@ -334,6 +335,33 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
 
     if key = "options" then
         abrirOpcoes()
+        return true
+    end if
+
+    ' A barra não recebe foco: as teclas do player ficam aqui.
+    osd = m.playerOsd
+    if key = "OK" or key = "play" then
+        onOsdPlayPause()
+        osd.isOpen = true
+        return true
+    else if key = "left" or key = "rewind" then
+        osd.seekRequested = -10
+        osd.isOpen = true
+        return true
+    else if key = "right" or key = "fastforward" then
+        osd.seekRequested = 10
+        osd.isOpen = true
+        return true
+    else if key = "replay" then
+        osd.seekRequested = -30
+        osd.isOpen = true
+        return true
+    else if key = "up" then
+        if osd.isSeries then onOsdSkipIntro()
+        osd.isOpen = true
+        return true
+    else if key = "down" then
+        osd.isOpen = not osd.isOpen
         return true
     end if
 

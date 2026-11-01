@@ -71,7 +71,7 @@
     </Group>
 
     <!-- Versão no rodapé -->
-    <Label id="versionLabel" translation="[18, 1030]" text="v2.6.2" color="#475569" visible="true"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="22" /></Label>
+    <Label id="versionLabel" translation="[18, 1030]" text="v2.6.3" color="#475569" visible="true"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="22" /></Label>
   </children>
 
   <script type="text/brightscript" uri="pkg:/components/views/SidebarMenu.brs" />

@@ -40,7 +40,7 @@
       <Label id="timeRemainingLabel" translation="[1720, 945]" width="120" text="-00:00" color="#94a3b8" horizAlign="right"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="28" /></Label>
 
       <!-- Controles inferiores com botões -->
-      <Label translation="[80, 990]" width="1760" text="OK pausa  ·  esquerda e direita avançam  ·  * áudio, legendas e fontes" color="#A8B4C0"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="28" /></Label>
+      <Label translation="[80, 990]" width="1760" text="OK pausa  ·  esquerda volta, direita avança 10 s  ·  * áudio, legendas e fontes" color="#A8B4C0"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="28" /></Label>
       <Label id="btnPlayPause" visible="false" />
     </Group>
 
