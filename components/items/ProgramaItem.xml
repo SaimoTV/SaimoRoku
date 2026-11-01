@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="ProgramaItem" extends="Group">
+  <interface>
+    <field id="itemContent" type="node" onChange="onConteudo" />
+    <field id="focusPercent" type="float" onChange="onFoco" />
+    <field id="listHasFocus" type="boolean" onChange="onFoco" />
+  </interface>
+  <children>
+    <Poster id="moldura" width="880" height="176" uri="pkg:/images/p_foco.9.png" visible="false" />
+    <Label id="hora" translation="[36, 0]" width="156" height="176" vertAlign="center" color="#A8B4C0"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="42" /></Label>
+    <Label id="titulo" translation="[196, 46]" width="650" height="52" maxLines="1" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="40" /></Label>
+    <Label id="detalhe" translation="[196, 100]" width="650" maxLines="1" color="#A8B4C0"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="30" /></Label>
+    <Rectangle id="trilho" translation="[196, 146]" width="640" height="6" color="#FFFFFF33" visible="false" />
+    <Rectangle id="barra" translation="[196, 146]" width="0" height="6" color="#4FE3D0" visible="false" />
+  </children>
+  <script type="text/brightscript"><![CDATA[
+sub init()
+    m.moldura = m.top.findNode("moldura")
+end sub
+sub onConteudo()
+    c = m.top.itemContent
+    if c = invalid then return
+    m.top.findNode("hora").text = c.hora
+    m.top.findNode("titulo").text = c.title
+    m.top.findNode("detalhe").text = c.description
+    tem = c.progresso > 0
+    m.top.findNode("trilho").visible = tem
+    b = m.top.findNode("barra")
+    b.visible = tem
+    b.width = Int(640 * c.progresso)
+end sub
+sub onFoco()
+    m.moldura.visible = m.top.focusPercent > 0.5 and m.top.listHasFocus
+end sub
+  ]]></script>
+</component>

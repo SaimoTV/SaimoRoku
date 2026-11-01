@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <component name="GuideScreen" extends="Group">
   <interface>
+    <field id="voltarRequested" type="boolean" alwaysNotify="true" />
     <field id="channels" type="array" onChange="onChannelsChange" />
     <field id="epgMap" type="assocarray" onChange="onEpgChange" />
     <field id="tuneRequested" type="assocarray" alwaysNotify="true" />
@@ -8,42 +9,14 @@
   </interface>
 
   <children>
-
-    <!-- Coluna Esquerda: Canais -->
-    <Group translation="[80, 100]">
-      <Rectangle width="460" height="920" color="#111827" />
-      <Rectangle width="460" height="3" color="#4FE3D0" />
-      <Label translation="[24, 20]" text="CANAIS" color="#4FE3D0"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="22" /></Label>
-
-      <LabelList
-        id="guideChannelList"
-        translation="[16, 60]"
-        itemSize="[428, 54]"
-        itemSpacing="[0, 6]"
-        numRows="14"
-        wrap="false"
-        color="#D5DCE5"
-        focusedColor="#0b0e14"
-        focusBitmapBlendColor="#4FE3D0"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="24" /><Font role="focusedFont" uri="pkg:/fonts/Roboto-Medium.ttf" size="24" /></LabelList>
-    </Group>
-
-    <!-- Coluna Direita: Grade do Canal Selecionado -->
-    <Group translation="[560, 100]">
-      <Rectangle width="1280" height="920" color="#111827" />
-      <Rectangle width="1280" height="3" color="#7AA2FF" />
-      <Label id="selectedChannelHeader" translation="[30, 20]" text="PROGRAMAÇÃO" color="#7AA2FF"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="22" /></Label>
-
-      <LabelList
-        id="scheduleList"
-        translation="[20, 60]"
-        itemSize="[1240, 56]"
-        itemSpacing="[0, 6]"
-        numRows="13"
-        wrap="false"
-        color="#D5DCE5"
-        focusedColor="#0b0e14"
-        focusBitmapBlendColor="#4FE3D0"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="24" /><Font role="focusedFont" uri="pkg:/fonts/Roboto-Medium.ttf" size="24" /></LabelList>
-    </Group>
+    <Rectangle width="1920" height="1080" color="#0b0e14D8" />
+    <Label translation="[92, 60]" text="Guia" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="60" /></Label>
+    <Label id="relogio" translation="[1500, 72]" width="328" horizAlign="right" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="46" /></Label>
+    <Label id="selectedChannelHeader" translation="[300, 80]" width="1180" maxLines="1" color="#A8B4C0"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="32" /></Label>
+    <MarkupList id="guideChannelList" translation="[68, 180]" itemComponentName="CanalItem" itemSize="[810, 172]" itemSpacing="[0, 4]" numRows="5" drawFocusFeedback="false" vertFocusAnimationStyle="floatingFocus" />
+    <Rectangle translation="[924, 180]" width="2" height="880" color="#FFFFFF14" />
+    <MarkupList id="scheduleList" translation="[966, 180]" itemComponentName="ProgramaItem" itemSize="[880, 176]" itemSpacing="[0, 8]" numRows="5" drawFocusFeedback="false" vertFocusAnimationStyle="floatingFocus" />
+    <Timer id="focoTimer" duration="0.1" repeat="false" />
   </children>
 
   <script type="text/brightscript" uri="pkg:/components/screens/GuideScreen.brs" />

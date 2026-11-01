@@ -34,6 +34,7 @@
     </Group>
     <Timer id="favoriteToastTimer" duration="2.5" repeat="false" />
 
+    <Rectangle id="fundoFontes" width="1040" height="1080" color="#0b0e14" visible="false" />
     <PainelLateral id="painelFontes" />
 
     <!-- Modal de PIN Parental -->

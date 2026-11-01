@@ -28,7 +28,7 @@ sub onDataChange()
     pct = m.top.programProgress
     if pct < 0 then pct = 0
     if pct > 1 then pct = 1
-    m.progBar.width = Int(1570 * pct)
+    m.progBar.width = Int(1500 * pct)
 
     m.top.findNode("horaLabel").text = m.top.linhaHora
     showHUD()

@@ -2,16 +2,18 @@
 <component name="PainelLateral" extends="Group">
   <interface>
     <field id="titulo" type="string" />
+    <field id="ajuda" type="string" />
     <field id="opcoes" type="array" onChange="onOpcoes" />
     <field id="escolhido" type="integer" alwaysNotify="true" />
     <field id="aberto" type="boolean" onChange="onAberto" />
   </interface>
   <children>
     <Group id="painel" visible="false">
-      <Rectangle translation="[880, 0]" width="1040" height="1080" color="#0b0e14F5" />
-      <Label id="tituloLabel" translation="[952, 88]" width="890" maxLines="2" wrap="true" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="56" /></Label>
-      <MarkupList id="lista" translation="[930, 230]" itemComponentName="AjusteItem" itemSize="[940, 140]" itemSpacing="[0, 8]" numRows="5" drawFocusFeedback="false" vertFocusAnimationStyle="floatingFocus" />
-      <Label translation="[952, 1000]" text="OK escolhe  ·  VOLTAR fecha" color="#A8B4C0"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="30" /></Label>
+      <Rectangle translation="[1040, 0]" width="880" height="1080" color="#0b0e14" />
+      <Label id="tituloLabel" translation="[1110, 96]" width="760" maxLines="1" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="52" /></Label>
+      <Label id="ajudaLabel" translation="[1110, 180]" width="740" height="90" wrap="true" maxLines="2" color="#A8B4C0"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="30" /></Label>
+      <MarkupList id="lista" translation="[1090, 300]" itemComponentName="FonteItem" itemSize="[760, 140]" itemSpacing="[0, 8]" numRows="4" drawFocusFeedback="false" vertFocusAnimationStyle="floatingFocus" />
+      <Label translation="[1110, 980]" text="OK escolhe  ·  VOLTAR fecha" color="#A8B4C0"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="30" /></Label>
     </Group>
     <Timer id="focoTimer" duration="0.1" repeat="false" />
   </children>
@@ -33,6 +35,7 @@ sub onOpcoes()
 end sub
 sub onAberto()
     m.top.findNode("tituloLabel").text = m.top.titulo
+    m.top.findNode("ajudaLabel").text = m.top.ajuda
     m.painel.visible = m.top.aberto
     if m.top.aberto then
         t = m.top.findNode("focoTimer")

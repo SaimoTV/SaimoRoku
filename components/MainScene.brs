@@ -316,9 +316,10 @@ sub switchScreen(screenName as String, params = invalid as Dynamic)
 
     else if screenName = "guide" then
         node = CreateObject("roSGNode", "GuideScreen")
-        if m.cachedChannels <> invalid then node.channels = m.cachedChannels
         if m.cachedEpg <> invalid then node.epgMap = m.cachedEpg
+        if m.cachedChannels <> invalid then node.channels = m.cachedChannels
         node.observeField("tuneRequested", "onGuideTune")
+        node.observeField("voltarRequested", "onGuiaVoltar")
         node.observeField("focusUpRequested", "onScreenFocusUp")
         m.currentScreenNode = node
 
@@ -368,7 +369,7 @@ sub switchScreen(screenName as String, params = invalid as Dynamic)
     avisarCelular()
 
     ' Atualiza visibilidade da barra de navegação (oculta no player de VOD e Live em tela cheia)
-    if screenName = "player" then
+    if screenName = "player" or screenName = "guide" then
         m.topNavBar.visible = false
     else if screenName = "live" and m.currentScreenNode.telaCheia then
         m.topNavBar.visible = false
@@ -482,6 +483,10 @@ end sub
 sub avisarCelular()
     tela = m.currentScreenName
     m.connectServer.saida = FormatJson({ t: "state", mode: "idle", screen: tela, channel: "", playing: tela = "live" or tela = "player", multi: false, active: 0, screens: [], tvAudio: "tv", phoneAudio: [] })
+end sub
+
+sub onGuiaVoltar()
+    switchScreen("live")
 end sub
 
 sub onAbrirGuia()

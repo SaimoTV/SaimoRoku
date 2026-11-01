@@ -75,7 +75,11 @@ sub abrirFontes(ch as Object)
         opcoes.Push(o)
     end for
     opcoes.Push({ titulo: "Guia de programação", detalhe: "Ver a grade dos canais" })
-    m.painelFontes.titulo = ch.name
+    m.painelFontes.titulo = "Fontes  ·  " + ch.name
+    m.painelFontes.ajuda = "Se a imagem travar, tente outra fonte. Se ela também cair, o app troca sozinho."
+    m.liveVideo.translation = [32, 262]
+    m.liveVideo.width = 988
+    m.liveVideo.height = 556
     m.painelFontes.opcoes = opcoes
     m.painelFontes.aberto = true
     m.top.telaCheia = true
@@ -84,6 +88,13 @@ end sub
 sub onFontesAberto()
     if m.painelFontes.aberto then return
     m.top.telaCheia = not m.channelDrawer.isOpen
+    if m.channelDrawer.isOpen then
+        m.liveVideo.translation = [896, 130]
+    else
+        m.liveVideo.translation = [0, 0]
+        m.liveVideo.width = 1920
+        m.liveVideo.height = 1080
+    end if
     if m.channelDrawer.isOpen then m.channelDrawer.setFocus(true) else m.top.setFocus(true)
 end sub
 
