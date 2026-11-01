@@ -40,6 +40,9 @@ sub onAberto()
     if m.top.aberto then
         t = m.top.findNode("focoTimer")
         t.control = "start"
+    else
+        ' Devolve o foco à tela: lista escondida com foco prende todas as teclas.
+        m.top.getParent().setFocus(true)
     end if
 end sub
 sub aplicarFoco()
@@ -49,7 +52,7 @@ sub onItem()
     m.top.escolhido = m.lista.itemSelected
 end sub
 function onKeyEvent(key as String, press as Boolean) as Boolean
-    if not press then return false
+    if not press or not m.top.aberto then return false
     if key = "back" or key = "left" then
         m.top.aberto = false
         return true
