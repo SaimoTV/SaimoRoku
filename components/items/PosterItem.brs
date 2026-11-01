@@ -31,26 +31,63 @@ sub modoLargo()
     m.title.maxLines = 1
 end sub
 
+' Cartão comum é a maioria: evento e categoria criam as peças só quando precisam.
+function novoRotulo(pai as Object, x as Integer, y as Integer, w as Integer, h as Integer, cor as String, tamanho as Integer, fonte as String, texto as String) as Object
+    r = pai.createChild("Label")
+    r.translation = [x, y]
+    r.width = w
+    if h > 0 then r.height = h
+    r.color = cor
+    r.font.uri = "pkg:/fonts/Roboto-" + fonte + ".ttf"
+    r.font.size = tamanho
+    r.text = texto
+    return r
+end function
+
+function novoPoster(pai as Object, x as Integer, y as Integer, w as Integer, h as Integer, uri as String) as Object
+    c = pai.createChild("Poster")
+    c.translation = [x, y]
+    c.width = w
+    c.height = h
+    c.loadWidth = w
+    c.loadHeight = h
+    c.uri = uri
+    return c
+end function
+
+sub modoEvento(item as Object)
+    g = m.top.createChild("Group")
+    fundo = novoPoster(g, 32, 30, 170, 44, "pkg:/images/p_branca.9.png")
+    fundo.blendColor = "#FF4D4F"
+    selo = novoRotulo(g, 32, 30, 170, 44, "#FFFFFF", 24, "Medium", item.hora)
+    selo.horizAlign = "center"
+    selo.vertAlign = "center"
+    novoPoster(g, 70, 90, 140, 140, item.casa).loadDisplayMode = "scaleToFit"
+    novoPoster(g, 318, 90, 140, 140, item.fora).loadDisplayMode = "scaleToFit"
+    x = novoRotulo(g, 210, 90, 108, 140, "#A8B4C0", 48, "Medium", "x")
+    x.horizAlign = "center"
+    x.vertAlign = "center"
+end sub
+
 sub modoCategoria(item as Object)
     m.moldura.width = 720 : m.moldura.height = 410
     m.fundo.visible = false : m.poster.visible = false : m.canto.visible = false
     m.title.visible = false
-    m.top.findNode("categoria").visible = true
-    m.top.findNode("disco").blendColor = item.cor
-    m.top.findNode("discoIcone").uri = item.icone
-    m.top.findNode("catTitulo").text = item.title
-    m.top.findNode("catSub").text = item.subTitulo
-    capas = m.top.findNode("capas")
-    x = 0
+    g = m.top.createChild("Group")
+    x = 12
     for each uri in item.capas
-        c = capas.createChild("Poster")
-        c.translation = [x, 0]
-        c.width = 174 : c.height = 386
-        c.loadWidth = 174 : c.loadHeight = 386
-        c.loadDisplayMode = "scaleToZoom"
-        c.uri = uri
+        novoPoster(g, x, 12, 174, 386, uri).loadDisplayMode = "scaleToZoom"
         x = x + 174
     end for
+    veu = g.createChild("Rectangle")
+    veu.translation = [12, 12]
+    veu.width = 696
+    veu.height = 386
+    veu.color = "#0b0e14A0"
+    novoPoster(g, 44, 270, 96, 96, "pkg:/images/p_circulo.png").blendColor = item.cor
+    novoPoster(g, 68, 294, 48, 48, item.icone).blendColor = "#0b0e14"
+    novoRotulo(g, 162, 262, 520, 0, "#FFFFFF", 44, "Medium", item.title)
+    novoRotulo(g, 162, 318, 520, 0, "#D5DCE5", 24, "Regular", item.subTitulo)
 end sub
 
 sub onItemContentChange()
@@ -63,10 +100,7 @@ sub onItemContentChange()
 
     if item.itemType = "channel" or item.itemType = "radio" or item.itemType = "evento" then modoLargo()
     if item.itemType = "evento" then
-        m.top.findNode("evento").visible = true
-        m.top.findNode("eventoHora").text = item.hora
-        m.top.findNode("eventoCasa").uri = item.casa
-        m.top.findNode("eventoFora").uri = item.fora
+        modoEvento(item)
         m.poster.visible = false
         m.sub.translation = [18, 340]
     end if

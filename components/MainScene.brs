@@ -132,11 +132,18 @@ sub juntarCanais()
         end for
     end if
     m.cachedChannels = todos
+    m.nomesCanais = {}
+    m.canaisInicio = []
+    for i = 0 to todos.Count() - 1
+        c = todos[i]
+        m.nomesCanais[LCase(c.name).Replace(" ", "")] = c.name
+        if i < 16 then m.canaisInicio.Push(c)
+    end for
     juntarEventos()
     if m.currentScreenName = "live" and m.currentScreenNode <> invalid then
         m.currentScreenNode.channels = m.cachedChannels
     else if m.currentScreenName = "home" and m.currentScreenNode <> invalid then
-        m.currentScreenNode.channels = m.cachedChannels
+        m.currentScreenNode.channels = m.canaisInicio
     else if m.currentScreenName = "favorites" and m.currentScreenNode <> invalid then
         m.currentScreenNode.channels = m.cachedChannels
     else if m.currentScreenName = "search" and m.currentScreenNode <> invalid then
@@ -178,15 +185,13 @@ end sub
 
 ' O jogo diz o canal por um apelido (premiere-2); só entra jogo com canal nosso.
 function canalDoJogo(players as Object) as String
-    if m.cachedChannels = invalid or players.Count() = 0 then return ""
+    if m.nomesCanais = invalid or players.Count() = 0 then return ""
     partes = players[0].Split("/")
     apelido = LCase(partes[partes.Count() - 1]).Replace("-", "").Replace(" ", "")
     if apelido = "" then return ""
-    for each c in m.cachedChannels
-        if LCase(c.name).Replace(" ", "") = apelido then return c.name
-    end for
-    for each c in m.cachedChannels
-        if Instr(1, LCase(c.name).Replace(" ", ""), apelido) > 0 then return c.name
+    if m.nomesCanais.DoesExist(apelido) then return m.nomesCanais[apelido]
+    for each n in m.nomesCanais
+        if Instr(1, n, apelido) > 0 then return m.nomesCanais[n]
     end for
     return ""
 end function
@@ -252,9 +257,8 @@ sub switchScreen(screenName as String, params = invalid as Dynamic)
 
     if screenName = "home" then
         node = CreateObject("roSGNode", "HomeScreen")
-        if m.cachedChannels <> invalid then node.channels = m.cachedChannels
+        if m.canaisInicio <> invalid then node.channels = m.canaisInicio
         if m.cachedEpg <> invalid then node.epgMap = m.cachedEpg
-        if m.cachedVod <> invalid then node.vodItems = m.cachedVod
         if m.cachedDestaques <> invalid then
             node.railsData = m.cachedDestaques
             if m.cachedDestaques.Count() > 0 and m.cachedDestaques[0].items.Count() > 0 then

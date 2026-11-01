@@ -31,7 +31,7 @@ function HttpGet(url as String) as String
     ut = CreateObject("roUrlTransfer")
     ut.SetUrl(url)
     ut.SetCertificatesFile("common:/certs/ca-bundle.crt")
-    ut.AddHeader("User-Agent", "SaimoTV/2.6.3 (RokuOS)")
+    ut.AddHeader("User-Agent", "SaimoTV/2.6.4 (RokuOS)")
     ut.RetainBodyOnError(true)
     return ut.GetToString()
 end function
@@ -119,6 +119,8 @@ sub fetchEpg(baseUrl as String)
         end if
     end if
 
+    ' Abrir o app e o primeiro canal vêm antes do guia.
+    sleep(15000)
     text = HttpGet(baseUrl + "guia.txt")
     if text = "" then return
 
@@ -131,10 +133,10 @@ sub fetchEpg(baseUrl as String)
     epgMap = {}
     for i = 0 to fila.Count() - 1
         c = fila[i]
-        lista = lerMeuGuia(HttpGet("https://meuguia.tv/programacao/canal/" + c.codigo), agora)
+        ' A página traz a semana inteira (270 KB); o começo já tem hoje e amanhã.
+        lista = lerMeuGuia(Left(HttpGet("https://meuguia.tv/programacao/canal/" + c.codigo), 60000), agora)
         if lista.Count() > 0 then epgMap[c.nome] = lista
-        ' Mostra aos poucos: quem abre o painel já vê os primeiros canais.
-        if (i + 1) mod 15 = 0 then m.top.responseEpg = epgMap
+        sleep(150)
     end for
     m.top.responseEpg = epgMap
     WriteAsciiFile(cache, FormatJson({ quando: agora, mapa: epgMap }))

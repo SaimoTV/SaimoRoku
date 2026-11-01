@@ -37,12 +37,13 @@ sub refreshFavorites()
     rootNode = CreateObject("roSGNode", "ContentNode")
 
     ' 1. Fileira de Canais Favoritos
-    if favChannels.Count() > 0 and m.top.channels <> invalid then
+    canais = m.top.channels
+    if favChannels.Count() > 0 and canais <> invalid then
         rowChannels = rootNode.CreateChild("ContentNode")
         rowChannels.title = "Canais"
 
         for each favName in favChannels
-            for each ch in m.top.channels
+            for each ch in canais
                 if ch.name = favName then
                     itemNode = rowChannels.CreateChild("ContentNode")
                     itemNode.title = ch.name

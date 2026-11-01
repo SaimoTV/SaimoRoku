@@ -30,6 +30,7 @@ end sub
 sub onRadiosChange()
     radios = m.top.radios
     if radios = invalid or radios.Count() = 0 then return
+    m.estacoes = radios
 
     ordem = []
     grupos = {}
@@ -82,7 +83,7 @@ end sub
 sub aplicarDestaque()
     no = noEm(m.rows.rowItemFocused)
     if no = invalid then return
-    r = m.top.radios[no.indice]
+    r = m.estacoes[no.indice]
     m.heroBanner.featuredItem = { title: r.name, genres: "Rádio ao vivo  ·  " + r.genre, overview: "OK toca  ·  na rádio, cima e baixo trocam de estação", semFundo: true }
 end sub
 
@@ -92,7 +93,7 @@ sub onRadioSelected()
 end sub
 
 sub tocar(i as Integer)
-    radios = m.top.radios
+    radios = m.estacoes
     m.atual = i
     r = radios[i]
     m.radioName.text = r.name
@@ -136,7 +137,7 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
     if not press then return false
 
     if m.tocando.visible then
-        total = m.top.radios.Count()
+        total = m.estacoes.Count()
         if key = "up" then
             tocar((m.atual + total - 1) mod total)
         else if key = "down" then

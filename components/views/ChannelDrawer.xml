@@ -2,7 +2,7 @@
 <component name="ChannelDrawer" extends="Group">
   <interface>
     <field id="channels" type="array" onChange="onChannelsChange" />
-    <field id="epgMap" type="assocarray" onChange="onChannelsChange" />
+    <field id="epgMap" type="assocarray" onChange="onEpgChange" />
     <field id="selectedIndex" type="integer" value="0" />
     <field id="channelSelected" type="assocarray" alwaysNotify="true" />
     <field id="isOpen" type="boolean" value="false" onChange="onOpenChange" />

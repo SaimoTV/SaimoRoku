@@ -54,8 +54,10 @@ sub buscar()
 
     raiz = CreateObject("roSGNode", "ContentNode")
     canais = invalid
-    if m.top.channels <> invalid then
-        for each ch in m.top.channels
+    if m.canais = invalid then m.canais = m.top.channels
+    if m.titulos = invalid then m.titulos = m.top.vodItems
+    if m.canais <> invalid then
+        for each ch in m.canais
             if Instr(1, LCase(ch.name), consulta) > 0 then
                 if canais = invalid then
                     canais = raiz.CreateChild("ContentNode")
@@ -71,8 +73,8 @@ sub buscar()
     end if
 
     titulos = invalid
-    if m.top.vodItems <> invalid then
-        for each it in m.top.vodItems
+    if m.titulos <> invalid then
+        for each it in m.titulos
             if Instr(1, LCase(it.title), consulta) > 0 then
                 if titulos = invalid then
                     titulos = raiz.CreateChild("ContentNode")

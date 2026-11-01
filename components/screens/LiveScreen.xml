@@ -38,6 +38,9 @@
     <Rectangle id="fundoFontes" width="1040" height="1080" color="#0b0e14" visible="false" />
     <PainelLateral id="painelFontes" />
     <Timer id="holdTimer" duration="0.6" repeat="false" />
+    <Timer id="zapTimer" duration="0.4" repeat="false" />
+    <Timer id="vigiaTimer" duration="8" repeat="false" />
+    <Group id="ancora" focusable="true" />
     <Timer id="sonoTimer" repeat="false" />
 
     <!-- Modal de PIN Parental -->

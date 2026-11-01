@@ -18,6 +18,14 @@ sub init()
     m.painelFontes = m.top.findNode("painelFontes")
     m.painelFontes.observeField("escolhido", "onFonteEscolhida")
     m.painelFontes.observeField("aberto", "onFontesAberto")
+    m.canais = []
+    m.indiceAtual = -1
+    m.pedemProxy = {}
+    m.ancora = m.top.findNode("ancora")
+    m.vigiaTimer = m.top.findNode("vigiaTimer")
+    m.vigiaTimer.observeField("fire", "onVigia")
+    m.zapTimer = m.top.findNode("zapTimer")
+    m.zapTimer.observeField("fire", "onZap")
     m.holdTimer = m.top.findNode("holdTimer")
     m.holdTimer.observeField("fire", "onHold")
     m.sonoTimer = m.top.findNode("sonoTimer")
@@ -65,6 +73,27 @@ sub showFavoriteToast(channelName as String, isFav as Boolean)
     m.favoriteToastTimer.control = "start"
 end sub
 
+' Cada canal aberto custa rede e decodificador: passando vários seguidos, só o
+' último abre de fato. A barra mostra o canal na hora.
+sub zapear(passo as Integer)
+    total = m.canais.Count()
+    if total = 0 then return
+    if m.alvoZap = invalid then m.alvoZap = m.top.currentChannelIndex
+    m.alvoZap = (m.alvoZap + passo + total) mod total
+    ch = m.canais[m.alvoZap]
+    m.zapHud.channelNumber = ch.number.ToStr()
+    m.zapHud.channelName = ch.name
+    m.zapHud.channelLogo = ch.logo
+    m.zapTimer.control = "stop"
+    m.zapTimer.control = "start"
+end sub
+
+sub onZap()
+    alvo = m.alvoZap
+    m.alvoZap = invalid
+    if alvo <> invalid then playChannel(alvo)
+end sub
+
 sub onDrawerMenu()
     abrirMenu(m.channelDrawer.menuRequested)
 end sub
@@ -105,7 +134,7 @@ sub onFontesAberto()
         m.liveVideo.width = 1920
         m.liveVideo.height = 1080
     end if
-    if m.channelDrawer.isOpen then m.channelDrawer.setFocus(true) else m.top.setFocus(true)
+    if m.channelDrawer.isOpen then m.channelDrawer.setFocus(true) else m.ancora.setFocus(true)
 end sub
 
 ' Segurar OK (ou *): tudo o que se pode fazer com o canal, como na TV Box.
@@ -139,7 +168,7 @@ end sub
 
 sub onHold()
     m.holdUsado = true
-    channels = m.top.channels
+    channels = m.canais
     if channels <> invalid and m.top.currentChannelIndex < channels.Count() then abrirMenu(channels[m.top.currentChannelIndex])
 end sub
 
@@ -161,7 +190,7 @@ sub executarMenu(i as Integer)
         m.top.guiaRequested = true
     else if a.id = "anterior" then
         m.painelFontes.aberto = false
-        channels = m.top.channels
+        channels = m.canais
         for c = 0 to channels.Count() - 1
             if channels[c].name = m.canalAnterior then
                 playChannel(c)
@@ -244,9 +273,10 @@ sub onFonteEscolhida()
         m.top.guiaRequested = true
         return
     end if
-    channels = m.top.channels
+    channels = m.canais
     for c = 0 to channels.Count() - 1
         if channels[c].name = ch.name then
+            m.indiceAtual = c
             m.top.currentChannelIndex = c
             exit for
         end if
@@ -274,13 +304,16 @@ sub onDrawerOpenChange()
         m.liveVideo.width = 1920
         m.liveVideo.height = 1080
         m.bufferingGroup.translation = [840, 500]
-        m.top.setFocus(true)
+        ' A lista escondida ficava com o foco: comia as setas e o OK trocava de canal.
+        m.ancora.setFocus(true)
     end if
 end sub
 
 sub onChannelsChange()
-    m.channelDrawer.channels = m.top.channels
-    if m.top.channels <> invalid and m.top.channels.Count() > 0 then
+    ' Campo de nó é copiado inteiro a cada leitura: aqui só se lê uma vez.
+    m.canais = m.top.channels
+    m.channelDrawer.channels = m.canais
+    if m.canais <> invalid and m.canais.Count() > 0 then
         playChannel(m.top.currentChannelIndex)
         if m.top.openDrawerOnLoad then
             m.channelDrawer.selectedIndex = m.top.currentChannelIndex
@@ -292,19 +325,22 @@ sub onChannelsChange()
 end sub
 
 sub onEpgChange()
-    m.channelDrawer.epgMap = m.top.epgMap
+    m.epg = m.top.epgMap
+    m.channelDrawer.epgMap = m.epg
     updateHUDInfo()
 end sub
 
 sub onChannelIndexChange()
-    playChannel(m.top.currentChannelIndex)
+    ' Quem já está trocando de canal grava o índice antes: sem isto, o canal abria duas vezes.
+    if m.top.currentChannelIndex <> m.indiceAtual then playChannel(m.top.currentChannelIndex)
 end sub
 
 sub playChannel(index as Integer)
-    channels = m.top.channels
+    channels = m.canais
     if channels = invalid or channels.Count() = 0 then return
     if index < 0 then index = channels.Count() - 1
     if index >= channels.Count() then index = 0
+    m.indiceAtual = index
     if m.top.currentChannelIndex <> index then
         m.top.currentChannelIndex = index
     end if
@@ -329,7 +365,7 @@ sub playChannel(index as Integer)
 end sub
 
 sub playCurrentVariant()
-    channels = m.top.channels
+    channels = m.canais
     if channels = invalid or m.top.currentChannelIndex >= channels.Count() then return
     ch = channels[m.top.currentChannelIndex]
     if ch.variants = invalid or ch.variants.Count() = 0 then return
@@ -350,10 +386,13 @@ sub playCurrentVariant()
 
     playUrl = rawUrl
     hasReferer = (v.referer <> invalid and v.referer <> "")
-    isTxt = (Instr(1, LCase(rawUrl), ".txt") > 0)
 
-    ' Se está no modo proxy, ou se a fonte obrigatoriamente precisa de proxy
-    if m.tryingProxy or hasReferer or isTxt then
+    ' O Roku fala direto com a fonte: manda Referer e User-Agent, e o formato vai
+    ' declarado abaixo, então .txt toca sem proxy. Cada segmento pelo proxy custa
+    ' tempo e pedidos na Cloudflare: ele fica só como segunda tentativa.
+    servidor = rawUrl.Split("/")[2]
+    if m.pedemProxy.DoesExist(servidor) then m.tryingProxy = true
+    if m.tryingProxy then
         ut = CreateObject("roUrlTransfer")
         playUrl = "https://saimo-tv.pages.dev/api/proxy?url=" + ut.Escape(rawUrl)
         if hasReferer then playUrl = playUrl + "&referer=" + ut.Escape(v.referer)
@@ -375,6 +414,14 @@ sub playCurrentVariant()
     m.bufferingGroup.visible = true
     m.liveVideo.content = content
     m.liveVideo.control = "play"
+    m.servidorAtual = servidor
+    ' Fonte que não abre nem dá erro não pode prender o canal.
+    m.vigiaTimer.control = "stop"
+    m.vigiaTimer.control = "start"
+end sub
+
+sub onVigia()
+    if m.liveVideo.state <> "playing" then tryNextVariant()
 end sub
 
 sub onPinUnlocked()
@@ -385,7 +432,7 @@ sub onPinUnlocked()
 end sub
 
 sub updateHUDInfo()
-    channels = m.top.channels
+    channels = m.canais
     if channels = invalid or m.top.currentChannelIndex >= channels.Count() then return
     ch = channels[m.top.currentChannelIndex]
 
@@ -393,7 +440,7 @@ sub updateHUDInfo()
     m.zapHud.channelName = ch.name
     m.zapHud.channelLogo = ch.logo
 
-    epgMap = m.top.epgMap
+    epgMap = m.epg
     if epgMap <> invalid and epgMap[ch.name] <> invalid then
         programs = epgMap[ch.name]
         for each p in programs
@@ -418,6 +465,9 @@ sub onVideoState()
     state = m.liveVideo.state
     if state = "playing" then
         m.bufferingGroup.visible = false
+        m.vigiaTimer.control = "stop"
+        ' Só pelo proxy abriu: os próximos canais deste servidor vão direto a ele.
+        if m.tryingProxy and m.servidorAtual <> invalid then m.pedemProxy[m.servidorAtual] = true
     else if state = "buffering" then
         m.bufferingGroup.visible = true
     else if state = "error" then
@@ -427,7 +477,7 @@ sub onVideoState()
 end sub
 
 sub tryNextVariant()
-    channels = m.top.channels
+    channels = m.canais
     if channels = invalid or m.top.currentChannelIndex >= channels.Count() then return
     ch = channels[m.top.currentChannelIndex]
     if ch.variants = invalid then return
@@ -448,13 +498,10 @@ end sub
 sub onDrawerSelect()
     sel = m.channelDrawer.channelSelected
     if sel <> invalid then
-        channels = m.top.channels
+        channels = m.canais
         for i = 0 to channels.Count() - 1
             if channels[i].id = sel.id then
-                if i <> m.top.currentChannelIndex then
-                    m.top.currentChannelIndex = i
-                    playChannel(i)
-                end if
+                if i <> m.top.currentChannelIndex then playChannel(i)
                 m.channelDrawer.isOpen = false
                 exit for
             end if
@@ -469,11 +516,10 @@ sub onNumberTimerFired()
     m.tryingProxy = false
 
     m.numberBuffer = ""
-        channels = m.top.channels
+        channels = m.canais
         if channels <> invalid then
             for i = 0 to channels.Count() - 1
                 if channels[i].number = targetNum then
-                    m.top.currentChannelIndex = i
                     playChannel(i)
                     exit for
                 end if
@@ -500,17 +546,17 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
     if m.painelFontes.aberto then return false
 
     if key = "right" then
-        channels = m.top.channels
+        channels = m.canais
         if channels <> invalid and m.top.currentChannelIndex < channels.Count() then abrirFontes(channels[m.top.currentChannelIndex])
         return true
     end if
 
     ' Zapping de canais (Cima/Baixo)
     if key = "up" then
-        playChannel(m.top.currentChannelIndex - 1)
+        zapear(-1)
         return true
     else if key = "down" then
-        playChannel(m.top.currentChannelIndex + 1)
+        zapear(1)
         return true
     else if key = "OK" then
         m.holdUsado = false
@@ -532,7 +578,7 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
 
     ' Botão Replay ou Play para favoritar / desfavoritar canal
     if key = "replay" or key = "play" then
-        channels = m.top.channels
+        channels = m.canais
         if channels <> invalid and m.top.currentChannelIndex < channels.Count() then
             ch = channels[m.top.currentChannelIndex]
             ToggleFavoriteChannel(ch.name)
@@ -558,6 +604,7 @@ end function
 
 sub cleanUp()
     if m.liveVideo <> invalid then
+        m.vigiaTimer.control = "stop"
         m.liveVideo.control = "stop"
         m.liveVideo.content = invalid
     end if

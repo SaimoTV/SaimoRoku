@@ -33,7 +33,9 @@ sub onFocusedChildChange()
 end sub
 
 sub onChannelsChange()
-    channels = m.top.channels
+    ' Campo de nó é copiado inteiro a cada leitura: aqui só se lê uma vez.
+    m.canais = m.top.channels
+    channels = m.canais
     if channels = invalid or channels.Count() = 0 then return
 
     m.allChannels = channels
@@ -61,7 +63,7 @@ sub loadMoreChannels(count as Integer)
         prog = ""
         pct = 0.0
         lista = invalid
-        if m.top.epgMap <> invalid then lista = m.top.epgMap[ch.name]
+        if m.epg <> invalid then lista = m.epg[ch.name]
         if lista <> invalid and lista.Count() > 0 then
             prog = lista[0].title
             pct = progressoDe(lista[0])
@@ -90,6 +92,7 @@ function progressoDe(p as Object) as Float
 end function
 
 sub onEpgChange()
+    m.epg = m.top.epgMap
     idx = m.guideChannelList.itemFocused
     if idx < 0 then idx = 0
     updateSchedule(idx)
@@ -107,7 +110,7 @@ sub onChannelFocused()
 end sub
 
 sub updateSchedule(idx as Integer)
-    channels = m.top.channels
+    channels = m.canais
     if channels = invalid or channels.Count() = 0 then return
     if idx < 0 then idx = 0
     if idx >= channels.Count() then idx = channels.Count() - 1
@@ -115,7 +118,7 @@ sub updateSchedule(idx as Integer)
     ch = channels[idx]
     m.selectedChannelHeader.text = ch.number.ToStr() + "  " + ch.name
 
-    epgMap = m.top.epgMap
+    epgMap = m.epg
     root = CreateObject("roSGNode", "ContentNode")
     if epgMap <> invalid and epgMap[ch.name] <> invalid then
         for each p in epgMap[ch.name]
@@ -136,8 +139,8 @@ end sub
 
 sub onChannelSelected()
     idx = m.guideChannelList.itemSelected
-    if m.top.channels <> invalid and idx >= 0 and idx < m.top.channels.Count() then
-        m.top.tuneRequested = m.top.channels[idx]
+    if m.canais <> invalid and idx >= 0 and idx < m.canais.Count() then
+        m.top.tuneRequested = m.canais[idx]
     end if
 end sub
 

@@ -4,8 +4,8 @@
     <field id="featuredItem" type="assocarray" onChange="onFeaturedChange" />
     <field id="railsData" type="array" onChange="onRailsChange" />
     <field id="channels" type="array" onChange="onRailsChange" />
-    <field id="epgMap" type="assocarray" onChange="onRailsChange" />
-    <field id="vodItems" type="array" onChange="onRailsChange" />
+    <field id="epgMap" type="assocarray" />
+    <field id="vodItems" type="array" />
     <field id="itemSelected" type="assocarray" alwaysNotify="true" />
         <field id="tuneRequested" type="assocarray" alwaysNotify="true" />
     <field id="focusUpRequested" type="boolean" alwaysNotify="true" />
@@ -36,6 +36,7 @@
       wrap="false"
     ><Font role="rowLabelFont" uri="pkg:/fonts/Roboto-Medium.ttf" size="36" /></RowList>
     <Timer id="heroTimer" duration="0.3" repeat="false" />
+    <Timer id="montarTimer" duration="0.15" repeat="false" />
   </children>
 
   <script type="text/brightscript" uri="pkg:/source/utils/Storage.brs" />

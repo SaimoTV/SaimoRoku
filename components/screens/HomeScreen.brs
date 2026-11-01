@@ -13,6 +13,8 @@ sub init()
 
     m.heroTimer = m.top.findNode("heroTimer")
     m.heroTimer.observeField("fire", "aplicarDestaque")
+    m.montarTimer = m.top.findNode("montarTimer")
+    m.montarTimer.observeField("fire", "montarFileiras")
 
     m.top.observeField("focusedChild", "onFocusedChildChange")
     saudar()
@@ -37,7 +39,13 @@ end sub
 sub onFeaturedChange()
 end sub
 
+' Canais e destaques chegam em momentos diferentes: junta tudo e monta uma vez.
 sub onRailsChange()
+    m.montarTimer.control = "stop"
+    m.montarTimer.control = "start"
+end sub
+
+sub montarFileiras()
     rootNode = CreateObject("roSGNode", "ContentNode")
 
     ' 1. Fileira: Continue Assistindo (se houver progresso salvo)

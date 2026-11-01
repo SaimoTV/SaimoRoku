@@ -18,6 +18,7 @@ sub init()
     m.secoes = []
     m.secao = 0
     m.area = "lista"
+    m.canais = []
     m.lista.observeField("itemSelected", "onCanal")
     m.lista.observeField("itemFocused", "onFocoCanal")
     m.top.observeField("focusedChild", "onFocusedChildChange")
@@ -27,9 +28,20 @@ sub onFocusedChildChange()
     if m.top.isInFocusChain() and m.area = "lista" and not m.lista.isInFocusChain() then m.lista.setFocus(true)
 end sub
 
+' A programação chega depois: atualiza as linhas sem tirar a pessoa do lugar.
+sub onEpgChange()
+    m.epg = m.top.epgMap
+    if m.canais.Count() = 0 then return
+    foco = m.lista.itemFocused
+    preencher()
+    if foco > 0 then m.lista.jumpToItem = foco
+end sub
+
 sub onChannelsChange()
+    ' Campo de nó é copiado inteiro a cada leitura: aqui só se lê uma vez.
     canais = m.top.channels
     if canais = invalid then return
+    m.canais = canais
     vistos = {}
     ordem = []
     for each c in canais
@@ -48,7 +60,7 @@ sub onChannelsChange()
 end sub
 
 function atual(canal as Object) as Dynamic
-    mapa = m.top.epgMap
+    mapa = m.epg
     if mapa = invalid or mapa[canal.name] = invalid then return invalid
     agora = CreateObject("roDateTime").AsSeconds()
     programas = mapa[canal.name]
@@ -113,14 +125,20 @@ sub marcarChips()
 end sub
 
 sub preencher()
-    canais = m.top.channels
-    if canais = invalid or m.secoes.Count() = 0 then return
+    canais = m.canais
+    if m.secoes.Count() = 0 then return
     nome = m.secoes[m.secao]
+    favoritos = {}
+    if nome = "Favoritos" then
+        for each f in LoadFavoriteChannels()
+            favoritos[f] = true
+        end for
+    end if
     m.filtrados = []
     raiz = CreateObject("roSGNode", "ContentNode")
     for each c in canais
         if nome = "Favoritos" then
-            entra = IsChannelFavorite(c.name)
+            entra = favoritos.DoesExist(c.name)
         else
             entra = c.category = nome
         end if
@@ -183,7 +201,7 @@ sub onOpenChange()
     if m.top.isOpen then
         m.area = "lista"
         marcarChips()
-        canais = m.top.channels
+        canais = m.canais
         if canais <> invalid and m.top.selectedIndex < canais.Count() and m.secoes.Count() > 0 then
             c = canais[m.top.selectedIndex]
             for i = 0 to m.secoes.Count() - 1
