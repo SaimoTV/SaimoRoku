@@ -108,8 +108,14 @@ sub onItemContentChange()
     if temImagem then
         m.poster.uri = item.hdPosterUrl
         m.inicial.text = ""
-    else if item.title <> invalid and item.itemType <> "evento" then
-        m.inicial.text = UCase(Left(item.title, 1))
+    else
+        ' Cartão reaproveitado: sem isso a página que ainda baixa mostrava a capa anterior.
+        m.poster.uri = ""
+        if item.itemType = "carregando" then
+            m.inicial.text = ""
+        else if item.title <> invalid and item.itemType <> "evento" then
+            m.inicial.text = UCase(Left(item.title, 1))
+        end if
     end if
     if item.title <> invalid then m.title.text = item.title
     if item.subTitulo <> invalid and item.subTitulo <> "" then

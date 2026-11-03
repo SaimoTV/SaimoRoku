@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="AcervoTask" extends="Task">
+  <interface>
+    <!-- vazio: baixa roku/indice.txt; senão baixa roku/<categoria>-<letra>-<pagina>.txt -->
+    <field id="categoria" type="string" />
+    <field id="letra" type="string" />
+    <field id="pagina" type="integer" />
+    <field id="indice" type="assocarray" />
+    <field id="linha" type="node" />
+  </interface>
+  <script type="text/brightscript" uri="pkg:/source/utils/Storage.brs" />
+  <script type="text/brightscript" uri="pkg:/components/tasks/AcervoTask.brs" />
+</component>

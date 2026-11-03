@@ -16,8 +16,35 @@ sub init()
     m.categories = ["Filmes", "Séries", "Animes", "Doramas"]
     m.cores = ["#4FE3D0", "#7AA2FF", "#FFB454", "#FF7EB6"]
     m.icones = ["m_movie", "m_live_tv", "m_star", "m_more"]
+    m.chaves = ["filmes", "series", "animes", "doramas"]
+    m.indice = invalid
+    m.linhas = {}
+    m.geracao = 0
+    m.tarefas = {}
     m.top.observeField("focusedChild", "onFocusedChildChange")
+    ' Índice de letras do acervo inteiro: as fileiras de cada letra chegam sob demanda.
+    m.tarefaIndice = CreateObject("roSGNode", "AcervoTask")
+    m.tarefaIndice.observeField("indice", "onIndice")
+    m.tarefaIndice.control = "RUN"
 end sub
+
+sub onIndice()
+    m.indice = m.tarefaIndice.indice
+    m.tarefaIndice = invalid
+    if m.grupos = invalid then separar()
+    montar()
+end sub
+
+function totalDaCategoria(i as Integer) as Integer
+    total = 0
+    if m.indice <> invalid and m.indice.letras[m.chaves[i]] <> invalid then
+        for each l in m.indice.letras[m.chaves[i]]
+            total = total + l.total
+        end for
+    end if
+    if total = 0 and m.grupos <> invalid then total = m.grupos[i].Count()
+    return total
+end function
 
 sub onFocusedChildChange()
     if m.top.isInFocusChain() and not m.vodRowList.isInFocusChain() then m.vodRowList.setFocus(true)
@@ -88,21 +115,97 @@ sub montar()
         end for
         no = cats.CreateChild("ContentNode")
         no.title = m.categories[i]
-        no.addFields({ itemType: "categoria", indice: i, subTitulo: textoTitulos(g.Count()), cor: m.cores[i], icone: "pkg:/images/icons/" + m.icones[i] + ".png", capas: capas })
+        no.addFields({ itemType: "categoria", indice: i, subTitulo: textoTitulos(totalDaCategoria(i)), cor: m.cores[i], icone: "pkg:/images/icons/" + m.icones[i] + ".png", capas: capas })
     end for
 
     g = m.grupos[m.currentCategoryIdx]
     fileira(raiz, "Em alta", g, 0, 19)
-    fileira(raiz, "Recomendados para você", g, 20, 39)
-    fileira(raiz, "Mais títulos", g, 40, 119)
+
+    ' O acervo inteiro em páginas de até 50 títulos, uma fileira por página; só
+    ' as páginas perto do foco ficam baixadas, para o Roku mais fraco aguentar.
+    m.geracao = m.geracao + 1
+    m.linhas = {}
+    letras = invalid
+    if m.indice <> invalid then letras = m.indice.letras[m.chaves[m.currentCategoryIdx]]
+    if letras <> invalid then
+        for each l in letras
+            for pagina = 1 to l.paginas
+                linha = raiz.CreateChild("ContentNode")
+                linha.title = l.letra
+                if l.paginas > 1 then linha.title = l.letra + " · " + pagina.ToStr() + " de " + l.paginas.ToStr()
+                esperar(linha)
+                m.linhas[(raiz.getChildCount() - 1).ToStr()] = { letra: l.letra, pagina: pagina, estado: "" }
+            end for
+        end for
+    end if
 
     AjustarFileiras(m.vodRowList, raiz)
     m.vodRowList.content = raiz
     mostrarCategoria(m.currentCategoryIdx)
+    carregarPerto(0)
+end sub
+
+sub esperar(linha as Object)
+    espera = linha.CreateChild("ContentNode")
+    espera.title = "Carregando…"
+    espera.addFields({ itemType: "carregando" })
+end sub
+
+' Baixa a fileira focada e as duas seguintes; devolve à espera as que ficaram
+' longe, para a memória não crescer enquanto a pessoa desce o acervo.
+sub carregarPerto(r as Integer)
+    raiz = m.vodRowList.content
+    for each k in m.linhas
+        info = m.linhas[k]
+        i = Val(k)
+        if info.estado = "pronto" and (i < r - 4 or i > r + 6) and raiz <> invalid then
+            linha = raiz.getChild(i)
+            if linha <> invalid then
+                linha.removeChildrenIndex(linha.getChildCount(), 0)
+                esperar(linha)
+            end if
+            info.estado = ""
+        end if
+    end for
+    for i = r to r + 2
+        info = m.linhas[i.ToStr()]
+        if info <> invalid and info.estado = "" then
+            info.estado = "baixando"
+            t = CreateObject("roSGNode", "AcervoTask")
+            t.id = i.ToStr() + ":" + m.geracao.ToStr()
+            t.categoria = m.chaves[m.currentCategoryIdx]
+            t.letra = info.letra
+            t.pagina = info.pagina
+            t.observeField("linha", "onLinha")
+            m.tarefas[t.id] = t
+            t.control = "RUN"
+        end if
+    end for
+end sub
+
+sub onLinha(evento as Object)
+    t = evento.getRoSGNode()
+    m.tarefas.Delete(t.id)
+    partes = t.id.Split(":")
+    ' Outra categoria foi montada enquanto a letra baixava.
+    if Val(partes[1]) <> m.geracao then return
+    raiz = m.vodRowList.content
+    if raiz = invalid then return
+    linha = raiz.getChild(Val(partes[0]))
+    novos = t.linha
+    if linha = invalid or novos = invalid then return
+    info = m.linhas[partes[0]]
+    if novos.getChildCount() = 0 then
+        if info <> invalid then info.estado = ""
+        return
+    end if
+    if info <> invalid then info.estado = "pronto"
+    linha.removeChildrenIndex(linha.getChildCount(), 0)
+    linha.appendChildren(novos.getChildren(-1, 0))
 end sub
 
 sub mostrarCategoria(i as Integer)
-    m.heroBanner.featuredItem = { title: m.categories[i], genres: textoTitulos(m.grupos[i].Count()), overview: "Lançamentos, clássicos e tudo entre eles, dublados e legendados.", semFundo: true }
+    m.heroBanner.featuredItem = { title: m.categories[i], genres: textoTitulos(totalDaCategoria(i)), overview: "Lançamentos, clássicos e tudo entre eles, dublados e legendados.", semFundo: true }
 end sub
 
 function noEm(coords as Dynamic) as Dynamic
@@ -115,6 +218,8 @@ function noEm(coords as Dynamic) as Dynamic
 end function
 
 sub onRowItemFocused()
+    foco = m.vodRowList.rowItemFocused
+    if foco <> invalid and foco.Count() >= 1 then carregarPerto(foco[0])
     m.heroTimer.control = "stop"
     m.heroTimer.control = "start"
 end sub
