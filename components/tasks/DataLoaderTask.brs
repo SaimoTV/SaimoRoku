@@ -81,11 +81,7 @@ sub fetchChannels(baseUrl as String)
             else if key = "logo" then
                 current.logo = val
             else if key = "fonte" then
-                resolvedUrl = val
-                if LCase(Left(val, 10)) = "curtitv://" then
-                    resolvedUrl = "https://saimo-tv.pages.dev/api/curtitv?stream=" + Mid(val, 11)
-                end if
-                curVariant = { url: resolvedUrl, quality: "Auto" }
+                curVariant = { url: val, quality: "Auto" }
                 current.variants.Push(curVariant)
             else if curVariant <> invalid then
                 if key = "qualidade" then
