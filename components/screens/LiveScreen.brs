@@ -22,7 +22,10 @@ sub init()
     m.inicioTimer = m.top.findNode("inicioTimer")
     m.inicioTimer.observeField("fire", "onInicio")
     m.indiceAtual = -1
-    m.pedemProxy = {}
+    m.pedemProxy = {
+        "proxy-embedtv.embedtvproxy.workers.dev": true,
+        "embedtvproxy.workers.dev": true
+    }
     m.ancora = m.top.findNode("ancora")
     m.vigiaTimer = m.top.findNode("vigiaTimer")
     m.vigiaTimer.observeField("fire", "onVigia")
@@ -415,7 +418,7 @@ sub playCurrentVariant()
     ' declarado abaixo, então .txt toca sem proxy. Cada segmento pelo proxy custa
     ' tempo e pedidos na Cloudflare: ele fica só como segunda tentativa.
     servidor = rawUrl.Split("/")[2]
-    if m.pedemProxy.DoesExist(servidor) then m.tryingProxy = true
+    if m.pedemProxy.DoesExist(servidor) or InStr(1, rawUrl, "embedtvproxy.workers.dev") > 0 then m.tryingProxy = true
     if m.tryingProxy then
         ut = CreateObject("roUrlTransfer")
         playUrl = "https://saimo-tv.pages.dev/api/proxy?url=" + ut.Escape(rawUrl)
