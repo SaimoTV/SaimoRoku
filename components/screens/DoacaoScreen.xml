@@ -37,8 +37,6 @@
         <Label translation="[78, 56]" width="236" wrap="true" text="Canais, filmes e séries para todo mundo" color="#9AA4B8"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="20" /></Label>
       </Group>
 
-      <Label translation="[0, 640]" text="Quem já apoiou" color="#C9D1E3"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="24" /></Label>
-      <Label id="apoiadores" translation="[0, 680]" width="1040" height="120" wrap="true" maxLines="3" text="" color="#C7F5EF"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="22" /></Label>
     </Group>
 
     <Group translation="[1260, 190]">
