@@ -263,7 +263,7 @@ sub saveCurrentProgress()
         if item.episode <> invalid then episode = item.episode
         if item.episodeTitle <> invalid then epTitle = item.episodeTitle
         if item.url <> invalid then url = item.url
-        SaveVODProgress(item.title, currentPos, dur, season, episode, epTitle, url)
+        SaveVODProgress(item.title, currentPos, dur, season, episode, epTitle, url, { poster: item.poster, isSeries: item.isSeries, letter: item.letter })
     end if
 end sub
 

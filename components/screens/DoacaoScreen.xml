@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="DoacaoScreen" extends="Group">
+  <interface>
+    <field id="focusUpRequested" type="boolean" alwaysNotify="true" />
+    <function name="cleanUp" />
+  </interface>
+
+  <children>
+    <Rectangle width="1920" height="1080" color="#0a0d16" />
+
+    <Group translation="[120, 170]">
+      <Poster translation="[0, 0]" width="360" height="52" uri="pkg:/images/p_branca.9.png" blendColor="#0F3D3A" />
+      <Poster translation="[20, 12]" width="28" height="28" uri="pkg:/images/icons/m_favorite.png" blendColor="#7FF0E3" />
+      <Label translation="[58, 0]" height="52" vertAlign="center" text="Comunidade Saimo TV" color="#7FF0E3"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="24" /></Label>
+
+      <Label translation="[0, 80]" width="1060" wrap="true" text="Ajude a manter tudo" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="64" /></Label>
+      <Label translation="[0, 156]" width="1060" text="100% gratuito" color="#4FE3D0"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="64" /></Label>
+      <Label translation="[0, 250]" width="1060" text="Sem anúncios, sem mensalidade e livre para todo mundo." color="#C9D1E3"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="32" /></Label>
+      <Label translation="[0, 310]" width="1040" wrap="true" lineSpacing="6" text="Manter servidores rápidos, a transmissão e as atualizações de todo dia custa dinheiro todo mês. Quem puder ajudar com qualquer valor faz uma diferença enorme para o Saimo TV continuar no ar para todos." color="#AAB4C8"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="26" /></Label>
+
+      <Group translation="[0, 470]">
+        <Poster width="330" height="130" uri="pkg:/images/p_branca.9.png" blendColor="#1A1F2C" />
+        <Poster translation="[22, 24]" width="40" height="40" uri="pkg:/images/icons/m_block.png" blendColor="#4FE3D0" />
+        <Label translation="[78, 18]" text="Zero anúncios" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="26" /></Label>
+        <Label translation="[78, 56]" width="236" wrap="true" text="Nada interrompendo o que você assiste" color="#9AA4B8"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="20" /></Label>
+      </Group>
+      <Group translation="[352, 470]">
+        <Poster width="330" height="130" uri="pkg:/images/p_branca.9.png" blendColor="#1A1F2C" />
+        <Poster translation="[22, 24]" width="40" height="40" uri="pkg:/images/icons/m_bolt.png" blendColor="#4FE3D0" />
+        <Label translation="[78, 18]" text="Servidores rápidos" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="26" /></Label>
+        <Label translation="[78, 56]" width="236" wrap="true" text="Transmissão estável e em alta qualidade" color="#9AA4B8"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="20" /></Label>
+      </Group>
+      <Group translation="[704, 470]">
+        <Poster width="330" height="130" uri="pkg:/images/p_branca.9.png" blendColor="#1A1F2C" />
+        <Poster translation="[22, 24]" width="40" height="40" uri="pkg:/images/icons/m_favorite.png" blendColor="#4FE3D0" />
+        <Label translation="[78, 18]" text="Sem mensalidade" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="26" /></Label>
+        <Label translation="[78, 56]" width="236" wrap="true" text="Canais, filmes e séries para todo mundo" color="#9AA4B8"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="20" /></Label>
+      </Group>
+
+      <Label translation="[0, 640]" text="Quem já apoiou" color="#C9D1E3"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="24" /></Label>
+      <Label id="apoiadores" translation="[0, 680]" width="1040" height="120" wrap="true" maxLines="3" text="" color="#C7F5EF"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="22" /></Label>
+    </Group>
+
+    <Group translation="[1260, 190]">
+      <Poster width="540" height="700" uri="pkg:/images/p_branca.9.png" blendColor="#FFFFFF" />
+      <Label translation="[0, 34]" width="540" horizAlign="center" text="Aponte a câmera do celular" color="#0B0F1A"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="30" /></Label>
+      <Poster translation="[60, 96]" width="420" height="420" uri="pkg:/images/doacao-qr.png" />
+      <Label translation="[0, 540]" width="540" horizAlign="center" text="deflow.exchange/pt/qr/saimo-tv" color="#0E7490"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="26" /></Label>
+      <Label translation="[0, 590]" width="540" horizAlign="center" text="Pix ou cripto, pagamento seguro pela Deflow" color="#5B6475"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="20" /></Label>
+    </Group>
+  </children>
+
+  <script type="text/brightscript" uri="pkg:/components/screens/DoacaoScreen.brs" />
+</component>

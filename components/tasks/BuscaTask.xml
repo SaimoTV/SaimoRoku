@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="BuscaTask" extends="Task">
+  <interface>
+    <!-- Fica rodando: cada consulta nova vira resultado, sempre a mais recente. -->
+    <field id="consulta" type="string" />
+    <field id="resultado" type="node" />
+    <field id="feita" type="string" />
+  </interface>
+  <script type="text/brightscript" uri="pkg:/source/utils/Storage.brs" />
+  <script type="text/brightscript" uri="pkg:/components/tasks/BuscaTask.brs" />
+</component>

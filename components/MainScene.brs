@@ -248,7 +248,8 @@ function screenToNavIndex(name as String) as Integer
     if name = "favorites" then return 5
     if name = "guide" then return 2
     if name = "radios" then return 6
-    if name = "settings" or name = "minhas" then return 7
+    if name = "doacao" then return 7
+    if name = "settings" or name = "minhas" then return 8
     return 1
 end function
 
@@ -368,6 +369,11 @@ sub switchScreen(screenName as String, params = invalid as Dynamic)
         node = CreateObject("roSGNode", "SettingsScreen")
         node.observeField("reloadRequested", "onSettingsReload")
         node.observeField("minhasListasRequested", "onAbrirMinhasListas")
+        node.observeField("focusUpRequested", "onScreenFocusUp")
+        m.currentScreenNode = node
+
+    else if screenName = "doacao" then
+        node = CreateObject("roSGNode", "DoacaoScreen")
         node.observeField("focusUpRequested", "onScreenFocusUp")
         m.currentScreenNode = node
 

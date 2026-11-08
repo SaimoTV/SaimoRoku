@@ -10,45 +10,50 @@
     <Poster translation="[80, 40]" width="56" height="56" uri="pkg:/images/icon_hd.png" />
 
     <!-- Pílula: branca na aba em foco, translúcida na aba da tela atual -->
+    <!-- Apoie: sempre em destaque, turquesa -->
+    <Poster id="pillApoie" translation="[1458, 36]" width="158" height="64" uri="pkg:/images/p_branca.9.png" blendColor="#0FA89A" />
     <Poster id="pillSel" translation="[0, 36]" width="100" height="64" uri="pkg:/images/p_sel.9.png" />
     <Poster id="pillFoco" translation="[0, 36]" width="100" height="64" uri="pkg:/images/p_branca.9.png" visible="false" />
 
     <Group id="tabsGroup">
-      <Group id="tab_0" translation="[156, 36]">
-        <Poster id="icon_0" translation="[22, 14]" width="36" height="36" uri="pkg:/images/icons/m_search.png" blendColor="#FFFFFF" />
-        <Label id="label_0" translation="[70, 0]" height="64" vertAlign="center" text="Buscar" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="32" /></Label>
+      <Group id="tab_0" translation="[150, 36]">
+        <Poster id="icon_0" translation="[14, 15]" width="34" height="34" uri="pkg:/images/icons/m_search.png" blendColor="#FFFFFF" />
+        <Label id="label_0" translation="[58, 0]" height="64" vertAlign="center" text="Buscar" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="30" /></Label>
       </Group>
-      <Group id="tab_1" translation="[350, 36]">
-        <Poster id="icon_1" translation="[22, 14]" width="36" height="36" uri="pkg:/images/icons/m_home.png" blendColor="#FFFFFF" />
-        <Label id="label_1" translation="[70, 0]" height="64" vertAlign="center" text="Início" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="32" /></Label>
+      <Group id="tab_1" translation="[322, 36]">
+        <Poster id="icon_1" translation="[14, 15]" width="34" height="34" uri="pkg:/images/icons/m_home.png" blendColor="#FFFFFF" />
+        <Label id="label_1" translation="[58, 0]" height="64" vertAlign="center" text="Início" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="30" /></Label>
       </Group>
-      <Group id="tab_2" translation="[523, 36]">
-        <Poster id="icon_2" translation="[22, 14]" width="36" height="36" uri="pkg:/images/icons/m_live_tv.png" blendColor="#FFFFFF" />
-        <Label id="label_2" translation="[70, 0]" height="64" vertAlign="center" text="Ao vivo" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="32" /></Label>
+      <Group id="tab_2" translation="[478, 36]">
+        <Poster id="icon_2" translation="[14, 15]" width="34" height="34" uri="pkg:/images/icons/m_live_tv.png" blendColor="#FFFFFF" />
+        <Label id="label_2" translation="[58, 0]" height="64" vertAlign="center" text="Ao vivo" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="30" /></Label>
       </Group>
-      <Group id="tab_3" translation="[723, 36]">
-        <Poster id="icon_3" translation="[22, 14]" width="36" height="36" uri="pkg:/images/icons/m_football.png" blendColor="#FFFFFF" />
-        <Label id="label_3" translation="[70, 0]" height="64" vertAlign="center" text="Eventos" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="32" /></Label>
+      <Group id="tab_3" translation="[658, 36]">
+        <Poster id="icon_3" translation="[14, 15]" width="34" height="34" uri="pkg:/images/icons/m_football.png" blendColor="#FFFFFF" />
+        <Label id="label_3" translation="[58, 0]" height="64" vertAlign="center" text="Eventos" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="30" /></Label>
       </Group>
-      <Group id="tab_4" translation="[931, 36]">
-        <Poster id="icon_4" translation="[22, 14]" width="36" height="36" uri="pkg:/images/icons/m_movie.png" blendColor="#FFFFFF" />
-        <Label id="label_4" translation="[70, 0]" height="64" vertAlign="center" text="On Demand" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="32" /></Label>
+      <Group id="tab_4" translation="[844, 36]">
+        <Poster id="icon_4" translation="[14, 15]" width="34" height="34" uri="pkg:/images/icons/m_movie.png" blendColor="#FFFFFF" />
+        <Label id="label_4" translation="[58, 0]" height="64" vertAlign="center" text="On Demand" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="30" /></Label>
       </Group>
-      <Group id="tab_5" translation="[1192, 36]">
-        <Poster id="icon_5" translation="[22, 14]" width="36" height="36" uri="pkg:/images/icons/m_star.png" blendColor="#FFFFFF" />
-        <Label id="label_5" translation="[70, 0]" height="64" vertAlign="center" text="Favoritos" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="32" /></Label>
+      <Group id="tab_5" translation="[1080, 36]">
+        <Poster id="icon_5" translation="[14, 15]" width="34" height="34" uri="pkg:/images/icons/m_star.png" blendColor="#FFFFFF" />
+        <Label id="label_5" translation="[58, 0]" height="64" vertAlign="center" text="Favoritos" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="30" /></Label>
       </Group>
-      <Group id="tab_6" translation="[1419, 36]">
-        <Poster id="icon_6" translation="[22, 14]" width="36" height="36" uri="pkg:/images/icons/m_radio.png" blendColor="#FFFFFF" />
-        <Label id="label_6" translation="[70, 0]" height="64" vertAlign="center" text="Rádios" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="32" /></Label>
+      <Group id="tab_6" translation="[1284, 36]">
+        <Poster id="icon_6" translation="[14, 15]" width="34" height="34" uri="pkg:/images/icons/m_radio.png" blendColor="#FFFFFF" />
+        <Label id="label_6" translation="[58, 0]" height="64" vertAlign="center" text="Rádios" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="30" /></Label>
       </Group>
-      <Group id="tab_7" translation="[1612, 36]">
-        <Poster id="icon_7" translation="[22, 14]" width="36" height="36" uri="pkg:/images/icons/m_settings.png" blendColor="#FFFFFF" />
-        
+      <Group id="tab_7" translation="[1458, 36]">
+        <Poster id="icon_7" translation="[14, 15]" width="34" height="34" uri="pkg:/images/icons/m_favorite.png" blendColor="#FFFFFF" />
+        <Label id="label_7" translation="[58, 0]" height="64" vertAlign="center" text="Apoie" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="30" /></Label>
+      </Group>
+      <Group id="tab_8" translation="[1620, 36]">
+        <Poster id="icon_8" translation="[14, 15]" width="34" height="34" uri="pkg:/images/icons/m_settings.png" blendColor="#FFFFFF" />
       </Group>
     </Group>
 
-    <Label id="clockLabel" translation="[1660, 36]" width="180" height="64" vertAlign="center" horizAlign="right" text="--:--" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="36" /></Label>
+    <Label id="clockLabel" translation="[1690, 36]" width="160" height="64" vertAlign="center" horizAlign="right" text="--:--" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="36" /></Label>
     <Timer id="clockTimer" duration="30" repeat="true" />
   </children>
 

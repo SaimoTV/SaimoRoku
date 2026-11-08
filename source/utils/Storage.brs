@@ -69,7 +69,7 @@ function GetVODProgress(title as String) as Dynamic
     return invalid
 end function
 
-sub SaveVODProgress(title as String, posSec as Integer, durSec as Integer, season = 0 as Integer, episode = 0 as Integer, epTitle = "" as String, url = "" as String)
+sub SaveVODProgress(title as String, posSec as Integer, durSec as Integer, season = 0 as Integer, episode = 0 as Integer, epTitle = "" as String, url = "" as String, extra = invalid as Dynamic)
     if title = "" or durSec <= 0 then return
     all = LoadAllProgress()
     percent = Int((posSec / durSec) * 100)
@@ -85,7 +85,22 @@ sub SaveVODProgress(title as String, posSec as Integer, durSec as Integer, seaso
         return
     end if
 
+    ' Capa, tipo e letra do título: o Continuar assistindo mostra a capa e
+    ' reabre o título sem procurar de novo. Sem eles, mantém os já guardados.
+    anterior = all[title]
+    if extra = invalid then extra = {}
+    poster = extra.poster
+    if (poster = invalid or poster = "") and anterior <> invalid then poster = anterior.poster
+    serie = extra.isSeries
+    if serie = invalid and anterior <> invalid then serie = anterior.isSeries
+    if serie = invalid then serie = (season > 0)
+    letra = extra.letter
+    if (letra = invalid or letra = "") and anterior <> invalid then letra = anterior.letter
+
     all[title] = {
+        poster: poster,
+        isSeries: serie,
+        letter: letra,
         title: title,
         position: posSec,
         duration: durSec,

@@ -21,6 +21,11 @@ sub init()
     m.teclas.observeField("itemSelected", "onTecla")
     m.resultados.observeField("rowItemSelected", "onResultado")
     m.top.observeField("focusedChild", "onFocusedChildChange")
+    ' A busca no acervo roda numa tarefa que fica aberta: a tela não trava.
+    m.busca = CreateObject("roSGNode", "BuscaTask")
+    m.busca.observeField("resultado", "onResultadoAcervo")
+    m.busca.control = "RUN"
+    m.acervo = invalid
 end sub
 
 sub onFocusedChildChange()
@@ -47,57 +52,75 @@ end sub
 sub buscar()
     consulta = m.texto.Trim()
     if consulta = "" then
+        m.acervo = invalid
+        m.busca.consulta = ""
         m.resultados.content = invalid
+        m.dica.text = "Digite o nome: os resultados aparecem enquanto você digita."
         m.dica.visible = true
         return
     end if
+    m.acervo = invalid
+    m.busca.consulta = consulta
+    m.dica.text = "Procurando…"
+    montarResultados()
+end sub
 
+sub onResultadoAcervo()
+    if m.busca.feita <> m.texto.Trim() then return
+    m.acervo = m.busca.resultado
+    montarResultados()
+end sub
+
+' Canais (lista pequena, já na memória) em cima; o acervo vem da tarefa.
+sub montarResultados()
+    consulta = LCase(m.texto.Trim())
+    if consulta = "" then return
+    if m.canais = invalid and m.top.channels <> invalid then
+        m.canais = []
+        for each ch in m.top.channels
+            m.canais.Push({ chave: LCase(ch.name), ch: ch })
+        end for
+    end if
     raiz = CreateObject("roSGNode", "ContentNode")
-    canais = invalid
-    if m.canais = invalid then m.canais = m.top.channels
-    if m.titulos = invalid then m.titulos = m.top.vodItems
     if m.canais <> invalid then
-        for each ch in m.canais
-            if Instr(1, LCase(ch.name), consulta) > 0 then
+        canais = invalid
+        for each c in m.canais
+            if Instr(1, c.chave, consulta) > 0 then
                 if canais = invalid then
                     canais = raiz.CreateChild("ContentNode")
                     canais.title = "Canais"
                 end if
                 no = canais.CreateChild("ContentNode")
-                no.title = ch.name
-                if ch.logo <> invalid then no.hdPosterUrl = ch.logo
-                no.addFields({ itemType: "channel", item: ch })
+                no.title = c.ch.name
+                if c.ch.logo <> invalid then no.hdPosterUrl = c.ch.logo
+                no.addFields({ itemType: "channel", item: c.ch })
                 if canais.getChildCount() >= 30 then exit for
             end if
         end for
     end if
-
-    titulos = invalid
-    if m.titulos <> invalid then
-        for each it in m.titulos
-            if Instr(1, LCase(it.title), consulta) > 0 then
-                if titulos = invalid then
-                    titulos = raiz.CreateChild("ContentNode")
-                    titulos.title = "Filmes e séries"
-                end if
-                no = titulos.CreateChild("ContentNode")
-                no.title = it.title
-                if it.poster <> invalid then no.hdPosterUrl = it.poster
-                no.addFields({ itemType: "vod", item: it })
-                if titulos.getChildCount() >= 30 then exit for
-            end if
+    if m.acervo <> invalid then
+        for each linha in m.acervo.getChildren(-1, 0)
+            nova = raiz.CreateChild("ContentNode")
+            nova.title = linha.title
+            nova.appendChildren(linha.getChildren(-1, 0))
         end for
     end if
-
-    m.dica.visible = raiz.getChildCount() = 0
-    if m.dica.visible then m.dica.text = "Nada encontrado."
+    vazio = raiz.getChildCount() = 0
+    m.dica.visible = vazio
+    if vazio and m.acervo <> invalid then m.dica.text = "Nada encontrado para " + Chr(34) + m.texto.Trim() + Chr(34) + "."
+    if vazio then
+        m.resultados.content = invalid
+        return
+    end if
     AjustarFileiras(m.resultados, raiz)
     m.resultados.content = raiz
 end sub
 
 sub onResultado()
     c = m.resultados.rowItemSelected
+    if m.resultados.content = invalid then return
     no = m.resultados.content.getChild(c[0]).getChild(c[1])
+    if no = invalid then return
     if no.itemType = "channel" then
         m.top.tuneRequested = no.item
     else
@@ -107,6 +130,19 @@ end sub
 
 function onKeyEvent(key as String, press as Boolean) as Boolean
     if not press then return false
+
+    ' Teclado do app Roku no celular: as letras chegam como Lit_x.
+    if Left(key, 4) = "Lit_" then
+        m.texto = m.texto + LCase(Mid(key, 5))
+        m.campo.text = m.texto
+        buscar()
+        return true
+    else if key = "backspace" then
+        if Len(m.texto) > 0 then m.texto = Left(m.texto, Len(m.texto) - 1)
+        m.campo.text = m.texto
+        buscar()
+        return true
+    end if
 
     if m.resultados.isInFocusChain() then
         if key = "left" or key = "back" then
@@ -125,3 +161,8 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
     end if
     return false
 end function
+
+' A tarefa de busca fica aberta esperando consulta: sai junto com a tela.
+sub cleanUp()
+    if m.busca <> invalid then m.busca.control = "STOP"
+end sub

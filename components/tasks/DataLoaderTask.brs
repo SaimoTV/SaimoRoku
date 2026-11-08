@@ -23,6 +23,8 @@ sub executeRequest()
         fetchEvents(urlCanais)
     else if reqType = "radios" then
         fetchRadios(urlCanais)
+    else if reqType = "apoiadores" then
+        fetchApoiadores()
     end if
 end sub
 
@@ -360,4 +362,19 @@ sub fetchRadios(baseUrl as String)
     end for
 
     m.top.responseRadios = radios
+end sub
+
+' ----- Apoiadores (tela Apoie): só os nomes, na ordem publicada -----
+sub fetchApoiadores()
+    texto = HttpGet("https://saimo-tv.pages.dev/apoiadores.txt")
+    nomes = []
+    for each bruta in texto.Split(Chr(10))
+        linha = bruta.Trim()
+        if linha <> "" and Left(linha, 1) <> "#" then
+            nome = linha.Split(Chr(9))[0].Trim()
+            if nome <> "" then nomes.Push(nome)
+        end if
+        if nomes.Count() >= 40 then exit for
+    end for
+    m.top.responseRadios = nomes
 end sub

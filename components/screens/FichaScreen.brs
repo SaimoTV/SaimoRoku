@@ -61,11 +61,13 @@ sub onItemChange()
         m.backdropPoster.uri = item.poster
     end if
 
-    year = "2026"
-    if item.year <> invalid and item.year <> "" then year = item.year
     tipo = "Filme"
     if item.isSeries then tipo = "Série"
-    m.metaLabel.text = tipo + " • " + year + " • Full HD • Classificação Livre"
+    ' Sem ano conhecido a linha não inventa um.
+    partes = [tipo]
+    if item.year <> invalid and item.year <> "" then partes.Push(item.year)
+    partes.Push("Full HD")
+    m.metaLabel.text = partes.Join(" • ")
 
     if item.genres <> invalid then
         m.genresLabel.text = item.genres
@@ -244,6 +246,7 @@ sub onEpisodeSelected()
             m.top.playRequested = {
                 title: m.top.item.title,
                 letter: m.top.item.letter,
+            poster: m.top.item.poster,
                 year: m.top.item.year,
                 season: epNode.seasonNum,
                 episode: epNode.episodeNum,
@@ -347,6 +350,7 @@ sub handleButtonClick()
         m.top.playRequested = {
             title: item.title,
             letter: item.letter,
+            poster: item.poster,
             year: item.year,
             resumePos: 0,
             isSeries: item.isSeries,
@@ -368,6 +372,7 @@ sub handleButtonClick()
         m.top.playRequested = {
             title: item.title,
             letter: item.letter,
+            poster: item.poster,
             year: item.year,
             resumePos: resPos,
             isSeries: item.isSeries,

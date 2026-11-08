@@ -13,9 +13,9 @@ sub init()
     m.clockTimer.control = "start"
     updateClock()
 
-    m.itemNames = ["search", "home", "live", "events", "vod", "favorites", "radios", "settings"]
-    m.tabPositions = [156, 350, 523, 723, 931, 1192, 1419, 1612]
-    m.tabWidths = [192, 171, 198, 206, 259, 225, 191, 80]
+    m.itemNames = ["search", "home", "live", "events", "vod", "favorites", "radios", "doacao", "settings"]
+    m.tabPositions = [150, 322, 478, 658, 844, 1080, 1284, 1458, 1620]
+    m.tabWidths = [168, 152, 176, 182, 232, 200, 170, 158, 64]
 
     m.focusedIndex = 1
     m.top.observeField("focusedChild", "onFocusedChildChange")
@@ -47,7 +47,7 @@ end sub
 sub updateVisuals()
     alvo = m.focusedIndex
     if alvo < 0 then alvo = 0
-    if alvo > 7 then alvo = 7
+    if alvo > 8 then alvo = 8
     atual = m.top.selectedIndex
     temFoco = m.top.hasFocus()
 
@@ -57,7 +57,7 @@ sub updateVisuals()
     m.pillFoco.width = m.tabWidths[alvo]
     m.pillFoco.visible = temFoco
 
-    for i = 0 to 7
+    for i = 0 to 8
         cor = "#FFFFFF"
         if temFoco and i = alvo then cor = "#0b0e14"
         m.top.findNode("icon_" + i.ToStr()).blendColor = cor
@@ -76,7 +76,7 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
             return true
         end if
     else if key = "right" then
-        if m.focusedIndex < 7 then
+        if m.focusedIndex < 8 then
             m.focusedIndex = m.focusedIndex + 1
             updateVisuals()
             return true

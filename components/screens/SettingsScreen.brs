@@ -4,6 +4,8 @@
 
 sub init()
     m.settingsList = m.top.findNode("settingsList")
+    ' Versão do manifest: o número escrito à mão ficava para trás a cada release.
+    m.top.findNode("versao").text = "Saimo TV " + CreateObject("roAppInfo").GetVersion()
     m.settingsList.observeField("itemSelected", "onSettingSelected")
     m.prefs = LoadPreferences()
     m.top.observeField("focusedChild", "onFocusedChildChange")
