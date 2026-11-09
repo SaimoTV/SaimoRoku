@@ -10,6 +10,8 @@ sub AjustarFileiras(rowList as Object, raiz as Object)
             alturas.Push(424) : tamanhos.Push([528, 400])
         else if tipo = "categoria" then
             alturas.Push(434) : tamanhos.Push([720, 410])
+        else if tipo = "filtro" then
+            alturas.Push(170) : tamanhos.Push([292, 104])
         else
             alturas.Push(480) : tamanhos.Push([272, 460])
         end if

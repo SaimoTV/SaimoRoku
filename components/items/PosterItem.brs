@@ -69,6 +69,21 @@ sub modoEvento(item as Object)
     x.vertAlign = "center"
 end sub
 
+' Botão de filtro do On Demand: o nome em cima, o valor escolhido embaixo.
+sub modoFiltro(item as Object)
+    m.moldura.width = 292 : m.moldura.height = 104
+    m.fundo.visible = false : m.poster.visible = false : m.canto.visible = false
+    m.title.visible = false
+    m.inicial.text = ""
+    g = m.top.createChild("Group")
+    fundo = novoPoster(g, 6, 6, 280, 92, "pkg:/images/p_branca.9.png")
+    fundo.blendColor = "#1A1F2C"
+    if item.ativo = true then fundo.blendColor = "#0F5E57"
+    novoRotulo(g, 28, 16, 240, 0, "#A8B4C0", 22, "Regular", item.title)
+    valor = novoRotulo(g, 28, 46, 240, 0, "#FFFFFF", 28, "Medium", item.subTitulo)
+    valor.maxLines = 1
+end sub
+
 sub modoCategoria(item as Object)
     m.moldura.width = 720 : m.moldura.height = 410
     m.fundo.visible = false : m.poster.visible = false : m.canto.visible = false
@@ -95,6 +110,10 @@ sub onItemContentChange()
     if item = invalid then return
     if item.itemType = "categoria" then
         modoCategoria(item)
+        return
+    end if
+    if item.itemType = "filtro" then
+        modoFiltro(item)
         return
     end if
 

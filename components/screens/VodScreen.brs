@@ -22,6 +22,17 @@ sub init()
     m.geracao = 0
     m.tarefas = {}
     m.top.observeField("focusedChild", "onFocusedChildChange")
+    ' Filtros: gênero, ano, idade, nota e ordem (FiltroTask, sobre o acervo inteiro).
+    m.lista = m.top.findNode("lista")
+    m.opcoes = m.top.findNode("opcoes")
+    m.opcoes.observeField("itemSelected", "onOpcaoEscolhida")
+    m.filtros = filtrosVazios()
+    m.generos = []
+    m.pedidoId = 0
+    m.filtro = CreateObject("roSGNode", "FiltroTask")
+    m.filtro.observeField("resultado", "onResultadoFiltro")
+    m.filtro.observeField("generos", "onGeneros")
+    m.filtro.control = "RUN"
     ' Índice de letras do acervo inteiro: as fileiras de cada letra chegam sob demanda.
     m.tarefaIndice = CreateObject("roSGNode", "AcervoTask")
     m.tarefaIndice.observeField("indice", "onIndice")
@@ -47,6 +58,11 @@ function totalDaCategoria(i as Integer) as Integer
 end function
 
 sub onFocusedChildChange()
+    ' Com a lista de opções aberta o foco é dela, não da grade.
+    if m.lista.visible then
+        if m.top.isInFocusChain() and not m.opcoes.isInFocusChain() then m.opcoes.setFocus(true)
+        return
+    end if
     if m.top.isInFocusChain() and not m.vodRowList.isInFocusChain() then m.vodRowList.setFocus(true)
 end sub
 
@@ -118,13 +134,26 @@ sub montar()
         no.addFields({ itemType: "categoria", indice: i, subTitulo: textoTitulos(totalDaCategoria(i)), cor: m.cores[i], icone: "pkg:/images/icons/" + m.icones[i] + ".png", capas: capas })
     end for
 
+    filaDeFiltros(raiz)
+    m.geracao = m.geracao + 1
+    m.linhas = {}
+    if filtrando() then
+        ' Com filtro, o acervo inteiro filtrado chega da tarefa (onResultadoFiltro).
+        espera = raiz.CreateChild("ContentNode")
+        espera.title = "Filtrando…"
+        esperar(espera)
+        AjustarFileiras(m.vodRowList, raiz)
+        m.vodRowList.content = raiz
+        mostrarCategoria(m.currentCategoryIdx)
+        pedirFiltro()
+        return
+    end if
+
     g = m.grupos[m.currentCategoryIdx]
     fileira(raiz, "Em alta", g, 0, 19)
 
     ' O acervo inteiro em páginas de até 50 títulos, uma fileira por página; só
     ' as páginas perto do foco ficam baixadas, para o Roku mais fraco aguentar.
-    m.geracao = m.geracao + 1
-    m.linhas = {}
     letras = invalid
     if m.indice <> invalid then letras = m.indice.letras[m.chaves[m.currentCategoryIdx]]
     if letras <> invalid then
@@ -235,8 +264,15 @@ sub aplicarDestaque()
 end sub
 
 sub onRowItemSelected()
+    if m.fechouLista <> invalid then
+        if m.fechouLista.TotalMilliseconds() < 600 then return
+    end if
     no = noEm(m.vodRowList.rowItemSelected)
     if no = invalid then return
+    if no.itemType = "filtro" then
+        abrirLista(no.campo)
+        return
+    end if
     if no.itemType = "categoria" then
         if no.indice <> m.currentCategoryIdx then
             m.currentCategoryIdx = no.indice
@@ -250,6 +286,10 @@ end sub
 
 function onKeyEvent(key as String, press as Boolean) as Boolean
     if not press then return false
+    if m.lista.visible then
+        if key = "back" or key = "left" then fecharLista()
+        return true
+    end if
     if key = "up" then
         m.top.focusUpRequested = true
         return true
@@ -258,4 +298,164 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
 end function
 
 sub cleanUp()
+    ' A tarefa de filtros fica aberta esperando pedido: sai junto com a tela.
+    if m.filtro <> invalid then m.filtro.control = "STOP"
+end sub
+
+
+' ===== Filtros =====
+
+function filtrosVazios() as Object
+    return { genero: -1, generoNome: "", anoDe: 0, anoAte: 0, rotuloAno: "", idade: -1, nota: 0, ordem: "" }
+end function
+
+function filtrando() as Boolean
+    f = m.filtros
+    return f.genero >= 0 or f.anoDe > 0 or f.idade >= 0 or f.nota > 0 or f.ordem <> ""
+end function
+
+sub filaDeFiltros(raiz as Object)
+    f = m.filtros
+    linha = raiz.CreateChild("ContentNode")
+    linha.title = "Filtros"
+    idade = "Todas"
+    if f.idade = 0 then idade = "Livre"
+    if f.idade > 0 then idade = "Até " + f.idade.ToStr() + " anos"
+    nota = "Qualquer"
+    if f.nota > 0 then nota = f.nota.ToStr() + " ou mais"
+    ordens = { "": "Destaques", populares: "Mais populares", melhores: "Mais bem avaliados", novos: "Mais novos", az: "A–Z" }
+    genero = "Todos"
+    if f.genero >= 0 then genero = f.generoNome
+    ano = "Todos"
+    if f.anoDe > 0 then ano = f.rotuloAno
+    itens = [
+        ["genero", "Gênero", genero, f.genero >= 0],
+        ["ano", "Ano", ano, f.anoDe > 0],
+        ["idade", "Idade", idade, f.idade >= 0],
+        ["nota", "Nota", nota, f.nota > 0],
+        ["ordem", "Ordem", ordens[f.ordem], f.ordem <> ""]
+    ]
+    if filtrando() then itens.Push(["limpar", "Filtros", "Limpar", false])
+    for each it in itens
+        no = linha.CreateChild("ContentNode")
+        no.title = it[1]
+        no.addFields({ itemType: "filtro", campo: it[0], subTitulo: it[2], ativo: it[3] })
+    end for
+end sub
+
+sub onGeneros()
+    m.generos = m.filtro.generos
+end sub
+
+sub pedirFiltro()
+    m.pedidoId = m.pedidoId + 1
+    f = m.filtros
+    m.filtro.pedido = { id: m.pedidoId, categoria: m.chaves[m.currentCategoryIdx], genero: f.genero,
+        anoDe: f.anoDe, anoAte: f.anoAte, idade: f.idade, nota: f.nota, ordem: f.ordem }
+end sub
+
+sub onResultadoFiltro()
+    if m.filtro.feito <> m.pedidoId or not filtrando() then return
+    raiz = m.vodRowList.content
+    if raiz = invalid then return
+    ' Mantém categorias e filtros; troca o resto pelos resultados.
+    while raiz.getChildCount() > 2
+        raiz.removeChildIndex(2)
+    end while
+    novos = m.filtro.resultado
+    if novos = invalid or novos.getChildCount() = 0 then
+        vazio = raiz.CreateChild("ContentNode")
+        vazio.title = "Nenhum título com esses filtros"
+        esperar(vazio)
+    else
+        raiz.appendChildren(novos.getChildren(-1, 0))
+    end if
+    AjustarFileiras(m.vodRowList, raiz)
+end sub
+
+sub abrirLista(campo as String)
+    if campo = "limpar" then
+        m.filtros = filtrosVazios()
+        montar()
+        m.vodRowList.jumpToRowItem = [1, 0]
+        return
+    end if
+    m.campoAberto = campo
+    m.valores = []
+    nomes = []
+    if campo = "genero" then
+        nomes.Push("Todos") : m.valores.Push(-1)
+        for i = 0 to m.generos.Count() - 1
+            nomes.Push(m.generos[i]) : m.valores.Push(i)
+        end for
+        titulo = "Gênero"
+    else if campo = "ano" then
+        atual = CreateObject("roDateTime").GetYear()
+        nomes.Push("Todos") : m.valores.Push([0, 0, ""])
+        for a = atual to atual - 2 step -1
+            nomes.Push(a.ToStr()) : m.valores.Push([a, a, a.ToStr()])
+        end for
+        decada = Int(atual / 10) * 10
+        if atual - 3 >= decada then
+            r = decada.ToStr() + "–" + (atual - 3).ToStr()
+            nomes.Push(r) : m.valores.Push([decada, atual - 3, r])
+        end if
+        for d = decada - 10 to 1990 step -10
+            r = "Anos " + d.ToStr()
+            nomes.Push(r) : m.valores.Push([d, d + 9, r])
+        end for
+        nomes.Push("Antes de 1990") : m.valores.Push([1, 1989, "Antes de 1990"])
+        titulo = "Ano"
+    else if campo = "idade" then
+        nomes = ["Todas", "Livre", "Até 10 anos", "Até 12 anos", "Até 14 anos", "Até 16 anos"]
+        m.valores = [-1, 0, 10, 12, 14, 16]
+        titulo = "Classificação indicativa"
+    else if campo = "nota" then
+        nomes = ["Qualquer", "6 ou mais", "7 ou mais", "8 ou mais"]
+        m.valores = [0, 6, 7, 8]
+        titulo = "Nota mínima"
+    else
+        nomes = ["Destaques", "Mais populares", "Mais bem avaliados", "Mais novos", "A–Z"]
+        m.valores = ["", "populares", "melhores", "novos", "az"]
+        titulo = "Ordem"
+    end if
+    conteudo = CreateObject("roSGNode", "ContentNode")
+    for each n in nomes
+        conteudo.CreateChild("ContentNode").title = n
+    end for
+    m.top.findNode("listaTitulo").text = titulo
+    m.opcoes.content = conteudo
+    m.lista.visible = true
+    m.opcoes.setFocus(true)
+end sub
+
+sub fecharLista()
+    m.lista.visible = false
+    ' O OK que escolheu a opção não pode abrir também o cartão de trás.
+    m.fechouLista = CreateObject("roTimespan")
+    m.vodRowList.setFocus(true)
+end sub
+
+sub onOpcaoEscolhida()
+    i = m.opcoes.itemSelected
+    if i < 0 or i >= m.valores.Count() then return
+    v = m.valores[i]
+    f = m.filtros
+    c = m.campoAberto
+    if c = "genero" then
+        f.genero = v
+        if v >= 0 then f.generoNome = m.generos[v] else f.generoNome = ""
+    else if c = "ano" then
+        f.anoDe = v[0] : f.anoAte = v[1] : f.rotuloAno = v[2]
+    else if c = "idade" then
+        f.idade = v
+    else if c = "nota" then
+        f.nota = v
+    else
+        f.ordem = v
+    end if
+    m.filtros = f
+    fecharLista()
+    montar()
+    m.vodRowList.jumpToRowItem = [1, 0]
 end sub

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="FiltroTask" extends="Task">
+  <interface>
+    <!-- Fica aberta: cada pedido novo (categoria + filtros) vira fileiras de resultado. -->
+    <field id="pedido" type="assocarray" />
+    <field id="resultado" type="node" />
+    <field id="total" type="integer" />
+    <field id="generos" type="array" />
+    <field id="feito" type="integer" />
+  </interface>
+  <script type="text/brightscript" uri="pkg:/source/utils/Storage.brs" />
+  <script type="text/brightscript" uri="pkg:/components/tasks/FiltroTask.brs" />
+</component>

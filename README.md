@@ -7,6 +7,7 @@ Aplicativo oficial 100% nativo para TVs e dispositivos Roku, desenvolvido em **B
   - **Ao Vivo:** Zapping rápido (Cima/Baixo), teclado numérico direto (0-9), mini ZapHUD com programação EPG, Drawer lateral de canais (tecla OK) e Bloqueio Parental.
   - **Início (Home):** Hero banner com reprodução em 1 clique e trilhos dinâmicos ("Continuar Assistindo", "Destaques", "Ao Vivo Agora").
   - **Acervo (VOD):** Filtros rápidos por Filmes, Séries, Animes e Doramas com navegação fluida em grade de pôsteres acelerada por GPU.
+  - **Filtros do On Demand:** fileira "Filtros" (Gênero, Ano, Idade, Nota, Ordem, Limpar) abrindo uma lista de opções; o resultado vem do `roku/filtros-<categoria>.txt` do catálogo, lido uma vez por uma tarefa (`FiltroTask`) que fica aberta esperando pedidos.
   - **Ficha Técnica:** Sinopse, ano, nota TMDB, áudio/legendas, e seletor de temporadas/episódios para séries.
   - **Player Nativo:** Decodificação direta por hardware (HLS / MP4), scrubber OSD, avanço/retrocesso rápido, botão de pular abertura (+85s) e salvamento automático de progresso.
   - **Guia de TV (EPG):** Grade completa de 2 colunas com sintonia em 1 clique.

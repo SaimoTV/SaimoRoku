@@ -30,6 +30,18 @@
       wrap="false"
     ><Font role="rowLabelFont" uri="pkg:/fonts/Roboto-Medium.ttf" size="36" /></RowList>
     <Timer id="heroTimer" duration="0.3" repeat="false" />
+
+    <!-- Opções de um filtro (gênero, ano, idade, nota, ordem) -->
+    <Group id="lista" visible="false">
+      <Rectangle width="1920" height="1080" color="#000000B0" />
+      <Poster translation="[560, 140]" width="800" height="800" uri="pkg:/images/p_branca.9.png" blendColor="#10141E" />
+      <Label id="listaTitulo" translation="[620, 180]" width="680" text="" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="40" /></Label>
+      <LabelList id="opcoes" translation="[620, 260]" itemSize="[680, 64]" numRows="10" vertFocusAnimationStyle="floatingFocus"
+        color="#D5DCE5" focusedColor="#0B0E14" focusBitmapUri="pkg:/images/p_branca.9.png">
+        <Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="30" />
+        <Font role="focusedFont" uri="pkg:/fonts/Roboto-Medium.ttf" size="30" />
+      </LabelList>
+    </Group>
   </children>
 
   <script type="text/brightscript" uri="pkg:/source/utils/Storage.brs" />
