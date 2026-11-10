@@ -34,6 +34,7 @@ sub init()
     m.currentScreenName = ""
 
     ' Abre na tela configurada (padrão: "home")
+    GuardarLinksDeFabrica()
     prefs = LoadPreferences()
     if prefs.abrirEm = "canal" then
         switchScreen("live")
