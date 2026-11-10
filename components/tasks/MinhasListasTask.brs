@@ -27,9 +27,56 @@ function caminho(id as String) as String
     return "cachefs:/minhas_" + id + ".json"
 end function
 
+' Baixa um texto (resposta da API ou M3U). invalid se não deu.
+function xtBuscar(url as String) as Dynamic
+    porta = CreateObject("roMessagePort")
+    ut = CreateObject("roUrlTransfer")
+    ut.SetMessagePort(porta)
+    ut.SetUrl(url)
+    ut.SetCertificatesFile("common:/certs/ca-bundle.crt")
+    ut.InitClientCertificates()
+    ut.AddHeader("User-Agent", "VLC/3.0.20 LibVLC/3.0.20")
+    if not ut.AsyncGetToString() then return invalid
+    msg = Wait(60000, porta)
+    if msg = invalid then
+        ut.AsyncCancel()
+        return invalid
+    end if
+    if msg.GetResponseCode() <> 200 then return invalid
+    return msg.GetString()
+end function
+
+' Conta com usuário e senha: entra, lê os canais ao vivo pela API (ou pelo
+' M3U do get.php se o servidor não tem API). Devolve os canais ou uma mensagem.
+function baixarXtream(conta as Object) as Dynamic
+    resposta = xtBuscar(xtUrlApi(conta, ""))
+    if resposta = invalid then return doM3uXtream(conta)
+    motivo = xtEntrada(resposta)
+    if motivo = "sem-api" then return doM3uXtream(conta)
+    if motivo <> "" then return motivo
+    categorias = invalid
+    textoCat = xtBuscar(xtUrlApi(conta, "get_live_categories"))
+    if textoCat <> invalid then categorias = ParseJson(textoCat)
+    textoStreams = xtBuscar(xtUrlApi(conta, "get_live_streams"))
+    if textoStreams = invalid then return doM3uXtream(conta)
+    canais = xtCanaisDaApi(conta, ParseJson(textoStreams), categorias, 5000)
+    if canais.Count() = 0 then return doM3uXtream(conta)
+    return canais
+end function
+
+function doM3uXtream(conta as Object) as Dynamic
+    texto = xtBuscar(xtLinkM3u(conta.base, conta.usuario, conta.senha))
+    if texto = invalid then return "Não consegui falar com o servidor"
+    lidos = LerM3u(texto, 5000)
+    if lidos.Count() = 0 then return "Essa conta não tem canais ao vivo"
+    return lidos
+end function
+
 ' Devolve os canais lidos, ou uma mensagem (String) para a pessoa.
 function baixar(link as String) as Dynamic
     if not m3uEhHttp(link) then return "O link precisa começar com http:// ou https://"
+    conta = xtDeLink(link)
+    if conta <> invalid then return baixarXtream(conta)
     temporario = "tmp:/lista.m3u"
     porta = CreateObject("roMessagePort")
     ut = CreateObject("roUrlTransfer")

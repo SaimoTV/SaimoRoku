@@ -34,7 +34,6 @@ sub init()
     m.currentScreenName = ""
 
     ' Abre na tela configurada (padrão: "home")
-    GuardarLinksDeFabrica()
     prefs = LoadPreferences()
     if prefs.abrirEm = "canal" then
         switchScreen("live")
@@ -273,6 +272,7 @@ sub switchScreen(screenName as String, params = invalid as Dynamic)
 
     if screenName = "home" then
         node = CreateObject("roSGNode", "HomeScreen")
+        node.observeField("minhasListasRequested", "onAbrirMinhasListas")
         if m.canaisInicio <> invalid then node.channels = m.canaisInicio
         if m.cachedEpg <> invalid then node.epgMap = m.cachedEpg
         if m.cachedDestaques <> invalid then

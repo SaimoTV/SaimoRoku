@@ -13,16 +13,22 @@ sub executeRequest()
     urlCanais = prefs.urlCanais
     urlFilmes = prefs.urlFilmes
 
+    ' Sem endereço (o app não traz nenhum): nada é pedido. O catálogo sai vazio
+    ' e a tela principal junta só as listas da própria pessoa.
     if reqType = "channels" then
-        fetchChannels(urlCanais)
+        if urlCanais = "" then
+            m.top.responseChannels = []
+        else
+            fetchChannels(urlCanais)
+        end if
     else if reqType = "epg" then
-        fetchEpg(urlCanais)
+        if urlCanais <> "" then fetchEpg(urlCanais)
     else if reqType = "destaques" then
-        fetchDestaques(urlFilmes)
+        if urlFilmes <> "" then fetchDestaques(urlFilmes)
     else if reqType = "events" then
-        fetchEvents(urlCanais)
+        if urlCanais <> "" then fetchEvents(urlCanais)
     else if reqType = "radios" then
-        fetchRadios(urlCanais)
+        if urlCanais <> "" then fetchRadios(urlCanais)
     end if
 end sub
 

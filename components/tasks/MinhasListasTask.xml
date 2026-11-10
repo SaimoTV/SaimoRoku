@@ -13,5 +13,6 @@
 
   <script type="text/brightscript" uri="pkg:/source/utils/Storage.brs" />
   <script type="text/brightscript" uri="pkg:/source/utils/LeitorM3u.brs" />
+  <script type="text/brightscript" uri="pkg:/source/utils/Xtream.brs" />
   <script type="text/brightscript" uri="pkg:/components/tasks/MinhasListasTask.brs" />
 </component>

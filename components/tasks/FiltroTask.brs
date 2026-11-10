@@ -11,7 +11,7 @@ end sub
 
 sub rodar()
     base = LoadPreferences().urlFilmes
-    if base = invalid or base = "" then base = "https://filmes-saimo.pages.dev/"
+    if base = invalid then base = ""
     if Right(base, 1) <> "/" then base = base + "/"
     m.base = base
     m.categoria = ""

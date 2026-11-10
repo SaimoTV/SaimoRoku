@@ -106,7 +106,7 @@ end function
 function getIndiceBases() as Object
     if m.globalBases <> invalid then return m.globalBases
 
-    url = "https://filmes-saimo.pages.dev/indice.txt"
+    url = baseFilmes() + "indice.txt"
     ut = CreateObject("roUrlTransfer")
     ut.SetUrl(url)
     ut.SetCertificatesFile("common:/certs/ca-bundle.crt")
@@ -137,7 +137,7 @@ end function
 
 function resolveMovieStream(title as String, letter as String, bases as Object) as Object
     results = []
-    url = "https://filmes-saimo.pages.dev/filmes-" + letter + ".txt"
+    url = baseFilmes() + "filmes-" + letter + ".txt"
     ut = CreateObject("roUrlTransfer")
     ut.SetUrl(url)
     ut.SetCertificatesFile("common:/certs/ca-bundle.crt")
@@ -210,7 +210,7 @@ function resolveSeriesStream(title as String, letter as String, season as Intege
     results = []
 
     ' 1. Busca índice de pedaços da série em series-<letra>.txt
-    url = "https://filmes-saimo.pages.dev/series-" + letter + ".txt"
+    url = baseFilmes() + "series-" + letter + ".txt"
     ut = CreateObject("roUrlTransfer")
     ut.SetUrl(url)
     ut.SetCertificatesFile("common:/certs/ca-bundle.crt")
@@ -237,7 +237,7 @@ function resolveSeriesStream(title as String, letter as String, season as Intege
     end if
 
     ' 2. Baixa o pedaço correspondente: series-<letra>-<pedaco>.txt
-    chunkUrl = "https://filmes-saimo.pages.dev/series-" + letter + "-" + pedaco.ToStr() + ".txt"
+    chunkUrl = baseFilmes() + "series-" + letter + "-" + pedaco.ToStr() + ".txt"
     ut.SetUrl(chunkUrl)
     chunkText = ut.GetToString()
 
@@ -282,11 +282,11 @@ function resolveSeriesStream(title as String, letter as String, season as Intege
     if results.Count() > 0 then return results
 
     ' 3. Se não achou, tenta em animes e doramas
-    animeUrl = "https://filmes-saimo.pages.dev/redeflix/links-animes.txt"
+    animeUrl = baseFilmes() + "redeflix/links-animes.txt"
     resolvedAnime = findInRedeflix(animeUrl, cleanTitle, season, episode, bases)
     if resolvedAnime.Count() > 0 then return resolvedAnime
 
-    doramaUrl = "https://filmes-saimo.pages.dev/redeflix/links-doramas.txt"
+    doramaUrl = baseFilmes() + "redeflix/links-doramas.txt"
     resolvedDorama = findInRedeflix(doramaUrl, cleanTitle, season, episode, bases)
     if resolvedDorama.Count() > 0 then return resolvedDorama
 
@@ -403,4 +403,13 @@ function findInRedeflix(url as String, cleanTitle as String, season as Integer, 
     end for
 
     return results
+end function
+
+' O endereço (no formato do Saimo) da lista de filmes e séries que a pessoa informou.
+' Sem endereço, os pedidos vão a um nome que nunca resolve e falham na hora.
+function baseFilmes() as String
+    base = LoadPreferences().urlFilmes
+    if base = invalid or base = "" then return "https://sem-lista.invalid/"
+    if Right(base, 1) <> "/" then base = base + "/"
+    return base
 end function

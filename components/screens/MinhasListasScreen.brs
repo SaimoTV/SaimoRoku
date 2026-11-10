@@ -14,8 +14,10 @@ sub init()
 
     m.lista.observeField("itemSelected", "onItem")
     m.botoes.observeField("itemSelected", "onBotao")
-    m.modo = "lista" ' lista | acoes | confirmar | link | nome
+    m.modo = "lista" ' lista | acoes | confirmar | link | usuario | senha | nome
     m.link = ""
+    m.usuario = ""
+    m.senha = ""
     m.nome = ""
     m.ocupado = false
     m.top.observeField("focusedChild", "onFocusedChildChange")
@@ -124,9 +126,17 @@ sub abrirCampo(modo as String)
     m.modo = modo
     m.aviso.text = ""
     m.teclado.text = ""
+    ' A senha aparece como pontinhos.
+    if m.teclado.textEditBox <> invalid then m.teclado.textEditBox.secureMode = (modo = "senha")
     raiz = CreateObject("roSGNode", "ContentNode")
     if modo = "link" then
-        m.tituloCampo.text = "Link da lista (.m3u)"
+        m.tituloCampo.text = "Link da lista (M3U) ou servidor"
+        raiz.CreateChild("ContentNode").title = "Continuar"
+    else if modo = "usuario" then
+        m.tituloCampo.text = "Usuário (opcional): deixe em branco se a lista é só um link"
+        raiz.CreateChild("ContentNode").title = "Continuar"
+    else if modo = "senha" then
+        m.tituloCampo.text = "Senha"
         raiz.CreateChild("ContentNode").title = "Continuar"
     else
         m.tituloCampo.text = "Nome (opcional)"
@@ -146,17 +156,38 @@ sub onBotao()
         mostrarListas()
     else if m.modo = "link" then
         m.link = m.teclado.text.Trim()
-        abrirCampo("nome")
+        m.usuario = ""
+        m.senha = ""
+        abrirCampo("usuario")
+    else if m.modo = "usuario" then
+        m.usuario = m.teclado.text.Trim()
+        ' Sem usuário: a lista é só o link, e a senha não se aplica.
+        if m.usuario = "" then abrirCampo("nome") else abrirCampo("senha")
+    else if m.modo = "senha" then
+        m.senha = m.teclado.text
+        if m.senha = "" then
+            abrirCampo("senha")
+            m.aviso.text = "Usuário e senha andam juntos: preencha a senha ou volte e deixe o usuário em branco"
+        else
+            abrirCampo("nome")
+        end if
     else
         m.nome = m.teclado.text.Trim()
-        mostrarListas()
-        rodar("adicionar", "Baixando a lista...")
+        f = xtLinkDoFormulario(m.link, m.usuario, m.senha)
+        if f.erro <> invalid then
+            abrirCampo("link")
+            m.aviso.text = f.erro
+        else
+            m.link = f.link
+            mostrarListas()
+            rodar("adicionar", "Baixando a lista...")
+        end if
     end if
 end sub
 
 ' Link enviado pelo celular (Saimo Connect) cai direto no campo.
 sub onTextoRecebido()
-    if m.modo = "link" or m.modo = "nome" then
+    if m.modo = "link" or m.modo = "usuario" or m.modo = "senha" or m.modo = "nome" then
         m.teclado.text = m.top.textoRecebido
         m.botoes.setFocus(true)
     end if

@@ -16,6 +16,10 @@ sub init()
     m.montarTimer = m.top.findNode("montarTimer")
     m.montarTimer.observeField("fire", "montarFileiras")
 
+    m.boasVindas = m.top.findNode("boasVindas")
+    m.botaoLista = m.top.findNode("botaoLista")
+    m.botaoLista.observeField("itemSelected", "onBotaoLista")
+
     m.top.observeField("focusedChild", "onFocusedChildChange")
     saudar()
 end sub
@@ -31,8 +35,8 @@ sub saudar()
 end sub
 
 sub onFocusedChildChange()
-    if m.top.isInFocusChain() and not m.contentRowList.isInFocusChain() then
-        m.contentRowList.setFocus(true)
+    if m.top.isInFocusChain() and not m.contentRowList.isInFocusChain() and not m.botaoLista.isInFocusChain() then
+        if m.botaoLista.visible then m.botaoLista.setFocus(true) else m.contentRowList.setFocus(true)
     end if
 end sub
 
@@ -135,6 +139,18 @@ sub montarFileiras()
     AjustarFileiras(m.contentRowList, rootNode)
     m.contentRowList.content = rootNode
 
+    ' Sem nada para mostrar e sem nenhuma lista: o primeiro passo é adicionar uma.
+    semListas = (rootNode.GetChildCount() = 0) and (LoadMinhasListas().Count() = 0) and (LoadPreferences().urlCanais = "") and (LoadPreferences().urlFilmes = "")
+    m.boasVindas.visible = semListas
+    m.botaoLista.visible = semListas
+    m.contentRowList.visible = not semListas
+    if semListas then
+        itens = CreateObject("roSGNode", "ContentNode")
+        itens.CreateChild("ContentNode").title = "Adicionar lista (M3U ou usuário e senha)"
+        m.botaoLista.content = itens
+        if m.top.isInFocusChain() then m.botaoLista.setFocus(true)
+    end if
+
 end sub
 
 sub onRowItemFocused()
@@ -188,6 +204,10 @@ sub onRowItemSelected()
             end if
         end if
     end if
+end sub
+
+sub onBotaoLista()
+    m.top.minhasListasRequested = true
 end sub
 
 function onKeyEvent(key as String, press as Boolean) as Boolean

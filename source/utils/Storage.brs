@@ -20,8 +20,8 @@ function GetDefaultPreferences() as Object
         pularAutomatico: true,
         pinParental: "1010",
         ultimoCanal: "",
-        urlCanais: "https://canais-saimo.pages.dev/",
-        urlFilmes: "https://filmes-saimo.pages.dev/"
+        urlCanais: "",
+        urlFilmes: ""
     }
 end function
 
@@ -42,31 +42,6 @@ function LoadPreferences() as Object
     end if
     return defaults
 end function
-
-' 2.8.0: quem nunca escolheu um endereço fica com o de fábrica GRAVADO no
-' registro, e não só implícito no código. Endereço trocado não é mexido.
-sub GuardarLinksDeFabrica()
-    prefs = LoadPreferences()
-    padroes = GetDefaultPreferences()
-    mudou = false
-    for each chave in ["urlCanais", "urlFilmes"]
-        valor = prefs[chave]
-        falta = false
-        if valor = invalid then
-            falta = true
-        else if GetInterface(valor, "ifString") = invalid then
-            falta = true
-        else if Len(valor) = 0 then
-            falta = true
-        end if
-        if falta then
-            prefs[chave] = padroes[chave]
-            mudou = true
-        end if
-    end for
-    reg = GetRegistry()
-    if mudou or reg.Read("prefs") = "" then SavePreferences(prefs)
-end sub
 
 sub SavePreferences(prefs as Object)
     if prefs = invalid then return
