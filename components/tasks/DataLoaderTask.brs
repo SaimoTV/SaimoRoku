@@ -48,6 +48,7 @@ sub fetchChannels(baseUrl as String)
     text = HttpGet(url)
     if text = "" then
         m.top.error = "Erro ao baixar catálogo"
+        m.top.responseChannels = []
         return
     end if
 

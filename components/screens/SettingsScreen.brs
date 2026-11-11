@@ -39,6 +39,7 @@ sub populateSettings()
     addSettingItem(root, "limparCache", "Limpar histórico", "Apaga o que você estava assistindo")
 
     m.settingsList.content = root
+    if m.idxAtual <> invalid then m.settingsList.jumpToItem = m.idxAtual
 end sub
 
 sub addSettingItem(root as Object, key as String, label as String, val as String)
@@ -79,8 +80,7 @@ sub onEnderecoBotao()
     end if
     novo = ""
     if botao = 0 then novo = dlg.text.Trim()
-    if novo <> "" and Left(LCase(novo), 4) <> "http" then novo = "https://" + novo
-    if novo <> "" and Right(novo, 1) <> "/" then novo = novo + "/"
+    novo = normalizarEndereco(novo)
     m.prefs[m.campoEdicao] = novo
     SavePreferences(m.prefs)
     dlg.close = true
@@ -91,7 +91,25 @@ end sub
 sub onEnderecoFechou()
     m.dlgEndereco = invalid
     m.settingsList.setFocus(true)
+    if m.idxAtual <> invalid then m.settingsList.jumpToItem = m.idxAtual
 end sub
+
+' Aceita o endereço com ou sem https://, com espaços, e até colado com o nome de um
+' arquivo no fim (catalogo.txt, destaques.txt...): o app guarda só a pasta, com "/" no fim.
+function normalizarEndereco(url as String) as String
+    u = url.Trim()
+    if u = "" then return ""
+    if Left(LCase(u), 4) <> "http" then u = "https://" + u
+    corte = Instr(1, u, "?")
+    if corte > 0 then u = Left(u, corte - 1)
+    ultimo = 0
+    for i = 1 to Len(u)
+        if Mid(u, i, 1) = "/" then ultimo = i
+    end for
+    if ultimo > 8 and Instr(1, Mid(u, ultimo + 1), ".") > 0 and Right(u, 1) <> "/" then u = Left(u, ultimo)
+    if Right(u, 1) <> "/" then u = u + "/"
+    return u
+end function
 
 function formatBool(val as Boolean) as String
     if val then return "Ligado"
@@ -100,6 +118,7 @@ end function
 
 sub onSettingSelected()
     idx = m.settingsList.itemSelected
+    m.idxAtual = idx
     root = m.settingsList.content
     if root <> invalid and idx >= 0 and idx < root.getChildCount() then
         node = root.getChild(idx)
@@ -149,7 +168,6 @@ sub onSettingSelected()
 
         SavePreferences(m.prefs)
         populateSettings()
-        m.settingsList.jumpToItem = idx
     end if
 end sub
 
