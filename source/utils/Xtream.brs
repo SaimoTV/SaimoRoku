@@ -38,10 +38,10 @@ function xtNormalizarServidor(texto as String) as Dynamic
     if t = "" then return invalid
     if Instr(1, t, " ") > 0 then return invalid
     if Instr(1, t, "://") = 0 then t = "http://" + t
-    pos = Instr(1, t, "://")
-    esquema = LCase(Left(t, pos - 1))
+    posicao = Instr(1, t, "://")
+    esquema = LCase(Left(t, posicao - 1))
     if esquema <> "http" and esquema <> "https" then return invalid
-    resto = Mid(t, pos + 3)
+    resto = Mid(t, posicao + 3)
     p = Instr(1, resto, "?")
     if p > 0 then resto = Left(resto, p - 1)
     p = Instr(1, resto, "#")
@@ -128,14 +128,14 @@ function xtEntrada(json as String) as String
     if auth <> "1" and auth <> "true" then return "Usuário ou senha incorretos"
     status = xtTexto(info.status)
     if status <> "" and LCase(status) <> "active" then return "Essa conta não está ativa"
-    exp = Val(xtTexto(info.exp_date))
-    if exp > 0 and exp <= CreateObject("roDateTime").AsSeconds() then return "Essa conta venceu"
+    validade = Val(xtTexto(info.exp_date))
+    if validade > 0 and validade <= CreateObject("roDateTime").AsSeconds() then return "Essa conta venceu"
     return ""
 end function
 
 ' get_live_streams + categorias -> canais (mesma forma do LerM3u), com
 ' .m3u8 e .ts como duas fontes.
-function xtCanaisDaApi(conta as Object, streams as Object, categorias as Object, limite as Integer) as Object
+function xtCanaisDaApi(conta as Object, streams as Dynamic, categorias as Dynamic, limite as Integer) as Object
     mapa = {}
     if categorias <> invalid and Type(categorias) = "roArray" then
         for each c in categorias
