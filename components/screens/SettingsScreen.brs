@@ -23,6 +23,8 @@ sub populateSettings()
     root = CreateObject("roSGNode", "ContentNode")
 
     addSettingItem(root, "minhasListas", "Minhas listas", "Adicionar listas .m3u pelo link")
+    addSettingItem(root, "urlCanais", "Endereço dos canais", enderecoResumo(p.urlCanais))
+    addSettingItem(root, "urlFilmes", "Endereço de filmes e séries", enderecoResumo(p.urlFilmes))
     abrir = "Início"
     if p.abrirEm = "canal" then abrir = "Último canal"
     addSettingItem(root, "abrirEm", "Abrir o app em", abrir)
@@ -46,6 +48,51 @@ sub addSettingItem(root as Object, key as String, label as String, val as String
     node.addFields({ settingKey: key })
 end sub
 
+function enderecoResumo(url as Dynamic) as String
+    if url = invalid or url = "" then return "Vazio. Aperte OK para digitar (formato Saimo)"
+    return url
+end function
+
+' Teclado da TV para digitar o endereço (formato Saimo) de canais ou de filmes e séries.
+sub abrirEditorEndereco(campo as String, titulo as String)
+    m.campoEdicao = campo
+    dlg = CreateObject("roSGNode", "StandardKeyboardDialog")
+    dlg.title = titulo
+    dlg.message = ["Cole ou digite o endereço da sua lista.", "Deixe em branco e salve para desligar."]
+    atual = m.prefs[campo]
+    if atual = invalid then atual = ""
+    dlg.text = atual
+    dlg.buttons = ["Salvar", "Apagar", "Cancelar"]
+    dlg.observeField("buttonSelected", "onEnderecoBotao")
+    dlg.observeField("wasClosed", "onEnderecoFechou")
+    m.dlgEndereco = dlg
+    m.top.getScene().dialog = dlg
+end sub
+
+sub onEnderecoBotao()
+    dlg = m.dlgEndereco
+    if dlg = invalid then return
+    botao = dlg.buttonSelected
+    if botao = 2 then
+        dlg.close = true
+        return
+    end if
+    novo = ""
+    if botao = 0 then novo = dlg.text.Trim()
+    if novo <> "" and Left(LCase(novo), 4) <> "http" then novo = "https://" + novo
+    if novo <> "" and Right(novo, 1) <> "/" then novo = novo + "/"
+    m.prefs[m.campoEdicao] = novo
+    SavePreferences(m.prefs)
+    dlg.close = true
+    populateSettings()
+    m.top.reloadRequested = true
+end sub
+
+sub onEnderecoFechou()
+    m.dlgEndereco = invalid
+    m.settingsList.setFocus(true)
+end sub
+
 function formatBool(val as Boolean) as String
     if val then return "Ligado"
     return "Desligado"
@@ -60,6 +107,12 @@ sub onSettingSelected()
 
         if key = "minhasListas" then
             m.top.minhasListasRequested = true
+            return
+        else if key = "urlCanais" then
+            abrirEditorEndereco("urlCanais", "Endereço dos canais")
+            return
+        else if key = "urlFilmes" then
+            abrirEditorEndereco("urlFilmes", "Endereço de filmes e séries")
             return
         else if key = "abrirEm" then
             if m.prefs.abrirEm = "inicio" then
