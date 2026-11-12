@@ -280,9 +280,8 @@ end sub
 ' ----- Eventos Esportivos -----
 sub fetchEvents(baseUrl as String)
     events = []
-    texto = HttpGet("https://embedtv.cc/api/events")
-    ' Fora do ar ela devolve página ou nada: vai o caminho do site.
-    if Left(texto.Trim(), 1) <> "[" then texto = HttpGet("https://saimo-tv.pages.dev/api/events")
+    ' Agenda do Saimo (nenhum site de streaming de terceiros é consultado).
+    texto = HttpGet("https://saimo-tv.pages.dev/eventos-extra.json")
     parsed = invalid
     if Left(texto.Trim(), 1) = "[" then parsed = ParseJson(texto)
     if parsed <> invalid and type(parsed) = "roArray" then

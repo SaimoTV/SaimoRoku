@@ -328,7 +328,7 @@ function buildCandidateUrl(cand as String, bases as Object) as String
 
     if Left(cand, 7) = "http://" or Left(cand, 8) = "https://" then
         finalUrl = cand
-        ' Se termina em .txt (ex: master.txt de embedplayer2), usa proxy Cloudflare para converter text/plain -> mpegurl
+        ' Se termina em .txt (playlist servida como texto), usa proxy Cloudflare para converter text/plain -> mpegurl
         if Instr(1, LCase(finalUrl), ".txt") > 0 and Instr(1, finalUrl, "api/proxy") = 0 then
             ut = CreateObject("roUrlTransfer")
             finalUrl = "https://saimo-tv.pages.dev/api/proxy?url=" + ut.Escape(finalUrl)
