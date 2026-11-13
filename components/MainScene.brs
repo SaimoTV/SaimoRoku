@@ -102,7 +102,8 @@ end sub
 
 ' Os canais das listas do usuário vêm depois do catálogo, em ordem de nome.
 sub juntarCanais()
-    if m.canaisCatalogo = invalid then return
+    ' Sem endereço de canais o catálogo é vazio: as listas da pessoa entram mesmo assim.
+    if m.canaisCatalogo = invalid then m.canaisCatalogo = []
     ' Mesma ordem de seções da TV Box; o número segue essa ordem.
     todos = []
     secoes = ["TV Aberta", "Filmes e Séries", "Esportes", "Notícias", "Infantil", "Documentários", "Pluto TV", "24 Horas", "Variedades", "Adulto"]
@@ -199,7 +200,7 @@ end sub
 
 ' O jogo diz o canal por um apelido (premiere-2); só entra jogo com canal nosso.
 function canalDoJogo(players as Object) as String
-    if m.nomesCanais = invalid or players.Count() = 0 then return ""
+    if players = invalid or m.nomesCanais = invalid or players.Count() = 0 then return ""
     partes = players[0].Split("/")
     apelido = LCase(partes[partes.Count() - 1]).Replace("-", "").Replace(" ", "")
     if apelido = "" then return ""
@@ -220,7 +221,7 @@ sub juntarEventos()
     saida = []
     for each ev in m.eventosCrus
         ev.channelName = canalDoJogo(ev.slugs)
-        if ev.channelName <> "" then saida.Push(ev)
+        saida.Push(ev)
     end for
     m.cachedEvents = saida
     if m.currentScreenName = "events" and m.currentScreenNode <> invalid then

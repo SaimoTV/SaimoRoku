@@ -7,7 +7,7 @@
     <field id="listaId" type="string" />
     <field id="erro" type="string" alwaysNotify="true" />
     <field id="pronto" type="boolean" alwaysNotify="true" />
-    <field id="canais" type="array" />
+    <field id="canais" type="array" alwaysNotify="true" />
     <field id="listas" type="array" />
   </interface>
 

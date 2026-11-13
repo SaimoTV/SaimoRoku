@@ -5,12 +5,12 @@
     <field id="requestUrl" type="string" />
     <field id="requestParams" type="assocarray" />
 
-    <field id="responseChannels" type="array" />
-    <field id="responseEpg" type="assocarray" />
-    <field id="responseDestaques" type="array" />
-    <field id="responseVodItems" type="array" />
-    <field id="responseEvents" type="array" />
-    <field id="responseRadios" type="array" />
+    <field id="responseChannels" type="array" alwaysNotify="true" />
+    <field id="responseEpg" type="assocarray" alwaysNotify="true" />
+    <field id="responseDestaques" type="array" alwaysNotify="true" />
+    <field id="responseVodItems" type="array" alwaysNotify="true" />
+    <field id="responseEvents" type="array" alwaysNotify="true" />
+    <field id="responseRadios" type="array" alwaysNotify="true" />
     <field id="error" type="string" />
   </interface>
 

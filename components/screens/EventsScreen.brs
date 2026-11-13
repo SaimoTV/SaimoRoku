@@ -40,11 +40,21 @@ sub onEventsChange()
         no.title = ev.homeTeam + " x " + ev.awayTeam
         selo = ev.timeStr
         if ev.aoVivo then selo = "AO VIVO"
-        no.addFields({ itemType: "evento", hora: selo, casa: ev.homeLogo, fora: ev.awayLogo, subTitulo: ev.channelName + "  ·  " + ev.league, rawEvent: ev })
+        no.addFields({ itemType: "evento", hora: selo, casa: ev.homeLogo, fora: ev.awayLogo, subTitulo: nomeCanal(ev) + "  ·  " + ev.league, rawEvent: ev })
     end for
     if breve <> invalid then root.appendChild(breve)
     m.rows.content = root
 end sub
+
+function nomeCanal(ev as Object) as String
+    if ev.channelName = "" then return "Sem canal"
+    return ev.channelName
+end function
+
+function textoCanal(ev as Object) as String
+    if ev.channelName = "" then return "Sem canal na lista"
+    return "No canal " + ev.channelName + "  ·  OK assiste"
+end function
 
 function noEm(c as Dynamic) as Dynamic
     root = m.rows.content
@@ -56,12 +66,12 @@ sub onEventFocused()
     no = noEm(m.rows.rowItemFocused)
     if no = invalid then return
     ev = no.rawEvent
-    m.heroBanner.featuredItem = { title: no.title, genres: ev.league + "  ·  " + ev.timeStr, overview: "No canal " + ev.channelName + "  ·  OK assiste", semFundo: true }
+    m.heroBanner.featuredItem = { title: no.title, genres: ev.league + "  ·  " + ev.timeStr, overview: textoCanal(ev), semFundo: true }
 end sub
 
 sub onEventSelected()
     no = noEm(m.rows.rowItemSelected)
-    if no <> invalid then m.top.tuneRequested = no.rawEvent.channelName
+    if no <> invalid and no.rawEvent.channelName <> "" then m.top.tuneRequested = no.rawEvent.channelName
 end sub
 
 function onKeyEvent(key as String, press as Boolean) as Boolean

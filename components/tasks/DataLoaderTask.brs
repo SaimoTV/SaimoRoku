@@ -26,7 +26,7 @@ sub executeRequest()
     else if reqType = "destaques" then
         if urlFilmes <> "" then fetchDestaques(urlFilmes)
     else if reqType = "events" then
-        if urlCanais <> "" then fetchEvents(urlCanais)
+        fetchEvents(urlCanais)
     else if reqType = "radios" then
         if urlCanais <> "" then fetchRadios(urlCanais)
     end if
@@ -297,7 +297,7 @@ end sub
 
 ' Campo faltando só descarta o jogo: erro aqui derrubaria a tarefa.
 function lerJogo(ev as Object, d as Object, agora as Integer) as Dynamic
-    if ev.players = invalid or ev.players.Count() = 0 or ev.teams = invalid or ev.time_start = invalid then return invalid
+    if ev.teams = invalid or ev.time_start = invalid then return invalid
     if ev.teams.home = invalid or ev.teams.away = invalid or ev.teams.home.name = invalid or ev.teams.away.name = invalid then return invalid
     d.FromISO8601String(Left(ev.time_start, 19) + "Z")
     inicio = d.AsSeconds() + 10800
@@ -313,7 +313,7 @@ function lerJogo(ev as Object, d as Object, agora as Integer) as Dynamic
     if ev.teams.away.image <> invalid then fora = ev.teams.away.image.Replace("w_34,h_34", "w_256,h_256")
     liga = ""
     if ev.league <> invalid and ev.league.name <> invalid then liga = ev.league.name
-    return { homeTeam: ev.teams.home.name, awayTeam: ev.teams.away.name, homeLogo: casa, awayLogo: fora, league: liga, timeStr: Mid(ev.time_start, 12, 5), aoVivo: agora >= inicio, slugs: ev.players, channelName: "", score: "" }
+    return { homeTeam: ev.teams.home.name, awayTeam: ev.teams.away.name, homeLogo: casa, awayLogo: fora, league: liga, timeStr: Mid(ev.time_start, 12, 5), aoVivo: agora >= inicio or ev.estado = "in", slugs: ev.players, estado: ev.estado, channelName: "", score: "" }
 end function
 
 ' Mesmos estilos da TV Box: a ordem conta, rádio que cabe em dois fica no primeiro.
