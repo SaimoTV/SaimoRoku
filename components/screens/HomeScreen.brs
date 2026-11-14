@@ -175,7 +175,17 @@ sub aplicarDestaque()
     selectedNode = rowNode.getChild(m.focoColuna)
     if selectedNode = invalid then return
     if selectedNode.itemType = "vod" and selectedNode.rawItem <> invalid then
-        m.heroBanner.featuredItem = selectedNode.rawItem
+        item = selectedNode.rawItem
+        if rowNode.title = "Continuar assistindo" then
+            copia = {}
+            for each k in item
+                copia[k] = item[k]
+            end for
+            copia.overview = "OK para retomar  •  Botao (*) para remover da lista"
+            m.heroBanner.featuredItem = copia
+        else
+            m.heroBanner.featuredItem = item
+        end if
     else if selectedNode.itemType = "channel" and selectedNode.rawChannel <> invalid then
         ch = selectedNode.rawChannel
         prog = ""
@@ -212,6 +222,20 @@ end sub
 
 function onKeyEvent(key as String, press as Boolean) as Boolean
     if not press then return false
+    if key = "options" or key = "replay" then
+        root = m.contentRowList.content
+        if root <> invalid and m.focoLinha >= 0 and m.focoLinha < root.getChildCount() then
+            rowNode = root.getChild(m.focoLinha)
+            if rowNode <> invalid and rowNode.title = "Continuar assistindo" and m.focoColuna >= 0 and m.focoColuna < rowNode.getChildCount() then
+                selectedNode = rowNode.getChild(m.focoColuna)
+                if selectedNode <> invalid and selectedNode.title <> invalid then
+                    RemoveInProgress(selectedNode.title)
+                    montarFileiras()
+                    return true
+                end if
+            end if
+        end if
+    end if
     if key = "up" then
         m.top.focusUpRequested = true
         return true

@@ -220,6 +220,24 @@ function GetInProgressList() as Object
     return list
 end function
 
+sub RemoveInProgress(title as String)
+    if title = "" then return
+    all = LoadAllProgress()
+    changed = false
+    for each key in all
+        it = all[key]
+        if key = title or (it <> invalid and it.title = title) then
+            all.Delete(key)
+            changed = true
+        end if
+    end for
+    if changed then
+        reg = GetRegistry()
+        reg.Write("vod_progress", FormatJson(all))
+        reg.Flush()
+    end if
+end sub
+
 ' ----- Minhas listas (só os dados de cada lista; os canais ficam no cachefs) -----
 function LoadMinhasListas() as Object
     bruto = GetRegistry().Read("minhas_listas")
