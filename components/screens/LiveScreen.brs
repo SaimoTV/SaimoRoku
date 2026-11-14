@@ -10,7 +10,9 @@ sub init()
     m.channelDrawer = m.top.findNode("channelDrawer")
     m.pinModal = m.top.findNode("pinModal")
 
+    m.liveVideo.notificationInterval = 1.0
     m.liveVideo.observeField("state", "onVideoState")
+    m.liveVideo.observeField("position", "onVideoPosition")
     m.channelDrawer.observeField("channelSelected", "onDrawerSelect")
     m.channelDrawer.observeField("isOpen", "onDrawerOpenChange")
     m.channelDrawer.observeField("focusUpRequested", "onDrawerUp")
@@ -44,6 +46,10 @@ sub init()
 
     m.currentVariantIndex = 0
     m.tryingProxy = false
+    m.encerrado = false
+    m.trocandoStream = false
+    m.jaTocou = false
+    m.ultimoAvanco = 0
 
     m.numberBuffer = ""
     m.numberTimer = CreateObject("roSGNode", "Timer")
@@ -79,19 +85,27 @@ end sub
 ' Cada canal aberto custa rede e decodificador: passando vários seguidos, só o
 ' último abre de fato. A barra mostra o canal na hora.
 sub zapear(passo as Integer)
+    if m.encerrado = true then return
     total = m.canais.Count()
     if total = 0 then return
+    m.vigiaTimer.control = "stop"
     if m.alvoZap = invalid then m.alvoZap = m.top.currentChannelIndex
     m.alvoZap = (m.alvoZap + passo + total) mod total
     ch = m.canais[m.alvoZap]
     m.zapHud.channelNumber = ch.number.ToStr()
     m.zapHud.channelName = ch.name
     m.zapHud.channelLogo = ch.logo
+    if ch.programa <> invalid and ch.programa <> "" then
+        m.zapHud.programTitle = ch.programa
+    else
+        m.zapHud.programTitle = "Ao Vivo"
+    end if
     m.zapTimer.control = "stop"
     m.zapTimer.control = "start"
 end sub
 
 sub onZap()
+    if m.encerrado = true then return
     alvo = m.alvoZap
     m.alvoZap = invalid
     if alvo <> invalid then playChannel(alvo)
@@ -317,6 +331,7 @@ end sub
 ' A árvore vem pronta e por referência: aqui só se monta a lista de ponteiros
 ' para o zapping, na ordem dos números.
 sub onArvore()
+    if m.encerrado = true then return
     arvore = m.top.arvore
     if arvore = invalid then return
     total = 0
@@ -356,15 +371,18 @@ sub onArvore()
 end sub
 
 sub onInicio()
+    if m.encerrado = true then return
     playChannel(m.top.currentChannelIndex)
 end sub
 
 sub onChannelIndexChange()
+    if m.encerrado = true then return
     ' Quem já está trocando de canal grava o índice antes: sem isto, o canal abria duas vezes.
     if m.top.currentChannelIndex <> m.indiceAtual then playChannel(m.top.currentChannelIndex)
 end sub
 
 sub playChannel(index as Integer)
+    if m.encerrado = true or m.liveVideo = invalid then return
     channels = m.canais
     if channels = invalid or channels.Count() = 0 then return
     if index < 0 then index = channels.Count() - 1
@@ -380,7 +398,10 @@ sub playChannel(index as Integer)
     if ch.category <> invalid and (ch.category = "Adultos" or ch.category = "Adulto") then
         if not m.isParentalUnlocked then
             m.pinModal.isOpen = true
+            m.trocandoStream = true
+            m.liveVideo.control = "pause"
             m.liveVideo.control = "stop"
+            m.trocandoStream = false
             return
         end if
     end if
@@ -389,11 +410,12 @@ sub playChannel(index as Integer)
     m.ultimoCanal = ch.name
     m.currentVariantIndex = 0
     m.tryingProxy = false
-    playCurrentVariant()
     updateHUDInfo()
+    playCurrentVariant()
 end sub
 
 sub playCurrentVariant()
+    if m.encerrado = true or m.liveVideo = invalid then return
     channels = m.canais
     if channels = invalid or m.top.currentChannelIndex >= channels.Count() then return
     ch = channels[m.top.currentChannelIndex]
@@ -412,37 +434,63 @@ sub playCurrentVariant()
         tryNextVariant()
         return
     end if
+    rawUrl = rawUrl.Trim()
 
     playUrl = rawUrl
     hasReferer = (v.referer <> invalid and v.referer <> "")
+    hasUa = (v.userAgent <> invalid and v.userAgent <> "")
+    lowerRaw = LCase(rawUrl)
+    isTxt = (Instr(1, lowerRaw, ".txt") > 0)
 
-    ' O Roku fala direto com a fonte: manda Referer e User-Agent, e o formato vai
-    ' declarado abaixo, então .txt toca sem proxy. Cada segmento pelo proxy custa
-    ' tempo e pedidos na Cloudflare: ele fica só como segunda tentativa.
-    servidor = rawUrl.Split("/")[2]
-    if m.pedemProxy.DoesExist(servidor) then m.tryingProxy = true
-    if m.tryingProxy then
+    servidor = ""
+    partesUrl = rawUrl.Split("/")
+    if partesUrl.Count() >= 3 then servidor = partesUrl[2]
+
+    ' Igual ao site (commit 1b4eda4 e streamUrl.ts): fontes .txt (segmentos .png)
+    ' ou que exigem Referer/User-Agent vão direto pelo proxy para não tomar 403/timeout.
+    if isTxt or hasReferer or hasUa or (servidor <> "" and m.pedemProxy.DoesExist(servidor)) then
+        m.tryingProxy = true
+    end if
+
+    if m.tryingProxy and Instr(1, rawUrl, "/api/proxy") = 0 then
         ut = CreateObject("roUrlTransfer")
         playUrl = "https://saimo-tv.pages.dev/api/proxy?url=" + ut.Escape(rawUrl)
         if hasReferer then playUrl = playUrl + "&referer=" + ut.Escape(v.referer)
-        if v.userAgent <> invalid and v.userAgent <> "" then playUrl = playUrl + "&ua=" + ut.Escape(v.userAgent)
+        if hasUa then playUrl = playUrl + "&ua=" + ut.Escape(v.userAgent)
     end if
 
     content = CreateObject("roSGNode", "ContentNode")
     content.url = playUrl
     content.title = ch.name
-    content.streamFormat = "hls"
+    lowerPlay = LCase(playUrl)
+    if Instr(1, lowerPlay, ".mpd") > 0 then
+        content.streamFormat = "dash"
+    else if Instr(1, lowerPlay, ".mp4") > 0 then
+        content.streamFormat = "mp4"
+    else
+        content.streamFormat = "hls"
+    end if
     content.live = true
     content.HttpSendClientHeaders = true
 
     headers = []
     if hasReferer then headers.Push("Referer: " + v.referer)
-    if v.userAgent <> invalid and v.userAgent <> "" then headers.Push("User-Agent: " + v.userAgent)
-    if headers.Count() > 0 then content.HttpHeaders = headers
+    if hasUa then
+        headers.Push("User-Agent: " + v.userAgent)
+    else
+        headers.Push("User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36")
+    end if
+    content.HttpHeaders = headers
 
+    m.trocandoStream = true
+    m.jaTocou = false
+    m.ultimoAvanco = CreateObject("roDateTime").AsSeconds()
     m.bufferingGroup.visible = true
+    m.liveVideo.control = "stop"
+    m.liveVideo.mute = false
     m.liveVideo.content = content
     m.liveVideo.control = "play"
+    m.trocandoStream = false
     m.servidorAtual = servidor
     ' Fonte que não abre nem dá erro não pode prender o canal.
     m.vigiaTimer.control = "stop"
@@ -450,10 +498,14 @@ sub playCurrentVariant()
 end sub
 
 sub onVigia()
-    if m.liveVideo.state <> "playing" then tryNextVariant()
+    if m.encerrado = true or m.liveVideo = invalid then return
+    if m.liveVideo.state <> "playing" then
+        tryNextVariant()
+    end if
 end sub
 
 sub onPinUnlocked()
+    if m.encerrado = true then return
     if m.pinModal.isUnlocked then
         m.isParentalUnlocked = true
         playChannel(m.top.currentChannelIndex)
@@ -461,6 +513,7 @@ sub onPinUnlocked()
 end sub
 
 sub updateHUDInfo()
+    if m.encerrado = true then return
     channels = m.canais
     if channels = invalid or m.top.currentChannelIndex >= channels.Count() then return
     ch = channels[m.top.currentChannelIndex]
@@ -482,15 +535,38 @@ sub updateHUDInfo()
     end if
 end sub
 
+sub onVideoPosition()
+    if m.encerrado = true or m.liveVideo = invalid then return
+    if m.liveVideo.state = "playing" then
+        m.jaTocou = true
+        m.ultimoAvanco = CreateObject("roDateTime").AsSeconds()
+        m.bufferingGroup.visible = false
+    end if
+end sub
+
 sub onVideoState()
+    if m.encerrado = true or m.trocandoStream = true or m.liveVideo = invalid then return
     state = m.liveVideo.state
     if state = "playing" then
+        m.jaTocou = true
+        m.ultimoAvanco = CreateObject("roDateTime").AsSeconds()
         m.bufferingGroup.visible = false
         m.vigiaTimer.control = "stop"
         ' Só pelo proxy abriu: os próximos canais deste servidor vão direto a ele.
-        if m.tryingProxy and m.servidorAtual <> invalid then m.pedemProxy[m.servidorAtual] = true
+        if m.tryingProxy and m.servidorAtual <> invalid and m.servidorAtual <> "" then
+            m.pedemProxy[m.servidorAtual] = true
+        end if
     else if state = "buffering" then
         m.bufferingGroup.visible = true
+        m.vigiaTimer.control = "stop"
+        m.vigiaTimer.control = "start"
+    else if state = "finished" then
+        m.bufferingGroup.visible = false
+        if m.jaTocou then
+            playCurrentVariant()
+        else
+            tryNextVariant()
+        end if
     else if state = "error" then
         m.bufferingGroup.visible = false
         tryNextVariant()
@@ -498,13 +574,20 @@ sub onVideoState()
 end sub
 
 sub tryNextVariant()
+    if m.encerrado = true or m.liveVideo = invalid then return
     channels = m.canais
     if channels = invalid or m.top.currentChannelIndex >= channels.Count() then return
     ch = channels[m.top.currentChannelIndex]
     if ch.variants = invalid then return
 
-    ' Se ainda não tentou a fonte atual via proxy, tenta via proxy antes de avançar para a próxima fonte
-    if not m.tryingProxy then
+    rawUrl = ""
+    if m.currentVariantIndex < ch.variants.Count() and ch.variants[m.currentVariantIndex].url <> invalid then
+        rawUrl = LCase(ch.variants[m.currentVariantIndex].url.Trim())
+    end if
+    ehHttp = (Left(rawUrl, 7) = "http://")
+
+    ' Se ainda não tentou a fonte atual via proxy (e não é http puro), tenta via proxy antes de avançar
+    if not m.tryingProxy and not ehHttp then
         m.tryingProxy = true
         playCurrentVariant()
         return
@@ -517,6 +600,7 @@ sub tryNextVariant()
 end sub
 
 sub onDrawerSelect()
+    if m.encerrado = true then return
     sel = m.channelDrawer.channelSelected
     if sel <> invalid then
         channels = m.canais
@@ -531,12 +615,12 @@ sub onDrawerSelect()
 end sub
 
 sub onNumberTimerFired()
+    if m.encerrado = true then return
     if m.numberBuffer <> "" then
         targetNum = Val(m.numberBuffer)
         m.currentVariantIndex = 0
-    m.tryingProxy = false
-
-    m.numberBuffer = ""
+        m.tryingProxy = false
+        m.numberBuffer = ""
         channels = m.canais
         if channels <> invalid then
             for i = 0 to channels.Count() - 1
@@ -624,11 +708,25 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
 end function
 
 sub cleanUp()
+    m.encerrado = true
+    m.trocandoStream = true
+    if m.inicioTimer <> invalid then m.inicioTimer.control = "stop"
+    if m.vigiaTimer <> invalid then m.vigiaTimer.control = "stop"
+    if m.zapTimer <> invalid then m.zapTimer.control = "stop"
+    if m.holdTimer <> invalid then m.holdTimer.control = "stop"
+    if m.sonoTimer <> invalid then m.sonoTimer.control = "stop"
+    if m.numberTimer <> invalid then m.numberTimer.control = "stop"
+    if m.favoriteToastTimer <> invalid then m.favoriteToastTimer.control = "stop"
     if m.liveVideo <> invalid then
-        m.vigiaTimer.control = "stop"
+        m.liveVideo.unobserveField("state")
+        m.liveVideo.unobserveField("position")
+        m.liveVideo.mute = true
+        m.liveVideo.control = "pause"
+        m.liveVideo.control = "stop"
+        m.liveVideo.content = CreateObject("roSGNode", "ContentNode")
         m.liveVideo.control = "stop"
         m.liveVideo.content = invalid
+        m.liveVideo.visible = false
     end if
     if m.zapHud <> invalid then m.zapHud.visible = false
-    if m.channelDrawer <> invalid then m.channelDrawer.isOpen = false
 end sub

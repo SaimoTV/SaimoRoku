@@ -88,8 +88,10 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
         m.top.focusDownRequested = true
         return true
     else if key = "down" then
-        ' Volta à tela atual sem trocar de aba, como na TV Box.
-        m.focusedIndex = m.top.selectedIndex
+        if m.focusedIndex <> m.top.selectedIndex then
+            m.top.selectedIndex = m.focusedIndex
+            m.top.itemSelected = m.itemNames[m.focusedIndex]
+        end if
         updateVisuals()
         m.top.focusDownRequested = true
         return true

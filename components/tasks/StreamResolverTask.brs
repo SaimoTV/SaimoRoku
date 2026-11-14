@@ -31,34 +31,29 @@ sub resolveStream()
     ' Determina a gaveta da letra
     letter = getLetterGaveta(title, item)
 
-    ' Bases do índice
-    bases = getIndiceBases()
+    prefs = LoadPreferences()
+    versaoPref = "dub"
+    if prefs <> invalid and prefs.versaoAudio <> invalid and prefs.versaoAudio <> "" then
+        versaoPref = LCase(prefs.versaoAudio)
+    end if
 
     candidatesList = []
 
     if isSeries then
-        candidatesList = resolveSeriesStream(title, letter, season, episode, bases)
+        candidatesList = resolveSeriesStream(title, letter, season, episode, versaoPref)
     else
-        candidatesList = resolveMovieStream(title, letter, bases)
+        candidatesList = resolveMovieStream(title, letter, versaoPref)
     end if
 
-    ' Se não encontrou no catálogo ou precisa de fonte extra, consulta api/stream por id TMDB
-    if item <> invalid and item.id <> invalid and item.id.ToStr() <> "" and item.id.ToStr() <> "0" then
+    ' Se não encontrou nenhuma fonte no catálogo, consulta api/stream por id TMDB
+    if candidatesList.Count() = 0 and item <> invalid and item.id <> invalid and item.id.ToStr() <> "" and item.id.ToStr() <> "0" then
         tipoReq = "movie"
         if isSeries then tipoReq = "series"
-        apiUrl = "https://saimo-tv.pages.dev/api/stream?tipo=" + tipoReq + "&id=" + item.id.ToStr() + "&versao=dub"
+        apiUrl = "https://saimo-tv.pages.dev/api/stream?tipo=" + tipoReq + "&id=" + item.id.ToStr() + "&versao=" + versaoPref
         if isSeries then apiUrl = apiUrl + "&s=" + season.ToStr() + "&e=" + episode.ToStr()
-        resolvedUrl = buildCandidateUrl(apiUrl, bases)
+        resolvedUrl = buildCandidateUrl(apiUrl)
         if resolvedUrl <> "" then
-            ' Adiciona à lista se ainda não estiver nela
-            alreadyIn = false
-            for each c in candidatesList
-                if c = resolvedUrl then
-                    alreadyIn = true
-                    exit for
-                end if
-            end for
-            if not alreadyIn then candidatesList.Push(resolvedUrl)
+            candidatesList.Push(resolvedUrl)
         end if
     end if
 
@@ -135,80 +130,165 @@ function getIndiceBases() as Object
     return bases
 end function
 
-function resolveMovieStream(title as String, letter as String, bases as Object) as Object
-    results = []
-    url = baseFilmes() + "filmes-" + letter + ".txt"
-    ut = CreateObject("roUrlTransfer")
-    ut.SetUrl(url)
-    ut.SetCertificatesFile("common:/certs/ca-bundle.crt")
-    ut.AddHeader("User-Agent", "SaimoTV/2.6.4 (RokuOS)")
-    ut.RetainBodyOnError(true)
-    text = ut.GetToString()
-    if text = "" then return results
-
-    lines = text.Split(Chr(10))
-    cleanTitle = LCase(title.Trim())
-    targetLine = ""
-
-    for each rawLine in lines
-        line = rawLine.Trim()
-        if line <> "" then
-            tabIdx = Instr(1, line, Chr(9))
-            if tabIdx > 1 then
-                lineTitle = LCase(Left(line, tabIdx - 1).Trim())
-                if lineTitle = cleanTitle then
-                    targetLine = line
-                    exit for
-                end if
-            end if
-        end if
-    end for
-
-    ' Se não achou com correspondência exata, tenta buscar sem o ano (ex: "Verity (2026)" -> "Verity")
-    if targetLine = "" and Instr(1, cleanTitle, " (") > 0 then
+function buscarLinhaPorTitulo(text as String, cleanTitle as String) as String
+    if text = "" or cleanTitle = "" then return ""
+    lowerText = Chr(10) + LCase(text)
+    idxPos = Instr(1, lowerText, Chr(10) + cleanTitle + Chr(9))
+    if idxPos = 0 and Instr(1, cleanTitle, " (") > 0 then
         openParen = Instr(1, cleanTitle, " (")
         baseTitle = Left(cleanTitle, openParen - 1).Trim()
-        for each rawLine in lines
-            line = rawLine.Trim()
-            if line <> "" then
-                tabIdx = Instr(1, line, Chr(9))
-                if tabIdx > 1 then
-                    lineTitle = LCase(Left(line, tabIdx - 1).Trim())
-                    if lineTitle = baseTitle or Instr(1, lineTitle, baseTitle) = 1 then
-                        targetLine = line
-                        exit for
-                    end if
+        idxPos = Instr(1, lowerText, Chr(10) + baseTitle + Chr(9))
+        if idxPos = 0 then
+            idxPos = Instr(1, lowerText, Chr(10) + baseTitle + " (")
+        end if
+    end if
+    if idxPos = 0 then
+        idxPos = Instr(1, lowerText, Chr(10) + cleanTitle + " (")
+    end if
+    if idxPos = 0 then return ""
+    fimLinha = Instr(idxPos, text, Chr(10))
+    if fimLinha > 0 then
+        return Mid(text, idxPos, fimLinha - idxPos).Trim()
+    end if
+    return Mid(text, idxPos).Trim()
+end function
+
+function ordenarEResolverCandidatos(rawPref as Object, rawAlt as Object) as Object
+    diretasHttps = []
+    diretasOutras = []
+    relays = []
+
+    listas = [rawPref, rawAlt]
+    for each lista in listas
+        for each c in lista
+            cand = c.Trim()
+            if cand <> "" and Instr(1, cand, "desativado.invalid") = 0 then
+                if Instr(1, cand, "api/stream") > 0 then
+                    relays.Push(cand)
+                else if Left(LCase(cand), 8) = "https://" then
+                    diretasHttps.Push(cand)
+                else
+                    diretasOutras.Push(cand)
                 end if
             end if
         end for
+    end for
+
+    results = []
+    for each c in diretasHttps
+        r = buildCandidateUrl(c)
+        if r <> "" then results.Push(r)
+    end for
+
+    ' Se não achou fonte direta https://, resolve no máximo 1 relay api/stream (que retorna https://)
+    if results.Count() = 0 and relays.Count() > 0 then
+        r = buildCandidateUrl(relays[0])
+        if r <> "" then results.Push(r)
     end if
 
-    if targetLine = "" then return results
-
-    ' Extrai URLs das fontes (dub ou leg)
-    parts = targetLine.Split(Chr(9))
-    if parts.Count() < 2 then return results
-
-    for p = 1 to parts.Count() - 1
-        part = parts[p]
-        eqIdx = Instr(1, part, "=")
-        if eqIdx > 1 then
-            urlsStr = Mid(part, eqIdx + 1)
-            candidates = urlsStr.Split(",")
-            for each c in candidates
-                cand = c.Trim()
-                resolved = buildCandidateUrl(cand, bases)
-                if resolved <> "" then
-                    results.Push(resolved)
-                end if
-            end for
-        end if
+    for each c in diretasOutras
+        r = buildCandidateUrl(c)
+        if r <> "" then results.Push(r)
     end for
 
     return results
 end function
 
-function resolveSeriesStream(title as String, letter as String, season as Integer, episode as Integer, bases as Object) as Object
+function resolveMovieStream(title as String, letter as String, versaoPref as String) as Object
+    results = []
+    url = baseFilmes() + "filmes-" + letter + ".txt"
+    ut = CreateObject("roUrlTransfer")
+    ut.SetUrl(url)
+    ut.SetCertificatesFile("common:/certs/ca-bundle.crt")
+    ut.AddHeader("User-Agent", "SaimoTV/3.0.3 (RokuOS)")
+    ut.RetainBodyOnError(true)
+    text = ut.GetToString()
+    if text = "" then return results
+
+    cleanTitle = LCase(title.Trim())
+    targetLine = buscarLinhaPorTitulo(text, cleanTitle)
+    if targetLine = "" then return results
+
+    ' Extrai URLs das fontes priorizando a versão escolhida (dub ou leg)
+    parts = targetLine.Split(Chr(9))
+    if parts.Count() < 2 then return results
+
+    rawPref = []
+    rawAlt = []
+    for p = 1 to parts.Count() - 1
+        part = parts[p]
+        eqIdx = Instr(1, part, "=")
+        if eqIdx > 1 then
+            tag = LCase(Left(part, eqIdx - 1).Trim())
+            urlsStr = Mid(part, eqIdx + 1)
+            candidates = urlsStr.Split(",")
+            if tag = versaoPref then
+                for each c in candidates
+                    rawPref.Push(c)
+                end for
+            else
+                for each c in candidates
+                    rawAlt.Push(c)
+                end for
+            end if
+        end if
+    end for
+
+    return ordenarEResolverCandidatos(rawPref, rawAlt)
+end function
+
+function extrairBlocoSerie(chunkText as String, cleanTitle as String) as String
+    if chunkText = "" or cleanTitle = "" then return ""
+    lowerChunk = Chr(10) + LCase(chunkText)
+    idxPos = Instr(1, lowerChunk, Chr(10) + "@" + cleanTitle + Chr(10))
+    if idxPos = 0 then idxPos = Instr(1, lowerChunk, Chr(10) + "@" + cleanTitle + Chr(13))
+    if idxPos = 0 then idxPos = Instr(1, lowerChunk, Chr(10) + "@" + cleanTitle)
+    if idxPos = 0 and Instr(1, cleanTitle, " (") > 0 then
+        openParen = Instr(1, cleanTitle, " (")
+        baseTitle = Left(cleanTitle, openParen - 1).Trim()
+        idxPos = Instr(1, lowerChunk, Chr(10) + "@" + baseTitle)
+    end if
+    if idxPos = 0 then return ""
+    prox = Instr(idxPos + 2, lowerChunk, Chr(10) + "@")
+    if prox > 0 then
+        return Mid(chunkText, idxPos, prox - idxPos)
+    end if
+    return Mid(chunkText, idxPos)
+end function
+
+function extrairEpisodioDeBloco(bloco as String, season as Integer, episode as Integer, versaoPref as String) as Object
+    rawPref = []
+    rawAlt = []
+    if bloco = "" then return []
+    lines = bloco.Split(Chr(10))
+    for each rawLine in lines
+        line = rawLine.Trim()
+        if line <> "" and Left(line, 1) <> "@" then
+            epFields = line.Split(Chr(9))
+            if epFields.Count() >= 4 then
+                epSeason = Val(epFields[0].Trim())
+                epNum = Val(epFields[1].Trim())
+                if epSeason = season and epNum = episode then
+                    tag = LCase(epFields[2].Trim())
+                    urlsStr = epFields[3].Trim()
+                    candidates = urlsStr.Split(",")
+                    if tag = versaoPref then
+                        for each c in candidates
+                            rawPref.Push(c)
+                        end for
+                    else
+                        for each c in candidates
+                            rawAlt.Push(c)
+                        end for
+                    end if
+                end if
+            end if
+        end if
+    end for
+    return ordenarEResolverCandidatos(rawPref, rawAlt)
+end function
+
+function resolveSeriesStream(title as String, letter as String, season as Integer, episode as Integer, versaoPref as String) as Object
     results = []
 
     ' 1. Busca índice de pedaços da série em series-<letra>.txt
@@ -216,27 +296,18 @@ function resolveSeriesStream(title as String, letter as String, season as Intege
     ut = CreateObject("roUrlTransfer")
     ut.SetUrl(url)
     ut.SetCertificatesFile("common:/certs/ca-bundle.crt")
-    ut.AddHeader("User-Agent", "SaimoTV/2.6.4 (RokuOS)")
+    ut.AddHeader("User-Agent", "SaimoTV/3.0.3 (RokuOS)")
     ut.RetainBodyOnError(true)
     text = ut.GetToString()
 
     pedaco = 0
     cleanTitle = LCase(title.Trim())
-    if text <> "" then
-        lines = text.Split(Chr(10))
-        for each rawLine in lines
-            line = rawLine.Trim()
-            if line <> "" then
-                fields = line.Split(Chr(9))
-                if fields.Count() >= 3 then
-                    sTitle = LCase(fields[0].Trim())
-                    if sTitle = cleanTitle or Instr(1, sTitle, cleanTitle) = 1 then
-                        pedaco = Val(fields[2].Trim())
-                        exit for
-                    end if
-                end if
-            end if
-        end for
+    linhaIndice = buscarLinhaPorTitulo(text, cleanTitle)
+    if linhaIndice <> "" then
+        fields = linhaIndice.Split(Chr(9))
+        if fields.Count() >= 3 then
+            pedaco = Val(fields[2].Trim())
+        end if
     end if
 
     ' 2. Baixa o pedaço correspondente: series-<letra>-<pedaco>.txt
@@ -244,59 +315,23 @@ function resolveSeriesStream(title as String, letter as String, season as Intege
     ut.SetUrl(chunkUrl)
     chunkText = ut.GetToString()
 
-    if chunkText <> "" then
-        lines = chunkText.Split(Chr(10))
-        inSeries = false
-        targetHeader = "@" + cleanTitle
-
-        for each rawLine in lines
-            line = rawLine.Trim()
-            if line <> "" then
-                if Left(line, 1) = "@" then
-                    if inSeries then
-                        exit for
-                    end if
-                    headerTitle = LCase(line)
-                    if headerTitle = targetHeader or Instr(1, headerTitle, targetHeader) = 1 then
-                        inSeries = true
-                    end if
-                else if inSeries then
-                    epFields = line.Split(Chr(9))
-                    if epFields.Count() >= 4 then
-                        epSeason = Val(epFields[0].Trim())
-                        epNum = Val(epFields[1].Trim())
-                        if epSeason = season and epNum = episode then
-                            urlsStr = epFields[3].Trim()
-                            candidates = urlsStr.Split(",")
-                            for each c in candidates
-                                cand = c.Trim()
-                                resolved = buildCandidateUrl(cand, bases)
-                                if resolved <> "" then
-                                    results.Push(resolved)
-                                end if
-                            end for
-                        end if
-                    end if
-                end if
-            end if
-        end for
-    end if
-
+    bloco = extrairBlocoSerie(chunkText, cleanTitle)
+    results = extrairEpisodioDeBloco(bloco, season, episode, versaoPref)
     if results.Count() > 0 then return results
 
     ' 3. Se não achou, tenta em animes e doramas
     animeUrl = baseFilmes() + "redeflix/links-animes.txt"
-    resolvedAnime = findInRedeflix(animeUrl, cleanTitle, season, episode, bases)
+    resolvedAnime = findInRedeflix(animeUrl, cleanTitle, season, episode, versaoPref)
     if resolvedAnime.Count() > 0 then return resolvedAnime
 
     doramaUrl = baseFilmes() + "redeflix/links-doramas.txt"
-    resolvedDorama = findInRedeflix(doramaUrl, cleanTitle, season, episode, bases)
+    resolvedDorama = findInRedeflix(doramaUrl, cleanTitle, season, episode, versaoPref)
     if resolvedDorama.Count() > 0 then return resolvedDorama
 
     return results
 end function
 
-function buildCandidateUrl(cand as String, bases as Object) as String
+function buildCandidateUrl(cand as String) as String
     if cand = "" or Instr(1, cand, "desativado.invalid") > 0 then return ""
 
     ' Se aponta para o relay central api/stream, consulta o endpoint com &json=1 para obter a URL direta do vídeo
@@ -311,7 +346,7 @@ function buildCandidateUrl(cand as String, bases as Object) as String
         utJson = CreateObject("roUrlTransfer")
         utJson.SetUrl(jsonUrl)
         utJson.SetCertificatesFile("common:/certs/ca-bundle.crt")
-        utJson.AddHeader("User-Agent", "SaimoTV/2.6.4 (RokuOS)")
+        utJson.AddHeader("User-Agent", "SaimoTV/3.0.3 (RokuOS)")
         utJson.RetainBodyOnError(true)
         respText = utJson.GetToString()
         if respText <> "" then
@@ -341,6 +376,7 @@ function buildCandidateUrl(cand as String, bases as Object) as String
 
     colonIdx = Instr(1, cand, ":")
     if colonIdx > 1 then
+        bases = getIndiceBases()
         baseId = Left(cand, colonIdx - 1).Trim()
         streamPath = Mid(cand, colonIdx + 1).Trim()
         if bases[baseId] <> invalid then
@@ -362,50 +398,17 @@ function buildCandidateUrl(cand as String, bases as Object) as String
     return ""
 end function
 
-function findInRedeflix(url as String, cleanTitle as String, season as Integer, episode as Integer, bases as Object) as Object
-    results = []
+function findInRedeflix(url as String, cleanTitle as String, season as Integer, episode as Integer, versaoPref as String) as Object
     ut = CreateObject("roUrlTransfer")
     ut.SetUrl(url)
     ut.SetCertificatesFile("common:/certs/ca-bundle.crt")
-    ut.AddHeader("User-Agent", "SaimoTV/2.6.4 (RokuOS)")
+    ut.AddHeader("User-Agent", "SaimoTV/3.0.3 (RokuOS)")
     ut.RetainBodyOnError(true)
     text = ut.GetToString()
-    if text = "" then return results
+    if text = "" then return []
 
-    lines = text.Split(Chr(10))
-    inSeries = false
-    targetHeader = "@" + cleanTitle
-
-    for each rawLine in lines
-        line = rawLine.Trim()
-        if line <> "" then
-            if Left(line, 1) = "@" then
-                if inSeries then exit for
-                headerTitle = LCase(line)
-                if headerTitle = targetHeader or Instr(1, headerTitle, targetHeader) = 1 then
-                    inSeries = true
-                end if
-            else if inSeries then
-                epFields = line.Split(Chr(9))
-                if epFields.Count() >= 4 then
-                    epSeason = Val(epFields[0].Trim())
-                    epNum = Val(epFields[1].Trim())
-                    if epSeason = season and epNum = episode then
-                        urlsStr = epFields[3].Trim()
-                        candidates = urlsStr.Split(",")
-                        for each c in candidates
-                            resolved = buildCandidateUrl(c.Trim(), bases)
-                            if resolved <> "" then
-                                results.Push(resolved)
-                            end if
-                        end for
-                    end if
-                end if
-            end if
-        end if
-    end for
-
-    return results
+    bloco = extrairBlocoSerie(text, cleanTitle)
+    return extrairEpisodioDeBloco(bloco, season, episode, versaoPref)
 end function
 
 ' O endereço (no formato do Saimo) da lista de filmes e séries que a pessoa informou.

@@ -62,6 +62,43 @@ function ehUrlM3uDireta(u as String) as Boolean
     return Instr(1, l, ".m3u") > 0 or Instr(1, l, "get.php") > 0 or Instr(1, l, "type=m3u") > 0
 end function
 
+function fonteDesativada(url as String) as Boolean
+    if url = invalid or url.Trim() = "" then return true
+    u = LCase(url.Trim())
+    mortos = ["146.0.32.89", "governosptx.org", "desativado.invalid", "playercdnx.workers.dev", "45.162.64.114", "123flmsfree.com", "cloutteam.com", "praia13.com", "megaembed.com", "clickhost.xyz"]
+    for each h in mortos
+        if Instr(1, u, h) > 0 then return true
+    end for
+    return false
+end function
+
+' Mesma prioridade do site (httpsFirst): fontes HTTPS .m3u8 primeiro, depois HTTPS .txt, e HTTP por último.
+function ordenarFontesCanal(fontes as Object) as Object
+    if fontes = invalid or fontes.Count() = 0 then return []
+    httpsM3u8 = []
+    httpsTxt = []
+    httpOutras = []
+    for each f in fontes
+        if f <> invalid and f.url <> invalid and not fonteDesativada(f.url) then
+            u = LCase(f.url.Trim())
+            if Left(u, 8) = "https://" then
+                if Instr(1, u, ".txt") > 0 then
+                    httpsTxt.Push(f)
+                else
+                    httpsM3u8.Push(f)
+                end if
+            else
+                httpOutras.Push(f)
+            end if
+        end if
+    end for
+    saida = []
+    saida.Append(httpsM3u8)
+    saida.Append(httpsTxt)
+    saida.Append(httpOutras)
+    return saida
+end function
+
 ' ----- Canais ao Vivo -----
 sub fetchChannels(baseUrl as String)
     direta = ehUrlM3uDireta(baseUrl)
@@ -94,19 +131,22 @@ sub fetchChannels(baseUrl as String)
                     if f.ua <> invalid then v.userAgent = f.ua
                     fontes.Push(v)
                 end for
-                cat = "Variedades"
-                if c.grupo <> invalid and c.grupo <> "" then cat = c.grupo
-                logo = ""
-                if c.logo <> invalid then logo = c.logo
-                channels.Push({
-                    id: "ch_" + chNumber.ToStr(),
-                    number: chNumber,
-                    name: c.nome,
-                    category: cat,
-                    logo: logo,
-                    variants: fontes
-                })
-                chNumber = chNumber + 1
+                fontes = ordenarFontesCanal(fontes)
+                if fontes.Count() > 0 then
+                    cat = "Variedades"
+                    if c.grupo <> invalid and c.grupo <> "" then cat = c.grupo
+                    logo = ""
+                    if c.logo <> invalid then logo = c.logo
+                    channels.Push({
+                        id: "ch_" + chNumber.ToStr(),
+                        number: chNumber,
+                        name: c.nome,
+                        category: cat,
+                        logo: logo,
+                        variants: fontes
+                    })
+                    chNumber = chNumber + 1
+                end if
             end if
         end for
         m.top.responseChannels = channels
@@ -127,8 +167,9 @@ sub fetchChannels(baseUrl as String)
             val = Mid(line, colon + 1).Trim()
 
             if key = "canal" then
-                if current <> invalid and current.variants.Count() > 0 then
-                    channels.Push(current)
+                if current <> invalid then
+                    current.variants = ordenarFontesCanal(current.variants)
+                    if current.variants.Count() > 0 then channels.Push(current)
                 end if
                 current = {
                     id: "ch_" + chNumber.ToStr(),
@@ -163,8 +204,9 @@ sub fetchChannels(baseUrl as String)
         end if
     end for
 
-    if current <> invalid and current.variants.Count() > 0 then
-        channels.Push(current)
+    if current <> invalid then
+        current.variants = ordenarFontesCanal(current.variants)
+        if current.variants.Count() > 0 then channels.Push(current)
     end if
 
     m.top.responseChannels = channels
@@ -176,7 +218,10 @@ end sub
 sub fetchEpg(baseUrl as String)
     cache = "cachefs:/epg.json"
     agora = CreateObject("roDateTime").AsSeconds()
-    bruto = ReadAsciiFile(cache)
+    bruto = ""
+    if CreateObject("roFileSystem").Exists(cache) then
+        bruto = ReadAsciiFile(cache)
+    end if
     if bruto <> "" then
         dados = ParseJson(bruto)
         if dados <> invalid and dados.quando <> invalid and agora - dados.quando < 21600 then

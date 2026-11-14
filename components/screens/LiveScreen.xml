@@ -38,8 +38,8 @@
     <PainelLateral id="painelFontes" />
     <Timer id="inicioTimer" duration="0.05" repeat="false" />
     <Timer id="holdTimer" duration="0.6" repeat="false" />
-    <Timer id="zapTimer" duration="0.4" repeat="false" />
-    <Timer id="vigiaTimer" duration="8" repeat="false" />
+    <Timer id="zapTimer" duration="0.2" repeat="false" />
+    <Timer id="vigiaTimer" duration="7" repeat="false" />
     <Group id="ancora" focusable="true" />
     <Timer id="sonoTimer" repeat="false" />
 

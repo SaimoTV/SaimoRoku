@@ -158,7 +158,10 @@ end function
 sub cleanUp()
     if m.radioAudio <> invalid then
         m.radioAudio.control = "stop"
+        m.radioAudio.content = CreateObject("roSGNode", "ContentNode")
+        m.radioAudio.control = "stop"
         m.radioAudio.content = invalid
     end if
     if m.barrasTimer <> invalid then m.barrasTimer.control = "stop"
+    if m.heroTimer <> invalid then m.heroTimer.control = "stop"
 end sub

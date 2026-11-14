@@ -89,33 +89,46 @@ function LoadPreferences() as Object
     if raw <> "" then
         parsed = ParseJson(raw)
         if parsed <> invalid then
-            for each key in defaults
-                if parsed[key] = invalid then
-                    parsed[key] = defaults[key]
+            for each key in parsed
+                val = parsed[key]
+                lk = LCase(key)
+                if val <> invalid then
+                    if defaults[lk] = invalid or defaults[lk].ToStr() = "" or val.ToStr() <> "" then
+                        defaults[lk] = val
+                    end if
                 end if
             end for
-            if parsed.urlCanais <> invalid and parsed.urlCanais <> "" then
-                parsed.urlCanais = NormalizarEnderecoSaimo(parsed.urlCanais)
-            end if
-            if parsed.urlFilmes <> invalid and parsed.urlFilmes <> "" then
-                parsed.urlFilmes = NormalizarEnderecoSaimo(parsed.urlFilmes)
-            end if
-            return parsed
         end if
+    end if
+    if defaults.urlCanais <> invalid and defaults.urlCanais <> "" then
+        defaults.urlCanais = NormalizarEnderecoSaimo(defaults.urlCanais)
+    end if
+    if defaults.urlFilmes <> invalid and defaults.urlFilmes <> "" then
+        defaults.urlFilmes = NormalizarEnderecoSaimo(defaults.urlFilmes)
     end if
     return defaults
 end function
 
 sub SavePreferences(prefs as Object)
     if prefs = invalid then return
-    if prefs.urlCanais <> invalid and prefs.urlCanais <> "" then
-        prefs.urlCanais = NormalizarEnderecoSaimo(prefs.urlCanais)
+    limpo = GetDefaultPreferences()
+    for each key in prefs
+        val = prefs[key]
+        lk = LCase(key)
+        if val <> invalid then
+            if limpo[lk] = invalid or limpo[lk].ToStr() = "" or val.ToStr() <> "" then
+                limpo[lk] = val
+            end if
+        end if
+    end for
+    if limpo.urlCanais <> invalid and limpo.urlCanais <> "" then
+        limpo.urlCanais = NormalizarEnderecoSaimo(limpo.urlCanais)
     end if
-    if prefs.urlFilmes <> invalid and prefs.urlFilmes <> "" then
-        prefs.urlFilmes = NormalizarEnderecoSaimo(prefs.urlFilmes)
+    if limpo.urlFilmes <> invalid and limpo.urlFilmes <> "" then
+        limpo.urlFilmes = NormalizarEnderecoSaimo(limpo.urlFilmes)
     end if
     reg = GetRegistry()
-    json = FormatJson(prefs)
+    json = FormatJson(limpo)
     reg.Write("prefs", json)
     reg.Flush()
 end sub

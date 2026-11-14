@@ -397,3 +397,6 @@ sub handleButtonClick()
         updateFavButtonText()
     end if
 end sub
+
+sub cleanUp()
+end sub

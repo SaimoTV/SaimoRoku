@@ -15,6 +15,8 @@ sub init()
     m.candidateIdx = 0
     m.tryingProxy = false
     m.resumePos = 0
+    m.encerrado = false
+    m.trocandoStream = false
 
     m.videoPlayer.observeField("state", "onVideoState")
     m.videoPlayer.observeField("position", "onVideoPosition")
@@ -29,6 +31,7 @@ sub init()
 end sub
 
 sub onPlayItemChange()
+    if m.encerrado = true then return
     item = m.top.playItem
     if item = invalid then return
 
@@ -63,6 +66,10 @@ sub onPlayItemChange()
         m.candidateUrls = [item.url]
         playCandidate(0, false)
     else
+        if m.resolverTask <> invalid then
+            m.resolverTask.unobserveField("resolvedItem")
+            m.resolverTask.control = "stop"
+        end if
         ' Resolve a URL usando StreamResolverTask
         m.resolverTask = CreateObject("roSGNode", "StreamResolverTask")
         m.resolverTask.requestItem = item
@@ -72,6 +79,7 @@ sub onPlayItemChange()
 end sub
 
 sub onStreamResolved(evt as Object)
+    if m.encerrado = true then return
     resolved = evt.getData()
     if resolved <> invalid and resolved.candidateUrls <> invalid and resolved.candidateUrls.Count() > 0 then
         m.candidateUrls = resolved.candidateUrls
@@ -93,6 +101,7 @@ sub onStreamResolved(evt as Object)
 end sub
 
 sub playCandidate(idx as Integer, useProxy as Boolean)
+    if m.encerrado = true or m.videoPlayer = invalid then return
     if m.candidateUrls = invalid or idx >= m.candidateUrls.Count() then
         m.bufferingGroup.visible = false
         m.errorLabel.text = "Vídeo indisponível no momento"
@@ -119,6 +128,7 @@ sub playCandidate(idx as Integer, useProxy as Boolean)
 end sub
 
 sub tryNextCandidate()
+    if m.encerrado = true or m.videoPlayer = invalid then return
     if m.candidateUrls = invalid or m.candidateUrls.Count() = 0 then
         m.bufferingGroup.visible = false
         m.errorLabel.text = "Falha ao reproduzir o vídeo"
@@ -127,9 +137,10 @@ sub tryNextCandidate()
     end if
 
     currentUrl = m.candidateUrls[m.candidateIdx]
+    ehHttp = (Left(LCase(currentUrl), 7) = "http://")
 
-    ' 1. Tenta a fonte atual via proxy da Cloudflare se ainda não tentou
-    if not m.tryingProxy and Instr(1, currentUrl, "api/proxy") = 0 then
+    ' 1. Tenta a fonte atual via proxy da Cloudflare se ainda não tentou (apenas https)
+    if not m.tryingProxy and not ehHttp and Instr(1, currentUrl, "api/proxy") = 0 then
         m.tryingProxy = true
         playCandidate(m.candidateIdx, true)
         return
@@ -150,11 +161,12 @@ sub tryNextCandidate()
 end sub
 
 sub startPlayback(streamUrl as String, resumePos as Dynamic)
+    if m.encerrado = true or m.videoPlayer = invalid then return
     content = CreateObject("roSGNode", "ContentNode")
     content.url = streamUrl
     content.title = m.playerOsd.title
     
-    headers = ["User-Agent: SaimoTV/2.6.4 (RokuOS)", "Accept: */*"]
+    headers = ["User-Agent: SaimoTV/3.0.3 (RokuOS)", "Accept: */*"]
     content.HttpHeaders = headers
 
     lowerUrl = LCase(streamUrl)
@@ -170,15 +182,20 @@ sub startPlayback(streamUrl as String, resumePos as Dynamic)
         content.playStart = resumePos
     end if
 
+    m.trocandoStream = true
     m.bufferingGroup.visible = true
+    m.videoPlayer.control = "stop"
+    m.videoPlayer.mute = false
     m.videoPlayer.content = content
     m.videoPlayer.control = "play"
+    m.trocandoStream = false
     m.progressTimer.control = "start"
     m.playerOsd.isOpen = true
     if not m.top.findNode("painelOpcoes").aberto then m.top.setFocus(true)
 end sub
 
 sub onVideoState()
+    if m.encerrado = true or m.trocandoStream = true or m.videoPlayer = invalid then return
     state = m.videoPlayer.state
     if state = "playing" then
         m.bufferingGroup.visible = false
@@ -363,9 +380,7 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
     end if
 
     if key = "back" then
-        saveCurrentProgress()
-        m.videoPlayer.control = "stop"
-        m.progressTimer.control = "stop"
+        cleanUp()
         m.top.exitRequested = true
         return true
     end if
@@ -374,12 +389,28 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
 end function
 
 sub cleanUp()
+    if m.encerrado = true then return
     saveCurrentProgress()
-    if m.videoPlayer <> invalid then
-        m.videoPlayer.control = "stop"
-        m.videoPlayer.content = invalid
-    end if
+    m.encerrado = true
+    m.trocandoStream = true
     if m.progressTimer <> invalid then
         m.progressTimer.control = "stop"
+    end if
+    if m.resolverTask <> invalid then
+        m.resolverTask.unobserveField("resolvedItem")
+        m.resolverTask.control = "stop"
+        m.resolverTask = invalid
+    end if
+    if m.videoPlayer <> invalid then
+        m.videoPlayer.unobserveField("state")
+        m.videoPlayer.unobserveField("position")
+        m.videoPlayer.unobserveField("duration")
+        m.videoPlayer.mute = true
+        m.videoPlayer.control = "pause"
+        m.videoPlayer.control = "stop"
+        m.videoPlayer.content = CreateObject("roSGNode", "ContentNode")
+        m.videoPlayer.control = "stop"
+        m.videoPlayer.content = invalid
+        m.videoPlayer.visible = false
     end if
 end sub

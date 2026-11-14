@@ -294,6 +294,10 @@ sub onRowItemSelected()
         if no.indice <> m.currentCategoryIdx then
             m.currentCategoryIdx = no.indice
             montar()
+        end if
+        if m.vodRowList.content <> invalid and m.vodRowList.content.getChildCount() > 2 then
+            m.vodRowList.jumpToRowItem = [2, 0]
+        else
             m.vodRowList.jumpToRowItem = [0, no.indice]
         end if
     else if no.rawItem <> invalid then

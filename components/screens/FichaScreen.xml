@@ -4,6 +4,7 @@
     <field id="item" type="assocarray" onChange="onItemChange" />
     <field id="playRequested" type="assocarray" alwaysNotify="true" />
     <field id="focusUpRequested" type="boolean" alwaysNotify="true" />
+    <function name="cleanUp" />
   </interface>
 
   <children>

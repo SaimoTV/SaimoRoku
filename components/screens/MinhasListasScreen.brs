@@ -200,12 +200,20 @@ end function
 
 sub salvarEnderecoCatalogo(chave as String, limpar as Boolean)
     prefs = LoadPreferences()
+    novo = ""
+    if not limpar then
+        novo = NormalizarEnderecoSaimo(lerTextoTeclado())
+    end if
+    if chave = "urlCanais" then
+        prefs.urlCanais = novo
+    else if chave = "urlFilmes" then
+        prefs.urlFilmes = novo
+    else
+        prefs[chave] = novo
+    end if
     if limpar then
-        prefs[chave] = ""
         m.aviso.text = "Endereço removido."
     else
-        novo = NormalizarEnderecoSaimo(lerTextoTeclado())
-        prefs[chave] = novo
         m.aviso.text = "Endereço salvo! Carregando catálogo..."
     end if
     SavePreferences(prefs)

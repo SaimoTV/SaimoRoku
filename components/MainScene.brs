@@ -275,6 +275,7 @@ sub switchScreen(screenName as String, params = invalid as Dynamic)
 
     ' Remove tela atual do container se houver e encerra tarefas de vídeo pendentes
     if m.currentScreenNode <> invalid then
+        m.currentScreenNode.unobserveField("telaCheia")
         m.currentScreenNode.callFunc("cleanUp")
         m.screensContainer.removeChild(m.currentScreenNode)
         m.currentScreenNode = invalid
