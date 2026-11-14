@@ -10,16 +10,37 @@ sub init()
 end sub
 
 function baixar(url as String) as String
+    if url = "" then return ""
+    porta = CreateObject("roMessagePort")
     ut = CreateObject("roUrlTransfer")
+    ut.SetMessagePort(porta)
     ut.SetUrl(url)
     ut.SetCertificatesFile("common:/certs/ca-bundle.crt")
-    ut.AddHeader("User-Agent", "SaimoTV (RokuOS)")
-    return ut.GetToString()
+    ut.InitClientCertificates()
+    ut.EnableEncodings(true)
+    ut.AddHeader("User-Agent", "SaimoTV/3.0.3 (RokuOS)")
+    if not ut.AsyncGetToString() then return ""
+    msg = Wait(30000, porta)
+    if msg = invalid then
+        ut.AsyncCancel()
+        return ""
+    end if
+    if msg.GetResponseCode() <> 200 then return ""
+    return msg.GetString()
 end function
 
 sub executar()
     base = LoadPreferences().urlFilmes
     if base = invalid then base = ""
+    base = base.Trim()
+    if base = "" then
+        if m.top.categoria = "" then
+            m.top.indice = { capa: "https://image.tmdb.org/t/p/w185", letras: {} }
+        else
+            m.top.linha = CreateObject("roSGNode", "ContentNode")
+        end if
+        return
+    end if
     if Right(base, 1) <> "/" then base = base + "/"
     if m.top.categoria = "" then
         lerIndice(base)

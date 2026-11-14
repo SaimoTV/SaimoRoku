@@ -95,11 +95,18 @@ sub onEnderecoFechou()
 end sub
 
 ' Aceita o endereço com ou sem https://, com espaços, e até colado com o nome de um
-' arquivo no fim (catalogo.txt, destaques.txt...): o app guarda só a pasta, com "/" no fim.
+' arquivo no fim (catalogo.txt, destaques.txt, indice.txt...): o app guarda só a
+' pasta com "/" no fim. Links diretos .m3u / .m3u8 / get.php são preservados.
 function normalizarEndereco(url as String) as String
     u = url.Trim()
     if u = "" then return ""
     if Left(LCase(u), 4) <> "http" then u = "https://" + u
+    lu = LCase(u)
+    if Instr(1, lu, ".m3u") > 0 or Instr(1, lu, "get.php") > 0 or Instr(1, lu, "type=m3u") > 0 then
+        return u
+    end if
+    corte = Instr(1, u, "#")
+    if corte > 0 then u = Left(u, corte - 1)
     corte = Instr(1, u, "?")
     if corte > 0 then u = Left(u, corte - 1)
     ultimo = 0
@@ -108,6 +115,7 @@ function normalizarEndereco(url as String) as String
     end for
     if ultimo > 8 and Instr(1, Mid(u, ultimo + 1), ".") > 0 and Right(u, 1) <> "/" then u = Left(u, ultimo)
     if Right(u, 1) <> "/" then u = u + "/"
+    if Right(LCase(u), 6) = "/roku/" then u = Left(u, Len(u) - 5)
     return u
 end function
 

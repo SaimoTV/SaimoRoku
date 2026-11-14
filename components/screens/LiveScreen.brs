@@ -348,6 +348,10 @@ sub onArvore()
         end if
         ' O painel aparece antes: o vídeo entra no quadro seguinte.
         m.inicioTimer.control = "start"
+    else if m.top.openDrawerOnLoad then
+        m.channelDrawer.isOpen = true
+        m.channelDrawer.setFocus(true)
+        m.zapHud.visible = false
     end if
 end sub
 

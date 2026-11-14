@@ -234,7 +234,16 @@ sub onLinha(evento as Object)
 end sub
 
 sub mostrarCategoria(i as Integer)
-    m.heroBanner.featuredItem = { title: m.categories[i], genres: textoTitulos(totalDaCategoria(i)), overview: "Lançamentos, clássicos e tudo entre eles, dublados e legendados.", semFundo: true }
+    desc = "Lançamentos, clássicos e tudo entre eles, dublados e legendados."
+    if totalDaCategoria(i) = 0 then
+        u = LoadPreferences().urlFilmes
+        if u = invalid or u = "" then
+            desc = "Configure o endereço de filmes e séries em Ajustes."
+        else
+            desc = "Nenhum título carregado. Verifique o endereço de filmes e séries em Ajustes."
+        end if
+    end if
+    m.heroBanner.featuredItem = { title: m.categories[i], genres: textoTitulos(totalDaCategoria(i)), overview: desc, semFundo: true }
 end sub
 
 function noEm(coords as Dynamic) as Dynamic

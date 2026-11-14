@@ -12,7 +12,8 @@ end sub
 sub rodar()
     base = LoadPreferences().urlFilmes
     if base = invalid then base = ""
-    if Right(base, 1) <> "/" then base = base + "/"
+    base = base.Trim()
+    if base <> "" and Right(base, 1) <> "/" then base = base + "/"
     m.base = base
     m.categoria = ""
     porta = CreateObject("roMessagePort")
@@ -26,13 +27,29 @@ end sub
 
 sub carregar(categoria as String)
     if categoria = m.categoria then return
+    if m.base = "" then
+        m.top.generos = []
+        return
+    end if
     m.categoria = categoria
     m.titulos = [] : m.anos = [] : m.capas = [] : m.gens = [] : m.idades = [] : m.notas = [] : m.pops = []
+    porta = CreateObject("roMessagePort")
     ut = CreateObject("roUrlTransfer")
+    ut.SetMessagePort(porta)
     ut.SetUrl(m.base + "roku/filtros-" + categoria + ".txt")
     ut.SetCertificatesFile("common:/certs/ca-bundle.crt")
-    ut.AddHeader("User-Agent", "SaimoTV (RokuOS)")
-    texto = ut.GetToString()
+    ut.InitClientCertificates()
+    ut.EnableEncodings(true)
+    ut.AddHeader("User-Agent", "SaimoTV/3.0.3 (RokuOS)")
+    texto = ""
+    if ut.AsyncGetToString() then
+        msg = Wait(30000, porta)
+        if msg <> invalid then
+            if msg.GetResponseCode() = 200 then texto = msg.GetString()
+        else
+            ut.AsyncCancel()
+        end if
+    end if
     generos = []
     for each linha in texto.Split(Chr(10))
         if Left(linha, 8) = "generos:" then

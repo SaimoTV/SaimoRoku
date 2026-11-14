@@ -24,7 +24,12 @@ sub executeRequest()
     else if reqType = "epg" then
         if urlCanais <> "" then fetchEpg(urlCanais)
     else if reqType = "destaques" then
-        if urlFilmes <> "" then fetchDestaques(urlFilmes)
+        if urlFilmes = "" then
+            m.top.responseDestaques = []
+            m.top.responseVodItems = []
+        else
+            fetchDestaques(urlFilmes)
+        end if
     else if reqType = "events" then
         fetchEvents(urlCanais)
     else if reqType = "radios" then
@@ -34,21 +39,78 @@ end sub
 
 ' ----- Requisição HTTP utilitária -----
 function HttpGet(url as String) as String
+    if url = "" then return ""
+    porta = CreateObject("roMessagePort")
     ut = CreateObject("roUrlTransfer")
+    ut.SetMessagePort(porta)
     ut.SetUrl(url)
     ut.SetCertificatesFile("common:/certs/ca-bundle.crt")
-    ut.AddHeader("User-Agent", "SaimoTV/2.6.4 (RokuOS)")
-    ut.RetainBodyOnError(true)
-    return ut.GetToString()
+    ut.InitClientCertificates()
+    ut.EnableEncodings(true)
+    ut.AddHeader("User-Agent", "SaimoTV/3.0.3 (RokuOS)")
+    if not ut.AsyncGetToString() then return ""
+    msg = Wait(30000, porta)
+    if msg = invalid then
+        ut.AsyncCancel()
+        return ""
+    end if
+    if msg.GetResponseCode() <> 200 then return ""
+    return msg.GetString()
+end function
+
+function ehUrlM3uDireta(u as String) as Boolean
+    l = LCase(u.Trim())
+    return Instr(1, l, ".m3u") > 0 or Instr(1, l, "get.php") > 0 or Instr(1, l, "type=m3u") > 0
 end function
 
 ' ----- Canais ao Vivo -----
 sub fetchChannels(baseUrl as String)
-    url = baseUrl + "catalogo.txt"
+    direta = ehUrlM3uDireta(baseUrl)
+    if direta then
+        url = baseUrl
+    else
+        url = baseUrl
+        if Right(url, 1) <> "/" then url = url + "/"
+        url = url + "catalogo.txt"
+    end if
     text = HttpGet(url)
     if text = "" then
         m.top.error = "Erro ao baixar catálogo"
         m.top.responseChannels = []
+        return
+    end if
+
+    if Left(text, 1) = Chr(65279) then text = Mid(text, 2)
+    if direta or Left(UCase(text.Trim()), 7) = "#EXTM3U" or Instr(1, UCase(text), "#EXTINF") > 0 then
+        lidos = LerM3u(text, 5000)
+        channels = []
+        chNumber = 1
+        for each c in lidos
+            if not EhRestrito(c) and c.fontes <> invalid and c.fontes.Count() > 0 then
+                fontes = []
+                for each f in c.fontes
+                    v = { url: f.url, quality: "Auto" }
+                    if f.qualidade <> invalid then v.quality = f.qualidade
+                    if f.referer <> invalid then v.referer = f.referer
+                    if f.ua <> invalid then v.userAgent = f.ua
+                    fontes.Push(v)
+                end for
+                cat = "Variedades"
+                if c.grupo <> invalid and c.grupo <> "" then cat = c.grupo
+                logo = ""
+                if c.logo <> invalid then logo = c.logo
+                channels.Push({
+                    id: "ch_" + chNumber.ToStr(),
+                    number: chNumber,
+                    name: c.nome,
+                    category: cat,
+                    logo: logo,
+                    variants: fontes
+                })
+                chNumber = chNumber + 1
+            end if
+        end for
+        m.top.responseChannels = channels
         return
     end if
 
@@ -220,9 +282,14 @@ end function
 
 ' ----- Destaques e Trilhos da Home -----
 sub fetchDestaques(baseUrl as String)
+    if Right(baseUrl, 1) <> "/" then baseUrl = baseUrl + "/"
     url = baseUrl + "destaques.txt"
     text = HttpGet(url)
-    if text = "" then return
+    if text = "" then
+        m.top.responseDestaques = []
+        m.top.responseVodItems = []
+        return
+    end if
 
     lines = text.Split(Chr(10))
     rails = []
