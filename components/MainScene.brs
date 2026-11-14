@@ -198,15 +198,20 @@ sub onVodLoaded(evt as Object)
     end if
 end sub
 
-' O jogo diz o canal por um apelido (premiere-2); só entra jogo com canal nosso.
+' O jogo diz o canal por um apelido (premiere-2); procura em todos os players com nome normalizado.
 function canalDoJogo(players as Object) as String
     if players = invalid or m.nomesCanais = invalid or players.Count() = 0 then return ""
-    partes = players[0].Split("/")
-    apelido = LCase(partes[partes.Count() - 1]).Replace("-", "").Replace(" ", "")
-    if apelido = "" then return ""
-    if m.nomesCanais.DoesExist(apelido) then return m.nomesCanais[apelido]
-    for each n in m.nomesCanais
-        if Instr(1, n, apelido) > 0 then return m.nomesCanais[n]
+    for each player in players
+        if type(player) = "roString" or type(player) = "String"
+            partes = player.Split("/")
+            apelido = LCase(partes[partes.Count() - 1]).Replace("-", "").Replace(" ", "").Replace("_", "")
+            if apelido <> ""
+                if m.nomesCanais.DoesExist(apelido) then return m.nomesCanais[apelido]
+                for each n in m.nomesCanais
+                    if Instr(1, n, apelido) > 0 then return m.nomesCanais[n]
+                end for
+            end if
+        end if
     end for
     return ""
 end function
