@@ -135,7 +135,38 @@ function agora() as Integer
     return CreateObject("roDateTime").AsSeconds()
 end function
 
+function tentarSalvarCatalogoSaimo(link as String) as Boolean
+    base = NormalizarEnderecoSaimo(link)
+    if base = "" or Right(base, 1) <> "/" then return false
+
+    ' Testa se é servidor de canais (catalogo.txt)
+    txtCanais = xtBuscar(base + "catalogo.txt")
+    if txtCanais <> invalid and Instr(1, txtCanais, "|") > 0 then
+        prefs = LoadPreferences()
+        prefs.urlCanais = base
+        SavePreferences(prefs)
+        return true
+    end if
+
+    ' Testa se é servidor de filmes/séries (destaques.txt ou roku/indice.txt)
+    txtFilmes = xtBuscar(base + "destaques.txt")
+    if txtFilmes = invalid or txtFilmes.Trim() = "" then
+        txtFilmes = xtBuscar(base + "roku/indice.txt")
+    end if
+    if txtFilmes <> invalid and txtFilmes.Trim() <> "" and Instr(1, LCase(txtFilmes), "<html") = 0 then
+        prefs = LoadPreferences()
+        prefs.urlFilmes = base
+        SavePreferences(prefs)
+        return true
+    end if
+
+    return false
+end function
+
 function adicionar(link as String, nome as String) as String
+    if tentarSalvarCatalogoSaimo(link) then
+        return "CATALOGO_SAIMO"
+    end if
     listas = LoadMinhasListas()
     if listas.Count() >= 10 then return "Já são 10 listas: remova uma antes"
     for each l in listas

@@ -1,200 +1,259 @@
-' ====================================================================
-' Saimo TV - SettingsScreen (BrightScript)
-' ====================================================================
-
 sub init()
     m.settingsList = m.top.findNode("settingsList")
-    ' Versão do manifest: o número escrito à mão ficava para trás a cada release.
-    m.top.findNode("versao").text = "Saimo TV " + CreateObject("roAppInfo").GetVersion()
-    m.settingsList.observeField("itemSelected", "onSettingSelected")
+    m.lblSecao = m.top.findNode("lblSecao")
+    m.painelTeclado = m.top.findNode("painelTeclado")
+    m.tituloCampo = m.top.findNode("tituloCampo")
+    m.subtituloCampo = m.top.findNode("subtituloCampo")
+    m.teclado = m.top.findNode("teclado")
+    m.botoes = m.top.findNode("botoes")
+    m.chaveEditando = ""
+
+    info = CreateObject("roAppInfo")
+    v = m.top.findNode("versao")
+    if v <> invalid then v.text = "Saimo TV v" + info.GetVersion()
+
+    opcoesBotoes = CreateObject("roSGNode", "ContentNode")
+    for each t in ["Salvar", "Apagar endereço", "Cancelar"]
+        it = opcoesBotoes.createChild("ContentNode")
+        it.title = t
+    end for
+    m.botoes.content = opcoesBotoes
+
     m.prefs = LoadPreferences()
-    m.top.observeField("focusedChild", "onFocusedChildChange")
     populateSettings()
+
+    m.settingsList.observeField("itemSelected", "onSettingSelected")
+    m.botoes.observeField("itemSelected", "onBotaoTeclado")
+    m.top.observeField("focusedChild", "onFocusChange")
 end sub
 
-sub onFocusedChildChange()
-    if m.top.isInFocusChain() and not m.settingsList.isInFocusChain() then
-        if m.settingsList <> invalid then m.settingsList.setFocus(true)
+sub onFocusChange()
+    if m.top.hasFocus() then
+        if m.painelTeclado.visible then
+            if not m.teclado.hasFocus() and not m.botoes.hasFocus() then
+                m.teclado.setFocus(true)
+            end if
+        else if not m.settingsList.hasFocus() then
+            m.prefs = LoadPreferences()
+            populateSettings()
+            m.settingsList.setFocus(true)
+        end if
     end if
 end sub
 
 sub populateSettings()
-    p = m.prefs
-    root = CreateObject("roSGNode", "ContentNode")
+    m.prefs = LoadPreferences()
+    content = CreateObject("roSGNode", "ContentNode")
 
-    addSettingItem(root, "minhasListas", "Minhas listas", "Adicionar listas .m3u pelo link")
-    addSettingItem(root, "urlCanais", "Endereço dos canais", enderecoResumo(p.urlCanais))
-    addSettingItem(root, "urlFilmes", "Endereço de filmes e séries", enderecoResumo(p.urlFilmes))
-    abrir = "Início"
-    if p.abrirEm = "canal" then abrir = "Último canal"
-    addSettingItem(root, "abrirEm", "Abrir o app em", abrir)
-    zero = { off: "Desligado", equilibrado: "Equilibrado", agressivo: "Agressivo" }[p.zeroDelay]
-    addSettingItem(root, "zeroDelay", "Modo Zero Delay", zero)
-    addSettingItem(root, "audioInteligente", "Áudio inteligente (voz nítida)", formatBool(p.audioInteligente))
-    audio = "Dublado"
-    if p.versaoAudio = "leg" then audio = "Legendado"
-    addSettingItem(root, "versaoAudio", "Áudio de filmes e séries", audio)
-    addSettingItem(root, "pularAutomatico", "Pular aberturas de séries", formatBool(p.pularAutomatico))
-    addSettingItem(root, "proximoAutomatico", "Próximo episódio automático", formatBool(p.proximoAutomatico))
-    addSettingItem(root, "limparCache", "Limpar histórico", "Apaga o que você estava assistindo")
+    item1 = content.createChild("ContentNode")
+    resText = "Desativado"
+    if m.prefs.autoResume then resText = "Ativado"
+    item1.title = "Continuar de onde parei"
+    item1.description = resText
+    item1.HDPosterUrl = "autoResume"
 
-    m.settingsList.content = root
-    if m.idxAtual <> invalid then m.settingsList.jumpToItem = m.idxAtual
+    item2 = content.createChild("ContentNode")
+    item2.title = "Qualidade preferida"
+    item2.description = m.prefs.preferredQuality
+    item2.HDPosterUrl = "preferredQuality"
+
+    item3 = content.createChild("ContentNode")
+    subText = "Desativado"
+    if m.prefs.enableSubtitles then subText = "Ativado"
+    item3.title = "Legendas por padrão"
+    item3.description = subText
+    item3.HDPosterUrl = "enableSubtitles"
+
+    listas = LoadMinhasListas()
+    item4 = content.createChild("ContentNode")
+    item4.title = "Minhas listas"
+    if listas.Count() = 0 then
+        item4.description = "Nenhuma lista adicionada · abrir"
+    else if listas.Count() = 1 then
+        item4.description = "1 lista adicionada · gerenciar"
+    else
+        item4.description = listas.Count().ToStr() + " listas adicionadas · gerenciar"
+    end if
+    item4.HDPosterUrl = "minhasListas"
+
+    item5 = content.createChild("ContentNode")
+    item5.title = "Endereço dos canais"
+    if m.prefs.urlCanais <> invalid and m.prefs.urlCanais.Trim() <> "" then
+        item5.description = m.prefs.urlCanais
+    else
+        item5.description = "Não configurado · clique para definir"
+    end if
+    item5.HDPosterUrl = "urlCanais"
+
+    item6 = content.createChild("ContentNode")
+    item6.title = "Endereço de filmes e séries"
+    if m.prefs.urlFilmes <> invalid and m.prefs.urlFilmes.Trim() <> "" then
+        item6.description = m.prefs.urlFilmes
+    else
+        item6.description = "Não configurado · clique para definir"
+    end if
+    item6.HDPosterUrl = "urlFilmes"
+
+    item7 = content.createChild("ContentNode")
+    item7.title = "Atualizar catálogo agora"
+    item7.description = "Recarregar canais e filmes"
+    item7.HDPosterUrl = "reload"
+
+    foco = m.settingsList.itemFocused
+    m.settingsList.content = content
+    if foco >= 0 and foco < content.getChildCount() then
+        m.settingsList.jumpToItem = foco
+    end if
 end sub
 
-sub addSettingItem(root as Object, key as String, label as String, val as String)
-    node = root.CreateChild("ContentNode")
-    node.title = label
-    node.description = val
-    node.addFields({ settingKey: key })
+sub onSettingSelected()
+    idx = m.settingsList.itemSelected
+    m.prefs = LoadPreferences()
+    if idx = 0 then
+        m.prefs.autoResume = not m.prefs.autoResume
+        SavePreferences(m.prefs)
+        populateSettings()
+    else if idx = 1 then
+        if m.prefs.preferredQuality = "Auto" then
+            m.prefs.preferredQuality = "FHD"
+        else if m.prefs.preferredQuality = "FHD" then
+            m.prefs.preferredQuality = "HD"
+        else if m.prefs.preferredQuality = "HD" then
+            m.prefs.preferredQuality = "SD"
+        else
+            m.prefs.preferredQuality = "Auto"
+        end if
+        SavePreferences(m.prefs)
+        populateSettings()
+    else if idx = 2 then
+        m.prefs.enableSubtitles = not m.prefs.enableSubtitles
+        SavePreferences(m.prefs)
+        populateSettings()
+    else if idx = 3 then
+        m.top.minhasListasRequested = true
+    else if idx = 4 then
+        abrirEditorUrl("urlCanais", "Endereço dos canais")
+    else if idx = 5 then
+        abrirEditorUrl("urlFilmes", "Endereço de filmes e séries")
+    else if idx = 6 then
+        m.top.reloadRequested = true
+    end if
 end sub
 
-function enderecoResumo(url as Dynamic) as String
-    if url = invalid or url = "" then return "Vazio. Aperte OK para digitar (formato Saimo)"
-    return url
+sub abrirEditorUrl(chave as String, titulo as String)
+    m.prefs = LoadPreferences()
+    m.chaveEditando = chave
+    atual = ""
+    if m.prefs[chave] <> invalid then atual = m.prefs[chave]
+    m.tituloCampo.text = titulo
+    m.subtituloCampo.text = "Digite o endereço (ex: canais-saimo.pages.dev), depois desça até Salvar"
+    m.teclado.text = atual
+    if m.teclado.textEditBox <> invalid then
+        m.teclado.textEditBox.text = atual
+        m.teclado.textEditBox.hintText = "https://..."
+    end if
+    m.settingsList.visible = false
+    if m.lblSecao <> invalid then m.lblSecao.visible = false
+    m.painelTeclado.visible = true
+    m.teclado.setFocus(true)
+end sub
+
+function lerTextoTeclado() as String
+    t = ""
+    if m.teclado <> invalid and m.teclado.text <> invalid then
+        t = m.teclado.text
+    end if
+    if t = "" and m.teclado <> invalid and m.teclado.textEditBox <> invalid and m.teclado.textEditBox.text <> invalid then
+        t = m.teclado.textEditBox.text
+    end if
+    return t.Trim()
 end function
 
-' Teclado da TV para digitar o endereço (formato Saimo) de canais ou de filmes e séries.
-sub abrirEditorEndereco(campo as String, titulo as String)
-    m.campoEdicao = campo
-    dlg = CreateObject("roSGNode", "StandardKeyboardDialog")
-    dlg.title = titulo
-    dlg.message = ["Cole ou digite o endereço da sua lista.", "Deixe em branco e salve para desligar."]
-    atual = m.prefs[campo]
-    if atual = invalid then atual = ""
-    dlg.text = atual
-    dlg.buttons = ["Salvar", "Apagar", "Cancelar"]
-    dlg.observeField("buttonSelected", "onEnderecoBotao")
-    dlg.observeField("wasClosed", "onEnderecoFechou")
-    m.dlgEndereco = dlg
-    m.top.getScene().dialog = dlg
-end sub
-
-sub onEnderecoBotao()
-    dlg = m.dlgEndereco
-    if dlg = invalid then return
-    botao = dlg.buttonSelected
-    if botao = 2 then
-        dlg.close = true
+sub salvarEdicaoAtual(limpar as Boolean)
+    if m.chaveEditando = "" then
+        fecharEditorUrl()
         return
     end if
-    novo = ""
-    if botao = 0 then novo = dlg.text.Trim()
-    novo = normalizarEndereco(novo)
-    m.prefs[m.campoEdicao] = novo
+    m.prefs = LoadPreferences()
+    if limpar then
+        m.prefs[m.chaveEditando] = ""
+    else
+        novo = NormalizarEnderecoSaimo(lerTextoTeclado())
+        m.prefs[m.chaveEditando] = novo
+    end if
     SavePreferences(m.prefs)
-    dlg.close = true
+    fecharEditorUrl()
     populateSettings()
     m.top.reloadRequested = true
 end sub
 
-sub onEnderecoFechou()
-    m.dlgEndereco = invalid
+sub fecharEditorUrl()
+    m.chaveEditando = ""
+    m.painelTeclado.visible = false
+    m.settingsList.visible = true
+    if m.lblSecao <> invalid then m.lblSecao.visible = true
     m.settingsList.setFocus(true)
-    if m.idxAtual <> invalid then m.settingsList.jumpToItem = m.idxAtual
 end sub
 
-' Aceita o endereço com ou sem https://, com espaços, e até colado com o nome de um
-' arquivo no fim (catalogo.txt, destaques.txt, indice.txt...): o app guarda só a
-' pasta com "/" no fim. Links diretos .m3u / .m3u8 / get.php são preservados.
-function normalizarEndereco(url as String) as String
-    u = url.Trim()
-    if u = "" then return ""
-    if Left(LCase(u), 4) <> "http" then u = "https://" + u
-    lu = LCase(u)
-    if Instr(1, lu, ".m3u") > 0 or Instr(1, lu, "get.php") > 0 or Instr(1, lu, "type=m3u") > 0 then
-        return u
+sub onBotaoTeclado()
+    idx = m.botoes.itemSelected
+    if idx = 0 then
+        salvarEdicaoAtual(false)
+    else if idx = 1 then
+        salvarEdicaoAtual(true)
+    else
+        fecharEditorUrl()
     end if
-    corte = Instr(1, u, "#")
-    if corte > 0 then u = Left(u, corte - 1)
-    corte = Instr(1, u, "?")
-    if corte > 0 then u = Left(u, corte - 1)
-    ultimo = 0
-    for i = 1 to Len(u)
-        if Mid(u, i, 1) = "/" then ultimo = i
-    end for
-    if ultimo > 8 and Instr(1, Mid(u, ultimo + 1), ".") > 0 and Right(u, 1) <> "/" then u = Left(u, ultimo)
-    if Right(u, 1) <> "/" then u = u + "/"
-    if Right(LCase(u), 6) = "/roku/" then u = Left(u, Len(u) - 5)
-    return u
-end function
+end sub
 
-function formatBool(val as Boolean) as String
-    if val then return "Ligado"
-    return "Desligado"
-end function
-
-sub onSettingSelected()
-    idx = m.settingsList.itemSelected
-    m.idxAtual = idx
-    root = m.settingsList.content
-    if root <> invalid and idx >= 0 and idx < root.getChildCount() then
-        node = root.getChild(idx)
-        key = node.settingKey
-
-        if key = "minhasListas" then
-            m.top.minhasListasRequested = true
+sub onTextoRecebido()
+    t = m.top.textoRecebido
+    if t = invalid or t.Trim() = "" then return
+    if not m.painelTeclado.visible then
+        foco = m.settingsList.itemFocused
+        if foco = 4 then
+            abrirEditorUrl("urlCanais", "Endereço dos canais")
+        else if foco = 5 then
+            abrirEditorUrl("urlFilmes", "Endereço de filmes e séries")
+        else
             return
-        else if key = "urlCanais" then
-            abrirEditorEndereco("urlCanais", "Endereço dos canais")
-            return
-        else if key = "urlFilmes" then
-            abrirEditorEndereco("urlFilmes", "Endereço de filmes e séries")
-            return
-        else if key = "abrirEm" then
-            if m.prefs.abrirEm = "inicio" then
-                m.prefs.abrirEm = "canal"
-            else
-                m.prefs.abrirEm = "inicio"
-            end if
-        else if key = "zeroDelay" then
-            if m.prefs.zeroDelay = "off" then
-                m.prefs.zeroDelay = "equilibrado"
-            else if m.prefs.zeroDelay = "equilibrado" then
-                m.prefs.zeroDelay = "agressivo"
-            else
-                m.prefs.zeroDelay = "off"
-            end if
-        else if key = "audioInteligente" then
-            m.prefs.audioInteligente = not m.prefs.audioInteligente
-        else if key = "versaoAudio" then
-            if m.prefs.versaoAudio = "dub" then
-                m.prefs.versaoAudio = "leg"
-            else
-                m.prefs.versaoAudio = "dub"
-            end if
-        else if key = "pularAutomatico" then
-            m.prefs.pularAutomatico = not m.prefs.pularAutomatico
-        else if key = "proximoAutomatico" then
-            m.prefs.proximoAutomatico = not m.prefs.proximoAutomatico
-        else if key = "limparCache" then
-            reg = GetRegistry()
-            reg.Delete("vod_progress")
-            reg.Flush()
-            m.top.reloadRequested = true
         end if
-
-        SavePreferences(m.prefs)
-        populateSettings()
     end if
+    m.teclado.text = t.Trim()
+    if m.teclado.textEditBox <> invalid then
+        m.teclado.textEditBox.text = t.Trim()
+    end if
+    m.botoes.jumpToItem = 0
+    m.botoes.setFocus(true)
 end sub
 
 function onKeyEvent(key as String, press as Boolean) as Boolean
     if not press then return false
-
-    if not m.settingsList.isInFocusChain() then
-        if m.settingsList <> invalid then m.settingsList.setFocus(true)
+    if m.painelTeclado.visible then
+        if key = "back" then
+            fecharEditorUrl()
+            return true
+        else if key = "play" then
+            salvarEdicaoAtual(false)
+            return true
+        else if key = "down" then
+            if not m.botoes.hasFocus() then
+                m.botoes.jumpToItem = 0
+                m.botoes.setFocus(true)
+                return true
+            end if
+        else if key = "up" then
+            if m.botoes.hasFocus() then
+                m.teclado.setFocus(true)
+                return true
+            end if
+        end if
+        return false
     end if
-
-    if key = "up" and m.settingsList.itemFocused <= 0 then
+    if key = "up" or key = "left" then
         m.top.focusUpRequested = true
         return true
-    else if key = "left" then
-        return true
-    else if key = "back" then
-        return false ' bubbles to MainScene
     end if
-
     return false
 end function
 

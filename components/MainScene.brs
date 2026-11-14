@@ -45,21 +45,25 @@ end sub
 sub loadAllData()
     ' Dispara tarefas assíncronas e armazena referências para evitar garbage collection prematuro
     m.loaders = []
+    prefs = LoadPreferences()
 
     loader1 = CreateObject("roSGNode", "DataLoaderTask")
     loader1.requestType = "channels"
+    loader1.requestUrl = prefs.urlCanais
     loader1.observeField("responseChannels", "onChannelsLoaded")
     loader1.control = "run"
     m.loaders.Push(loader1)
 
     loader2 = CreateObject("roSGNode", "DataLoaderTask")
     loader2.requestType = "epg"
+    loader2.requestUrl = prefs.urlCanais
     loader2.observeField("responseEpg", "onEpgLoaded")
     loader2.control = "run"
     m.loaders.Push(loader2)
 
     loader3 = CreateObject("roSGNode", "DataLoaderTask")
     loader3.requestType = "destaques"
+    loader3.requestUrl = prefs.urlFilmes
     loader3.observeField("responseDestaques", "onDestaquesLoaded")
     loader3.observeField("responseVodItems", "onVodLoaded")
     loader3.control = "run"
@@ -67,12 +71,14 @@ sub loadAllData()
 
     loader5 = CreateObject("roSGNode", "DataLoaderTask")
     loader5.requestType = "events"
+    loader5.requestUrl = prefs.urlCanais
     loader5.observeField("responseEvents", "onEventsLoaded")
     loader5.control = "run"
     m.loaders.Push(loader5)
 
     loader6 = CreateObject("roSGNode", "DataLoaderTask")
     loader6.requestType = "radios"
+    loader6.requestUrl = prefs.urlCanais
     loader6.observeField("responseRadios", "onRadiosLoaded")
     loader6.control = "run"
     m.loaders.Push(loader6)
@@ -387,6 +393,7 @@ sub switchScreen(screenName as String, params = invalid as Dynamic)
     else if screenName = "minhas" then
         node = CreateObject("roSGNode", "MinhasListasScreen")
         node.observeField("listasMudaram", "onListasMudaram")
+        node.observeField("reloadRequested", "onSettingsReload")
         node.observeField("focusUpRequested", "onScreenFocusUp")
         m.currentScreenNode = node
     end if
@@ -552,7 +559,9 @@ sub onConnectCommand(evt as Object)
     else if tipo = "key" and cmd.code <> invalid then
         handleVirtualKey(cmd.code)
     else if tipo = "text" and cmd.value <> invalid then
-        if m.currentScreenName = "minhas" then m.currentScreenNode.textoRecebido = cmd.value
+        if (m.currentScreenName = "minhas" or m.currentScreenName = "settings") and m.currentScreenNode <> invalid then
+            m.currentScreenNode.textoRecebido = cmd.value
+        end if
     else if tipo = "fonte" or tipo = "sync" then
         avisarCelular()
     end if

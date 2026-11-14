@@ -4,10 +4,32 @@
 ' ====================================================================
 
 function GetRegistry() as Object
-    if m.registry = invalid then
-        m.registry = CreateObject("roRegistrySection", "saimo_tv")
+    return CreateObject("roRegistrySection", "saimo_tv")
+end function
+
+function NormalizarEnderecoSaimo(url as String) as String
+    u = url.Trim()
+    if u = "" then return ""
+    l = LCase(u)
+    if Left(l, 7) <> "http://" and Left(l, 8) <> "https://" then
+        u = "https://" + u
+        l = LCase(u)
     end if
-    return m.registry
+    if Instr(1, l, ".m3u") > 0 or Instr(1, l, "get.php") > 0 or Instr(1, l, "type=m3u") > 0 then
+        return u
+    end if
+    while Right(u, 1) = "/"
+        u = Left(u, Len(u) - 1)
+    end while
+    l = LCase(u)
+    sufixos = ["/catalogo.txt", "/destaques.txt", "/roku/indice.txt", "/indice.txt", "/eventos.txt"]
+    for each s in sufixos
+        if Right(l, Len(s)) = s then
+            u = Left(u, Len(u) - Len(s))
+            exit for
+        end if
+    end for
+    return u + "/"
 end function
 
 function GetDefaultPreferences() as Object

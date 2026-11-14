@@ -1,6 +1,7 @@
 ' ====================================================================
 ' Saimo TV - MinhasListasScreen (BrightScript)
-' Lista > ações da lista; "Adicionar lista" abre o teclado (link, depois nome).
+' Permite configurar Endereço dos canais, Endereço de filmes e séries
+' e gerenciar listas .m3u / Xtream.
 ' ====================================================================
 
 sub init()
@@ -14,7 +15,7 @@ sub init()
 
     m.lista.observeField("itemSelected", "onItem")
     m.botoes.observeField("itemSelected", "onBotao")
-    m.modo = "lista" ' lista | acoes | confirmar | link | usuario | senha | nome
+    m.modo = "lista" ' lista | acoes | confirmar | urlCanais | urlFilmes | link | usuario | senha | nome
     m.link = ""
     m.usuario = ""
     m.senha = ""
@@ -67,7 +68,23 @@ end function
 sub mostrarListas()
     m.modo = "lista"
     m.listas = LoadMinhasListas()
-    textos = ["Adicionar lista"]
+    prefs = LoadPreferences()
+
+    descCanais = "Não configurado · clique para definir"
+    if prefs.urlCanais <> invalid and prefs.urlCanais.Trim() <> "" then
+        descCanais = prefs.urlCanais
+    end if
+
+    descFilmes = "Não configurado · clique para definir"
+    if prefs.urlFilmes <> invalid and prefs.urlFilmes.Trim() <> "" then
+        descFilmes = prefs.urlFilmes
+    end if
+
+    textos = [
+        ["Endereço dos canais", descCanais],
+        ["Endereço de filmes e séries", descFilmes],
+        ["Adicionar lista M3U", "Adicionar lista externa .m3u ou servidor Xtream"]
+    ]
     for each l in m.listas
         linha = l.total.ToStr() + " canais  ·  " + haQuanto(l.atualizadaEm)
         if not l.ativa then linha = linha + "  ·  desativada"
@@ -84,9 +101,13 @@ sub onItem()
     i = m.lista.itemSelected
     if m.modo = "lista" then
         if i = 0 then
+            abrirCampo("urlCanais")
+        else if i = 1 then
+            abrirCampo("urlFilmes")
+        else if i = 2 then
             abrirCampo("link")
         else
-            m.atual = m.listas[i - 1]
+            m.atual = m.listas[i - 3]
             m.modo = "acoes"
             alternar = "Desativar"
             if not m.atual.ativa then alternar = "Ativar"
@@ -126,23 +147,39 @@ sub abrirCampo(modo as String)
     m.modo = modo
     m.aviso.text = ""
     m.teclado.text = ""
-    ' A senha aparece como pontinhos.
     if m.teclado.textEditBox <> invalid then m.teclado.textEditBox.secureMode = (modo = "senha")
     raiz = CreateObject("roSGNode", "ContentNode")
-    if modo = "link" then
+    if modo = "urlCanais" or modo = "urlFilmes" then
+        prefs = LoadPreferences()
+        atual = ""
+        if prefs[modo] <> invalid then atual = prefs[modo]
+        m.teclado.text = atual
+        if m.teclado.textEditBox <> invalid then m.teclado.textEditBox.text = atual
+        if modo = "urlCanais" then
+            m.tituloCampo.text = "Endereço dos canais (ex: canais-saimo.pages.dev)"
+        else
+            m.tituloCampo.text = "Endereço de filmes e séries (ex: filmes-saimo.pages.dev)"
+        end if
+        raiz.CreateChild("ContentNode").title = "Salvar"
+        raiz.CreateChild("ContentNode").title = "Apagar endereço"
+        raiz.CreateChild("ContentNode").title = "Cancelar"
+    else if modo = "link" then
         m.tituloCampo.text = "Link da lista (M3U) ou servidor"
         raiz.CreateChild("ContentNode").title = "Continuar"
+        raiz.CreateChild("ContentNode").title = "Cancelar"
     else if modo = "usuario" then
         m.tituloCampo.text = "Usuário (opcional): deixe em branco se a lista é só um link"
         raiz.CreateChild("ContentNode").title = "Continuar"
+        raiz.CreateChild("ContentNode").title = "Cancelar"
     else if modo = "senha" then
         m.tituloCampo.text = "Senha"
         raiz.CreateChild("ContentNode").title = "Continuar"
+        raiz.CreateChild("ContentNode").title = "Cancelar"
     else
         m.tituloCampo.text = "Nome (opcional)"
         raiz.CreateChild("ContentNode").title = "Adicionar lista"
+        raiz.CreateChild("ContentNode").title = "Cancelar"
     end if
-    raiz.CreateChild("ContentNode").title = "Cancelar"
     m.botoes.content = raiz
     m.botoes.jumpToItem = 0
     m.painelLista.visible = false
@@ -150,21 +187,59 @@ sub abrirCampo(modo as String)
     m.teclado.setFocus(true)
 end sub
 
+function lerTextoTeclado() as String
+    t = ""
+    if m.teclado <> invalid and m.teclado.text <> invalid then
+        t = m.teclado.text
+    end if
+    if t = "" and m.teclado <> invalid and m.teclado.textEditBox <> invalid and m.teclado.textEditBox.text <> invalid then
+        t = m.teclado.textEditBox.text
+    end if
+    return t.Trim()
+end function
+
+sub salvarEnderecoCatalogo(chave as String, limpar as Boolean)
+    prefs = LoadPreferences()
+    if limpar then
+        prefs[chave] = ""
+        m.aviso.text = "Endereço removido."
+    else
+        novo = NormalizarEnderecoSaimo(lerTextoTeclado())
+        prefs[chave] = novo
+        m.aviso.text = "Endereço salvo! Carregando catálogo..."
+    end if
+    SavePreferences(prefs)
+    mostrarListas()
+    m.top.reloadRequested = true
+end sub
+
 sub onBotao()
     if m.ocupado then return
-    if m.botoes.itemSelected = 1 then
+    idx = m.botoes.itemSelected
+    if m.modo = "urlCanais" or m.modo = "urlFilmes" then
+        if idx = 0 then
+            salvarEnderecoCatalogo(m.modo, false)
+        else if idx = 1 then
+            salvarEnderecoCatalogo(m.modo, true)
+        else
+            mostrarListas()
+        end if
+        return
+    end if
+
+    if idx = 1 then
         mostrarListas()
     else if m.modo = "link" then
-        m.link = m.teclado.text.Trim()
+        m.link = lerTextoTeclado()
         m.usuario = ""
         m.senha = ""
         abrirCampo("usuario")
     else if m.modo = "usuario" then
-        m.usuario = m.teclado.text.Trim()
+        m.usuario = lerTextoTeclado()
         ' Sem usuário: a lista é só o link, e a senha não se aplica.
         if m.usuario = "" then abrirCampo("nome") else abrirCampo("senha")
     else if m.modo = "senha" then
-        m.senha = m.teclado.text
+        m.senha = lerTextoTeclado()
         if m.senha = "" then
             abrirCampo("senha")
             m.aviso.text = "Usuário e senha andam juntos: preencha a senha ou volte e deixe o usuário em branco"
@@ -172,7 +247,7 @@ sub onBotao()
             abrirCampo("nome")
         end if
     else
-        m.nome = m.teclado.text.Trim()
+        m.nome = lerTextoTeclado()
         f = xtLinkDoFormulario(m.link, m.usuario, m.senha)
         if f.erro <> invalid then
             abrirCampo("link")
@@ -187,8 +262,22 @@ end sub
 
 ' Link enviado pelo celular (Saimo Connect) cai direto no campo.
 sub onTextoRecebido()
-    if m.modo = "link" or m.modo = "usuario" or m.modo = "senha" or m.modo = "nome" then
-        m.teclado.text = m.top.textoRecebido
+    t = m.top.textoRecebido
+    if t = invalid or t.Trim() = "" then return
+    if m.modo = "lista" then
+        foco = m.lista.itemFocused
+        if foco = 0 then
+            abrirCampo("urlCanais")
+        else if foco = 1 then
+            abrirCampo("urlFilmes")
+        else
+            abrirCampo("link")
+        end if
+    end if
+    if m.modo = "urlCanais" or m.modo = "urlFilmes" or m.modo = "link" or m.modo = "usuario" or m.modo = "senha" or m.modo = "nome" then
+        m.teclado.text = t.Trim()
+        if m.teclado.textEditBox <> invalid then m.teclado.textEditBox.text = t.Trim()
+        m.botoes.jumpToItem = 0
         m.botoes.setFocus(true)
     end if
 end sub
@@ -209,6 +298,12 @@ end sub
 sub onPronto()
     m.ocupado = false
     t = m.tarefaAtiva
+    if t.erro = "CATALOGO_SAIMO" then
+        m.aviso.text = "Catálogo salvo! Carregando..."
+        mostrarListas()
+        m.top.reloadRequested = true
+        return
+    end if
     m.aviso.text = t.erro
     if t.listas <> invalid then SaveMinhasListas(t.listas)
     if t.erro = "" then m.top.listasMudaram = { canais: t.canais }
@@ -225,7 +320,11 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
         return false
     end if
     if m.painelTeclado.visible then
-        if key = "down" and m.teclado.isInFocusChain() then
+        if key = "play" and (m.modo = "urlCanais" or m.modo = "urlFilmes") then
+            salvarEnderecoCatalogo(m.modo, false)
+            return true
+        else if key = "down" and m.teclado.isInFocusChain() then
+            m.botoes.jumpToItem = 0
             m.botoes.setFocus(true)
             return true
         else if key = "up" and m.botoes.isInFocusChain() then

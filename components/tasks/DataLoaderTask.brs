@@ -10,8 +10,15 @@ end sub
 sub executeRequest()
     reqType = m.top.requestType
     prefs = LoadPreferences()
-    urlCanais = prefs.urlCanais
-    urlFilmes = prefs.urlFilmes
+    urlCanais = NormalizarEnderecoSaimo(prefs.urlCanais)
+    urlFilmes = NormalizarEnderecoSaimo(prefs.urlFilmes)
+    if m.top.requestUrl <> invalid and m.top.requestUrl.Trim() <> "" then
+        if reqType = "destaques" then
+            urlFilmes = NormalizarEnderecoSaimo(m.top.requestUrl)
+        else
+            urlCanais = NormalizarEnderecoSaimo(m.top.requestUrl)
+        end if
+    end if
 
     ' Sem endereço (o app não traz nenhum): nada é pedido. O catálogo sai vazio
     ' e a tela principal junta só as listas da própria pessoa.
@@ -39,23 +46,14 @@ end sub
 
 ' ----- Requisição HTTP utilitária -----
 function HttpGet(url as String) as String
-    if url = "" then return ""
-    porta = CreateObject("roMessagePort")
+    if url = "" or url = invalid then return ""
     ut = CreateObject("roUrlTransfer")
-    ut.SetMessagePort(porta)
     ut.SetUrl(url)
     ut.SetCertificatesFile("common:/certs/ca-bundle.crt")
     ut.InitClientCertificates()
-    ut.EnableEncodings(true)
-    ut.AddHeader("User-Agent", "SaimoTV/3.0.3 (RokuOS)")
-    if not ut.AsyncGetToString() then return ""
-    msg = Wait(30000, porta)
-    if msg = invalid then
-        ut.AsyncCancel()
-        return ""
-    end if
-    if msg.GetResponseCode() <> 200 then return ""
-    return msg.GetString()
+    res = ut.GetToString()
+    if res = invalid then return ""
+    return res
 end function
 
 function ehUrlM3uDireta(u as String) as Boolean

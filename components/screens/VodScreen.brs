@@ -17,6 +17,7 @@ sub init()
     m.cores = ["#4FE3D0", "#7AA2FF", "#FFB454", "#FF7EB6"]
     m.icones = ["m_movie", "m_live_tv", "m_star", "m_more"]
     m.chaves = ["filmes", "series", "animes", "doramas"]
+    m.grupos = [[], [], [], []]
     m.indice = invalid
     m.linhas = {}
     m.geracao = 0
@@ -68,6 +69,13 @@ end sub
 
 sub onItemsChange()
     separar()
+    if m.indice = invalid or m.indice.letras = invalid or m.indice.letras.Count() = 0 then
+        if m.tarefaIndice = invalid then
+            m.tarefaIndice = CreateObject("roSGNode", "AcervoTask")
+            m.tarefaIndice.observeField("indice", "onIndice")
+            m.tarefaIndice.control = "RUN"
+        end if
+    end if
     montar()
 end sub
 
@@ -196,7 +204,7 @@ sub carregarPerto(r as Integer)
             info.estado = ""
         end if
     end for
-    for i = r to r + 2
+    for i = r to r + 4
         info = m.linhas[i.ToStr()]
         if info <> invalid and info.estado = "" then
             info.estado = "baixando"
