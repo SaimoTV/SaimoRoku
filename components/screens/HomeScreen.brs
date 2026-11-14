@@ -139,16 +139,20 @@ sub montarFileiras()
     AjustarFileiras(m.contentRowList, rootNode)
     m.contentRowList.content = rootNode
 
-    ' Sem nada para mostrar e sem nenhuma lista: o primeiro passo é adicionar uma.
-    semListas = (rootNode.GetChildCount() = 0) and (LoadMinhasListas().Count() = 0) and (LoadPreferences().urlCanais = "") and (LoadPreferences().urlFilmes = "")
+    ' Sem nada para mostrar e sem nenhuma lista nem addons ativos: mostra onboarding.
+    prefs = LoadPreferences()
+    semListas = (rootNode.GetChildCount() = 0) and (LoadMinhasListas().Count() = 0) and (prefs.urlCanais = "") and (prefs.urlFilmes = "") and (GetEnabledAddons().Count() = 0)
     m.boasVindas.visible = semListas
     m.botaoLista.visible = semListas
     m.contentRowList.visible = not semListas
     if semListas then
         itens = CreateObject("roSGNode", "ContentNode")
         itens.CreateChild("ContentNode").title = "Adicionar lista (M3U ou usuário e senha)"
+        itens.CreateChild("ContentNode").title = "Instalar Addons Stremio / Debrid (QR Code)"
         m.botaoLista.content = itens
         if m.top.isInFocusChain() then m.botaoLista.setFocus(true)
+    else if m.top.isInFocusChain() and m.botaoLista.isInFocusChain() then
+        m.contentRowList.setFocus(true)
     end if
 
 end sub
@@ -217,7 +221,12 @@ sub onRowItemSelected()
 end sub
 
 sub onBotaoLista()
-    m.top.minhasListasRequested = true
+    idx = m.botaoLista.itemSelected
+    if idx = 1 then
+        m.top.addonsRequested = true
+    else
+        m.top.minhasListasRequested = true
+    end if
 end sub
 
 function onKeyEvent(key as String, press as Boolean) as Boolean

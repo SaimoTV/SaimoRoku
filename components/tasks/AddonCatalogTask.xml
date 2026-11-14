@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="AddonCatalogTask" extends="Task">
+  <interface>
+    <field id="mode" type="string" value="discovery" />
+    <field id="includeTmdbDiscovery" type="boolean" value="true" />
+    <field id="searchQuery" type="string" />
+
+    <field id="responseRails" type="array" alwaysNotify="true" />
+    <field id="responseVodItems" type="array" alwaysNotify="true" />
+    <field id="searchResults" type="node" alwaysNotify="true" />
+  </interface>
+
+  <script type="text/brightscript" uri="pkg:/source/utils/Addons.brs" />
+  <script type="text/brightscript" uri="pkg:/source/utils/IdResolver.brs" />
+  <script type="text/brightscript" uri="pkg:/components/tasks/AddonCatalogTask.brs" />
+</component>

@@ -36,8 +36,10 @@
       wrap="false"
     ><Font role="rowLabelFont" uri="pkg:/fonts/Roboto-Medium.ttf" size="36" /></RowList>
     </Group>
+    <Timer id="addonSearchTimer" duration="0.45" repeat="false" />
   </children>
 
   <script type="text/brightscript" uri="pkg:/source/utils/Rows.brs" />
+  <script type="text/brightscript" uri="pkg:/source/utils/Addons.brs" />
   <script type="text/brightscript" uri="pkg:/components/screens/SearchScreen.brs" />
 </component>

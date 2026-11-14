@@ -1,7 +1,8 @@
 ' ====================================================================
 ' Saimo TV - StreamResolverTask (BrightScript)
-' Resolução ultra-rápida de URLs de streaming para filmes e séries
-' Suporte a múltiplas fontes, proxy automático para .txt e fallbacks
+' Resolução de URLs para filmes e séries: preserva 100% das listas
+' Saimo locais e mescla streams + legendas de Addons Stremio ativos
+' (com bridge TMDB <-> IMDb, classificação/ranking Roku e bingeGroup).
 ' ====================================================================
 
 sub init()
@@ -13,49 +14,124 @@ sub resolveStream()
     if item = invalid then return
 
     title = ""
-    if item.title <> invalid then title = item.title
+    if item.title <> invalid then title = item.title.ToStr().Trim()
     if title = "" then return
 
     isSeries = false
-    if item.isSeries <> invalid then isSeries = item.isSeries
+    if item.isSeries <> invalid then isSeries = (item.isSeries = true)
 
     season = 1
-    if item.season <> invalid and item.season > 0 then season = item.season
+    if item.season <> invalid and Val(item.season.ToStr()) > 0 then season = Int(Val(item.season.ToStr()))
 
     episode = 1
-    if item.episode <> invalid and item.episode > 0 then episode = item.episode
+    if item.episode <> invalid and Val(item.episode.ToStr()) > 0 then episode = Int(Val(item.episode.ToStr()))
 
     resumePos = 0
-    if item.resumePos <> invalid then resumePos = item.resumePos
+    if item.resumePos <> invalid then resumePos = Int(Val(item.resumePos.ToStr()))
 
-    ' Determina a gaveta da letra
+    preferredBinge = ""
+    if item.preferredBingeGroup <> invalid then preferredBinge = item.preferredBingeGroup.ToStr().Trim()
+
     letter = getLetterGaveta(title, item)
-
     prefs = LoadPreferences()
     versaoPref = "dub"
     if prefs <> invalid and prefs.versaoAudio <> invalid and prefs.versaoAudio <> "" then
         versaoPref = LCase(prefs.versaoAudio)
     end if
+    hasLocalVod = (prefs <> invalid and prefs.urlFilmes <> invalid and prefs.urlFilmes.Trim() <> "")
 
-    candidatesList = []
+    localUrls = []
+    if hasLocalVod then
+        if isSeries then
+            localUrls = resolveSeriesStream(title, letter, season, episode, versaoPref)
+        else
+            localUrls = resolveMovieStream(title, letter, versaoPref)
+        end if
 
-    if isSeries then
-        candidatesList = resolveSeriesStream(title, letter, season, episode, versaoPref)
-    else
-        candidatesList = resolveMovieStream(title, letter, versaoPref)
-    end if
-
-    ' Se não encontrou nenhuma fonte no catálogo, consulta api/stream por id TMDB
-    if candidatesList.Count() = 0 and item <> invalid and item.id <> invalid and item.id.ToStr() <> "" and item.id.ToStr() <> "0" then
-        tipoReq = "movie"
-        if isSeries then tipoReq = "series"
-        apiUrl = "https://saimo-tv.pages.dev/api/stream?tipo=" + tipoReq + "&id=" + item.id.ToStr() + "&versao=" + versaoPref
-        if isSeries then apiUrl = apiUrl + "&s=" + season.ToStr() + "&e=" + episode.ToStr()
-        resolvedUrl = buildCandidateUrl(apiUrl)
-        if resolvedUrl <> "" then
-            candidatesList.Push(resolvedUrl)
+        if localUrls.Count() = 0 and item.id <> invalid and item.id.ToStr() <> "" and item.id.ToStr() <> "0" then
+            tipoReq = "movie"
+            if isSeries then tipoReq = "series"
+            apiUrl = "https://saimo-tv.pages.dev/api/stream?tipo=" + tipoReq + "&id=" + item.id.ToStr() + "&versao=" + versaoPref
+            if isSeries then apiUrl = apiUrl + "&s=" + season.ToStr() + "&e=" + episode.ToStr()
+            resolvedUrl = buildCandidateUrl(apiUrl)
+            if resolvedUrl <> "" then localUrls.Push(resolvedUrl)
         end if
     end if
+
+    ' Consulta Addons Stremio ativos (streams + legendas)
+    enabledAddons = GetEnabledAddons()
+    addonStreams = []
+    addonSubtitles = []
+    resolvedIds = invalid
+
+    if enabledAddons.Count() > 0 then
+        resolvedIds = ResolveIdsForItem(item)
+        if item.rawVideoId <> invalid and item.rawVideoId.ToStr().Trim() <> "" then
+            resolvedIds.rawVideoId = item.rawVideoId.ToStr().Trim()
+        end if
+
+        mediaType = "movie"
+        if isSeries then mediaType = "series"
+
+        streamData = fetchAddonStreamsParallel(enabledAddons, mediaType, resolvedIds, season, episode, preferredBinge)
+        addonStreams = streamData.streams
+        addonSubtitles = fetchAddonSubtitlesParallel(enabledAddons, mediaType, resolvedIds, season, episode)
+    end if
+
+    ' Converte fontes locais em objetos compatíveis para o mesmo pipeline
+    localStreamObjs = []
+    for i = 0 to localUrls.Count() - 1
+        u = localUrls[i]
+        if u <> "" then
+            fmt = DetectStreamFormatFromHint(u, "")
+            san = SanitizeHttpHeaders(invalid)
+            localStreamObjs.Push({
+                sourceKind: "local",
+                addonId: "saimo_local",
+                addonName: "Minha Lista VOD",
+                title: "Fonte Local " + (i + 1).ToStr() + " [" + UCase(fmt) + "]",
+                detail: "",
+                url: u,
+                infoHash: "",
+                isTorrent: false,
+                streamFormat: fmt,
+                notWebReady: false,
+                bingeGroup: "",
+                proxyHeaders: san.headersAA,
+                httpHeadersArray: san.headersArray,
+                subtitles: [],
+                score: 1100
+            })
+        end if
+    end for
+
+    rankedAddons = RankRokuStreams(addonStreams, HasAnyDebridConfigured(), preferredBinge)
+
+    allStreams = []
+    ' Se há bingeGroup preferido e algum addon casou com ele, ele vai no topo
+    if preferredBinge <> "" then
+        for each s in rankedAddons
+            if s.bingeGroup <> invalid and s.bingeGroup = preferredBinge then
+                allStreams.Push(s)
+            end if
+        end for
+        allStreams.Append(localStreamObjs)
+        for each s in rankedAddons
+            if s.bingeGroup = invalid or s.bingeGroup <> preferredBinge then
+                allStreams.Push(s)
+            end if
+        end for
+    else
+        allStreams.Append(localStreamObjs)
+        allStreams.Append(rankedAddons)
+    end if
+
+    candidatesList = []
+    for each s in allStreams
+        if s.url <> invalid and s.url <> "" then
+            candidatesList.Push(s.url)
+        end if
+    end for
 
     streamUrl = ""
     if candidatesList.Count() > 0 then
@@ -66,11 +142,17 @@ sub resolveStream()
         title: title,
         url: streamUrl,
         candidateUrls: candidatesList,
+        candidateStreams: allStreams,
+        subtitles: addonSubtitles,
         isSeries: isSeries,
         season: season,
         episode: episode,
         resumePos: resumePos
     }
+    if resolvedIds <> invalid then
+        resolved.tmdbId = resolvedIds.tmdbId
+        resolved.imdbId = resolvedIds.imdbId
+    end if
 
     if isSeries and item.episodeTitle <> invalid then
         resolved.episodeTitle = item.episodeTitle
@@ -80,6 +162,142 @@ sub resolveStream()
 
     m.top.resolvedItem = resolved
 end sub
+
+function fetchAddonStreamsParallel(addons as Object, mediaType as String, ids as Object, season as Integer, episode as Integer, preferredBinge as String) as Object
+    porta = CreateObject("roMessagePort")
+    emVoo = {}
+    resultadosPorAddon = {}
+
+    for idx = 0 to addons.Count() - 1
+        addon = addons[idx]
+        qId = AddonResolveQueryId(addon, "stream", mediaType, ids, season, episode)
+        if qId = "" and ids.rawVideoId <> invalid and ids.rawVideoId <> "" then
+            if AddonSupportsResource(addon, "stream", mediaType, ids.rawVideoId) then
+                qId = ids.rawVideoId
+            end if
+        end if
+        if qId <> "" then
+            url = BuildAddonRouteUrl(addon, "stream/" + mediaType + "/" + EncodeUrlPathSegment(qId) + ".json")
+            if url <> "" then
+                ut = CreateObject("roUrlTransfer")
+                ut.SetMessagePort(porta)
+                ut.SetUrl(url)
+                ut.SetCertificatesFile("common:/certs/ca-bundle.crt")
+                ut.InitClientCertificates()
+                ut.RetainBodyOnError(true)
+                ut.AddHeader("User-Agent", "SaimoTV/3.0.5 (RokuOS)")
+                if ut.AsyncGetToString() then
+                    emVoo[ut.GetIdentity().ToStr()] = { ut: ut, addon: addon, idx: idx }
+                end if
+            end if
+        end if
+    end for
+
+    timer = CreateObject("roTimespan")
+    while emVoo.Count() > 0 and timer.TotalMilliseconds() < 8000
+        restante = 8000 - timer.TotalMilliseconds()
+        if restante <= 0 then exit while
+        msg = Wait(restante, porta)
+        if msg = invalid then exit while
+        if Type(msg) = "roUrlEvent" then
+            sid = msg.GetSourceIdentity().ToStr()
+            reqObj = emVoo[sid]
+            if reqObj <> invalid then
+                emVoo.Delete(sid)
+                if msg.GetResponseCode() >= 200 and msg.GetResponseCode() < 300 then
+                    parsed = ParseJson(msg.GetString())
+                    if parsed <> invalid and parsed.streams <> invalid and Type(parsed.streams) = "roArray" then
+                        list = []
+                        for each rawStream in parsed.streams
+                            cs = ClassifyRokuStream(reqObj.addon, rawStream, preferredBinge)
+                            if cs <> invalid then list.Push(cs)
+                        end for
+                        resultadosPorAddon[reqObj.idx.ToStr()] = list
+                    end if
+                end if
+            end if
+        end if
+    end while
+
+    for each sid in emVoo
+        emVoo[sid].ut.AsyncCancel()
+    end for
+
+    merged = []
+    for idx = 0 to addons.Count() - 1
+        part = resultadosPorAddon[idx.ToStr()]
+        if part <> invalid then merged.Append(part)
+    end for
+    return { streams: merged }
+end function
+
+function fetchAddonSubtitlesParallel(addons as Object, mediaType as String, ids as Object, season as Integer, episode as Integer) as Object
+    porta = CreateObject("roMessagePort")
+    emVoo = {}
+
+    for idx = 0 to addons.Count() - 1
+        addon = addons[idx]
+        qId = AddonResolveQueryId(addon, "subtitles", mediaType, ids, season, episode)
+        if qId <> "" then
+            url = BuildAddonRouteUrl(addon, "subtitles/" + mediaType + "/" + EncodeUrlPathSegment(qId) + ".json")
+            if url <> "" then
+                ut = CreateObject("roUrlTransfer")
+                ut.SetMessagePort(porta)
+                ut.SetUrl(url)
+                ut.SetCertificatesFile("common:/certs/ca-bundle.crt")
+                ut.InitClientCertificates()
+                ut.RetainBodyOnError(true)
+                ut.AddHeader("User-Agent", "SaimoTV/3.0.5 (RokuOS)")
+                if ut.AsyncGetToString() then
+                    emVoo[ut.GetIdentity().ToStr()] = { ut: ut, addon: addon }
+                end if
+            end if
+        end if
+    end for
+
+    subs = []
+    seenUrls = {}
+    timer = CreateObject("roTimespan")
+    while emVoo.Count() > 0 and timer.TotalMilliseconds() < 5500
+        restante = 5500 - timer.TotalMilliseconds()
+        if restante <= 0 then exit while
+        msg = Wait(restante, porta)
+        if msg = invalid then exit while
+        if Type(msg) = "roUrlEvent" then
+            sid = msg.GetSourceIdentity().ToStr()
+            reqObj = emVoo[sid]
+            if reqObj <> invalid then
+                emVoo.Delete(sid)
+                if msg.GetResponseCode() >= 200 and msg.GetResponseCode() < 300 then
+                    parsed = ParseJson(msg.GetString())
+                    if parsed <> invalid and parsed.subtitles <> invalid and Type(parsed.subtitles) = "roArray" then
+                        for each rawSub in parsed.subtitles
+                            normSub = NormalizeSubtitleEntry(rawSub, reqObj.addon.name)
+                            if normSub <> invalid and not seenUrls.DoesExist(normSub.TrackName) then
+                                seenUrls[normSub.TrackName] = true
+                                subs.Push(normSub)
+                            end if
+                        end for
+                    end if
+                end if
+            end if
+        end if
+    end while
+
+    for each sid in emVoo
+        emVoo[sid].ut.AsyncCancel()
+    end for
+
+    subs.SortBy("priority", "r")
+    if subs.Count() > 25 then
+        trimmed = []
+        for i = 0 to 24
+            trimmed.Push(subs[i])
+        end for
+        return trimmed
+    end if
+    return subs
+end function
 
 function getLetterGaveta(title as String, item as Object) as String
     if item <> invalid and item.letter <> invalid and item.letter <> "" then
@@ -105,7 +323,8 @@ function getIndiceBases() as Object
     ut = CreateObject("roUrlTransfer")
     ut.SetUrl(url)
     ut.SetCertificatesFile("common:/certs/ca-bundle.crt")
-    ut.AddHeader("User-Agent", "SaimoTV/2.6.4 (RokuOS)")
+    ut.InitClientCertificates()
+    ut.AddHeader("User-Agent", "SaimoTV/3.0.5 (RokuOS)")
     ut.RetainBodyOnError(true)
     text = ut.GetToString()
 
@@ -200,7 +419,8 @@ function resolveMovieStream(title as String, letter as String, versaoPref as Str
     ut = CreateObject("roUrlTransfer")
     ut.SetUrl(url)
     ut.SetCertificatesFile("common:/certs/ca-bundle.crt")
-    ut.AddHeader("User-Agent", "SaimoTV/3.0.3 (RokuOS)")
+    ut.InitClientCertificates()
+    ut.AddHeader("User-Agent", "SaimoTV/3.0.5 (RokuOS)")
     ut.RetainBodyOnError(true)
     text = ut.GetToString()
     if text = "" then return results
@@ -296,7 +516,8 @@ function resolveSeriesStream(title as String, letter as String, season as Intege
     ut = CreateObject("roUrlTransfer")
     ut.SetUrl(url)
     ut.SetCertificatesFile("common:/certs/ca-bundle.crt")
-    ut.AddHeader("User-Agent", "SaimoTV/3.0.3 (RokuOS)")
+    ut.InitClientCertificates()
+    ut.AddHeader("User-Agent", "SaimoTV/3.0.5 (RokuOS)")
     ut.RetainBodyOnError(true)
     text = ut.GetToString()
 
@@ -346,7 +567,8 @@ function buildCandidateUrl(cand as String) as String
         utJson = CreateObject("roUrlTransfer")
         utJson.SetUrl(jsonUrl)
         utJson.SetCertificatesFile("common:/certs/ca-bundle.crt")
-        utJson.AddHeader("User-Agent", "SaimoTV/3.0.3 (RokuOS)")
+        utJson.InitClientCertificates()
+        utJson.AddHeader("User-Agent", "SaimoTV/3.0.5 (RokuOS)")
         utJson.RetainBodyOnError(true)
         respText = utJson.GetToString()
         if respText <> "" then
@@ -402,7 +624,8 @@ function findInRedeflix(url as String, cleanTitle as String, season as Integer, 
     ut = CreateObject("roUrlTransfer")
     ut.SetUrl(url)
     ut.SetCertificatesFile("common:/certs/ca-bundle.crt")
-    ut.AddHeader("User-Agent", "SaimoTV/3.0.3 (RokuOS)")
+    ut.InitClientCertificates()
+    ut.AddHeader("User-Agent", "SaimoTV/3.0.5 (RokuOS)")
     ut.RetainBodyOnError(true)
     text = ut.GetToString()
     if text = "" then return []

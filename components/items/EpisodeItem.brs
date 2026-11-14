@@ -27,7 +27,8 @@ sub onItemContentChange()
 end sub
 
 sub onFocusChange()
-    if m.top.rowFocusPercent > 0.5 then
+    foc = (m.top.focusPercent > 0.5 and m.top.rowListHasFocus)
+    if foc then
         m.focusBorder.visible = true
         m.title.color = "#4FE3D0"
     else

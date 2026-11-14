@@ -37,6 +37,7 @@ sub init()
     m.sonoTimer.observeField("fire", "onSono")
     m.channelDrawer.observeField("menuRequested", "onDrawerMenu")
     m.pinModal.observeField("isUnlocked", "onPinUnlocked")
+    m.pinModal.observeField("isOpen", "onPinOpenChange")
     m.top.observeField("focusedChild", "onFocusedChildChange")
 
     m.favoriteToast = m.top.findNode("favoriteToast")
@@ -59,10 +60,18 @@ sub init()
     m.top.appendChild(m.numberTimer)
 end sub
 
+sub onPinOpenChange()
+    if not m.pinModal.isOpen and not m.channelDrawer.isOpen and not m.painelFontes.aberto then
+        m.ancora.setFocus(true)
+    end if
+end sub
+
 sub onFocusedChildChange()
-    if m.top.isInFocusChain() and not m.painelFontes.aberto then
+    if m.top.isInFocusChain() and not m.painelFontes.aberto and not m.pinModal.isOpen then
         if m.channelDrawer.isOpen then
             m.channelDrawer.setFocus(true)
+        else
+            m.ancora.setFocus(true)
         end if
     end if
 end sub
@@ -92,9 +101,14 @@ sub zapear(passo as Integer)
     if m.alvoZap = invalid then m.alvoZap = m.top.currentChannelIndex
     m.alvoZap = (m.alvoZap + passo + total) mod total
     ch = m.canais[m.alvoZap]
-    m.zapHud.channelNumber = ch.number.ToStr()
+    if ch = invalid then return
+    if ch.number <> invalid then
+        m.zapHud.channelNumber = ch.number.ToStr()
+    else
+        m.zapHud.channelNumber = (m.alvoZap + 1).ToStr()
+    end if
     m.zapHud.channelName = ch.name
-    m.zapHud.channelLogo = ch.logo
+    if ch.logo <> invalid then m.zapHud.channelLogo = ch.logo
     if ch.programa <> invalid and ch.programa <> "" then
         m.zapHud.programTitle = ch.programa
     else
@@ -186,7 +200,10 @@ end sub
 sub onHold()
     m.holdUsado = true
     channels = m.canais
-    if channels <> invalid and m.top.currentChannelIndex < channels.Count() then abrirMenu(channels[m.top.currentChannelIndex])
+    if channels <> invalid and m.top.currentChannelIndex >= 0 and m.top.currentChannelIndex < channels.Count() then
+        ch = channels[m.top.currentChannelIndex]
+        if ch <> invalid then abrirMenu(ch)
+    end if
 end sub
 
 sub onSono()
@@ -334,18 +351,15 @@ sub onArvore()
     if m.encerrado = true then return
     arvore = m.top.arvore
     if arvore = invalid then return
-    total = 0
-    for i = 0 to arvore.getChildCount() - 1
-        total = total + arvore.getChild(i).getChildCount()
-    end for
-    nos = CreateObject("roArray", total, true)
+    nos = []
     for i = 0 to arvore.getChildCount() - 1
         secao = arvore.getChild(i)
         for j = 0 to secao.getChildCount() - 1
             c = secao.getChild(j)
-            nos[c.number - 1] = c
+            if c <> invalid then nos.Push(c)
         end for
     end for
+    nos.SortBy("number")
     m.canais = nos
     m.channelDrawer.selectedIndex = m.top.currentChannelIndex
     m.channelDrawer.arvore = arvore
@@ -393,6 +407,7 @@ sub playChannel(index as Integer)
     end if
 
     ch = channels[index]
+    if ch = invalid then return
 
     ' Verifica se é canal adulto / protegido
     if ch.category <> invalid and (ch.category = "Adultos" or ch.category = "Adulto") then
@@ -401,6 +416,7 @@ sub playChannel(index as Integer)
             m.trocandoStream = true
             m.liveVideo.control = "pause"
             m.liveVideo.control = "stop"
+            m.liveVideo.content = invalid
             m.trocandoStream = false
             return
         end if
@@ -410,6 +426,7 @@ sub playChannel(index as Integer)
     m.ultimoCanal = ch.name
     m.currentVariantIndex = 0
     m.tryingProxy = false
+    m.vigiaTimer.control = "stop"
     updateHUDInfo()
     playCurrentVariant()
 end sub
@@ -419,22 +436,37 @@ sub playCurrentVariant()
     channels = m.canais
     if channels = invalid or m.top.currentChannelIndex >= channels.Count() then return
     ch = channels[m.top.currentChannelIndex]
-    if ch.variants = invalid or ch.variants.Count() = 0 then return
+    if ch = invalid or ch.variants = invalid or ch.variants.Count() = 0 then
+        m.bufferingGroup.visible = false
+        if ch <> invalid then m.zapHud.channelName = ch.name + " (Sem sinal)"
+        m.vigiaTimer.control = "stop"
+        m.liveVideo.control = "stop"
+        m.liveVideo.content = invalid
+        m.ancora.setFocus(true)
+        return
+    end if
 
     if m.currentVariantIndex >= ch.variants.Count() then
         ' Todas as fontes foram esgotadas
         m.bufferingGroup.visible = false
         m.zapHud.channelName = ch.name + " (Sem sinal)"
+        m.vigiaTimer.control = "stop"
+        m.liveVideo.control = "stop"
+        m.liveVideo.content = invalid
+        m.ancora.setFocus(true)
         return
     end if
 
     v = ch.variants[m.currentVariantIndex]
-    rawUrl = v.url
-    if rawUrl = invalid or rawUrl = "" then
+    if v = invalid or v.url = invalid then
         tryNextVariant()
         return
     end if
-    rawUrl = rawUrl.Trim()
+    rawUrl = v.url.Trim()
+    if rawUrl = "" then
+        tryNextVariant()
+        return
+    end if
 
     playUrl = rawUrl
     hasReferer = (v.referer <> invalid and v.referer <> "")
@@ -487,6 +519,7 @@ sub playCurrentVariant()
     m.ultimoAvanco = CreateObject("roDateTime").AsSeconds()
     m.bufferingGroup.visible = true
     m.liveVideo.control = "stop"
+    m.liveVideo.content = invalid
     m.liveVideo.mute = false
     m.liveVideo.content = content
     m.liveVideo.control = "play"
@@ -495,12 +528,27 @@ sub playCurrentVariant()
     ' Fonte que não abre nem dá erro não pode prender o canal.
     m.vigiaTimer.control = "stop"
     m.vigiaTimer.control = "start"
+    m.ancora.setFocus(true)
 end sub
 
 sub onVigia()
     if m.encerrado = true or m.liveVideo = invalid then return
+    channels = m.canais
+    if channels = invalid or m.top.currentChannelIndex >= channels.Count() then return
+    ch = channels[m.top.currentChannelIndex]
+    if ch = invalid or ch.variants = invalid then return
+
     if m.liveVideo.state <> "playing" then
-        tryNextVariant()
+        if m.currentVariantIndex < ch.variants.Count() then
+            tryNextVariant()
+        else
+            m.bufferingGroup.visible = false
+            m.zapHud.channelName = ch.name + " (Sem sinal)"
+            m.vigiaTimer.control = "stop"
+            m.liveVideo.control = "stop"
+            m.liveVideo.content = invalid
+            m.ancora.setFocus(true)
+        end if
     end if
 end sub
 
@@ -517,12 +565,17 @@ sub updateHUDInfo()
     channels = m.canais
     if channels = invalid or m.top.currentChannelIndex >= channels.Count() then return
     ch = channels[m.top.currentChannelIndex]
+    if ch = invalid then return
 
-    m.zapHud.channelNumber = ch.number.ToStr()
+    if ch.number <> invalid then
+        m.zapHud.channelNumber = ch.number.ToStr()
+    else
+        m.zapHud.channelNumber = (m.top.currentChannelIndex + 1).ToStr()
+    end if
     m.zapHud.channelName = ch.name
-    m.zapHud.channelLogo = ch.logo
+    if ch.logo <> invalid then m.zapHud.channelLogo = ch.logo
 
-    if ch.programa <> "" then
+    if ch.programa <> invalid and ch.programa <> "" then
         m.zapHud.programTitle = ch.programa
         agora = CreateObject("roDateTime").AsSeconds()
         pct = 0.5
@@ -578,7 +631,25 @@ sub tryNextVariant()
     channels = m.canais
     if channels = invalid or m.top.currentChannelIndex >= channels.Count() then return
     ch = channels[m.top.currentChannelIndex]
-    if ch.variants = invalid then return
+    if ch = invalid or ch.variants = invalid or ch.variants.Count() = 0 then
+        m.bufferingGroup.visible = false
+        if ch <> invalid then m.zapHud.channelName = ch.name + " (Sem sinal)"
+        m.vigiaTimer.control = "stop"
+        m.liveVideo.control = "stop"
+        m.liveVideo.content = invalid
+        m.ancora.setFocus(true)
+        return
+    end if
+
+    if m.currentVariantIndex >= ch.variants.Count() then
+        m.bufferingGroup.visible = false
+        m.zapHud.channelName = ch.name + " (Sem sinal)"
+        m.vigiaTimer.control = "stop"
+        m.liveVideo.control = "stop"
+        m.liveVideo.content = invalid
+        m.ancora.setFocus(true)
+        return
+    end if
 
     rawUrl = ""
     if m.currentVariantIndex < ch.variants.Count() and ch.variants[m.currentVariantIndex].url <> invalid then
@@ -587,7 +658,7 @@ sub tryNextVariant()
     ehHttp = (Left(rawUrl, 7) = "http://")
 
     ' Se ainda não tentou a fonte atual via proxy (e não é http puro), tenta via proxy antes de avançar
-    if not m.tryingProxy and not ehHttp then
+    if not m.tryingProxy and not ehHttp and rawUrl <> "" then
         m.tryingProxy = true
         playCurrentVariant()
         return
@@ -652,7 +723,10 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
 
     if key = "right" then
         channels = m.canais
-        if channels <> invalid and m.top.currentChannelIndex < channels.Count() then abrirFontes(channels[m.top.currentChannelIndex])
+        if channels <> invalid and m.top.currentChannelIndex >= 0 and m.top.currentChannelIndex < channels.Count() then
+            ch = channels[m.top.currentChannelIndex]
+            if ch <> invalid then abrirFontes(ch)
+        end if
         return true
     end if
 

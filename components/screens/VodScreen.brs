@@ -79,6 +79,11 @@ sub onItemsChange()
     montar()
 end sub
 
+sub onAddonRailsChange()
+    if m.grupos = invalid then separar()
+    montar()
+end sub
+
 sub onCategoryChange()
     for i = 0 to m.categories.Count() - 1
         if m.categories[i] = m.top.selectedCategory then m.currentCategoryIdx = i
@@ -145,20 +150,50 @@ sub montar()
     filaDeFiltros(raiz)
     m.geracao = m.geracao + 1
     m.linhas = {}
+    prefs = LoadPreferences()
+    hasLocalVod = (prefs <> invalid and prefs.urlFilmes <> invalid and prefs.urlFilmes.Trim() <> "")
+
     if filtrando() then
-        ' Com filtro, o acervo inteiro filtrado chega da tarefa (onResultadoFiltro).
-        espera = raiz.CreateChild("ContentNode")
-        espera.title = "Filtrando…"
-        esperar(espera)
-        AjustarFileiras(m.vodRowList, raiz)
-        m.vodRowList.content = raiz
-        mostrarCategoria(m.currentCategoryIdx)
-        pedirFiltro()
+        if hasLocalVod then
+            ' Com filtro e lista VOD local, o acervo inteiro filtrado chega da tarefa (onResultadoFiltro).
+            espera = raiz.CreateChild("ContentNode")
+            espera.title = "Filtrando…"
+            esperar(espera)
+            AjustarFileiras(m.vodRowList, raiz)
+            m.vodRowList.content = raiz
+            mostrarCategoria(m.currentCategoryIdx)
+            pedirFiltro()
+        else
+            ' Sem lista VOD local: filtra diretamente os itens carregados de Addons + TMDB
+            gFiltrado = filtrarItensEmMemoria(m.grupos[m.currentCategoryIdx])
+            if gFiltrado.Count() > 0 then
+                fileira(raiz, "Resultados filtrados", gFiltrado, 0, gFiltrado.Count() - 1)
+            else
+                vazio = raiz.CreateChild("ContentNode")
+                vazio.title = "Nenhum título com esses filtros"
+                esperar(vazio)
+            end if
+            AjustarFileiras(m.vodRowList, raiz)
+            m.vodRowList.content = raiz
+            mostrarCategoria(m.currentCategoryIdx)
+        end if
         return
     end if
 
     g = m.grupos[m.currentCategoryIdx]
     fileira(raiz, "Em alta", g, 0, 19)
+
+    ' Desbloqueia catálogos de Addons Stremio + TMDB por categoria
+    rails = m.top.addonRails
+    if rails <> invalid and Type(rails) = "roArray" then
+        for each rail in rails
+            if rail <> invalid and rail.items <> invalid and rail.items.Count() > 0 then
+                if railCombinaComCategoria(rail, m.currentCategoryIdx) then
+                    fileira(raiz, rail.title, rail.items, 0, rail.items.Count() - 1)
+                end if
+            end if
+        end for
+    end if
 
     ' O acervo inteiro em páginas de até 50 títulos, uma fileira por página; só
     ' as páginas perto do foco ficam baixadas, para o Roku mais fraco aguentar.
@@ -181,6 +216,44 @@ sub montar()
     mostrarCategoria(m.currentCategoryIdx)
     carregarPerto(0)
 end sub
+
+function railCombinaComCategoria(rail as Object, catIdx as Integer) as Boolean
+    lt = LCase(rail.title.ToStr())
+    ehAnime = (Instr(1, lt, "anime") > 0)
+    ehDorama = (Instr(1, lt, "dorama") > 0 or Instr(1, lt, "k-drama") > 0 or Instr(1, lt, "kdrama") > 0)
+    if catIdx = 2 then return ehAnime
+    if catIdx = 3 then return ehDorama
+    if catIdx = 1 then return (rail.isSeries = true and not ehAnime and not ehDorama)
+    return (rail.isSeries <> true and not ehAnime and not ehDorama)
+end function
+
+function filtrarItensEmMemoria(itens as Object) as Object
+    if itens = invalid then return []
+    f = m.filtros
+    res = []
+    for each it in itens
+        passa = true
+        if f.anoDe > 0 then
+            yr = 0
+            if it.year <> invalid then yr = Int(Val(it.year.ToStr()))
+            if yr < f.anoDe or (f.anoAte > 0 and yr > f.anoAte) then passa = false
+        end if
+        if passa and f.nota > 0 then
+            rt = 0.0
+            if it.rating <> invalid then rt = Val(it.rating.ToStr())
+            if rt < f.nota then passa = false
+        end if
+        if passa then res.Push(it)
+    end for
+    if f.ordem = "az" and res.Count() > 1 then
+        res.SortBy("title")
+    else if f.ordem = "novos" and res.Count() > 1 then
+        res.SortBy("year", "r")
+    else if f.ordem = "melhores" and res.Count() > 1 then
+        res.SortBy("rating", "r")
+    end if
+    return res
+end function
 
 sub esperar(linha as Object)
     espera = linha.CreateChild("ContentNode")
@@ -243,13 +316,18 @@ end sub
 
 sub mostrarCategoria(i as Integer)
     desc = "Lançamentos, clássicos e tudo entre eles, dublados e legendados."
+    u = LoadPreferences().urlFilmes
+    enabledCount = GetEnabledAddons().Count()
     if totalDaCategoria(i) = 0 then
-        u = LoadPreferences().urlFilmes
-        if u = invalid or u = "" then
-            desc = "Configure o endereço de filmes e séries em Ajustes."
+        if (u = invalid or u = "") and enabledCount > 0 then
+            desc = "Nenhum título nesta categoria ainda. Explore os catálogos dos seus Addons Stremio ou TMDB."
+        else if u = invalid or u = "" then
+            desc = "Configure uma lista VOD ou instale Addons Stremio em Ajustes > Addons e Debrid."
         else
             desc = "Nenhum título carregado. Verifique o endereço de filmes e séries em Ajustes."
         end if
+    else if (u = invalid or u = "") and enabledCount > 0 then
+        desc = "Descoberta TMDB e catálogos dos seus Addons Stremio ativos."
     end if
     m.heroBanner.featuredItem = { title: m.categories[i], genres: textoTitulos(totalDaCategoria(i)), overview: desc, semFundo: true }
 end sub

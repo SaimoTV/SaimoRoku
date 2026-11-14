@@ -26,6 +26,11 @@ sub init()
     m.busca.observeField("resultado", "onResultadoAcervo")
     m.busca.control = "RUN"
     m.acervo = invalid
+    m.addonBusca = invalid
+    m.addonBuscaQuery = ""
+    m.addonBuscaTask = invalid
+    m.addonSearchTimer = m.top.findNode("addonSearchTimer")
+    m.addonSearchTimer.observeField("fire", "dispararBuscaAddons")
 end sub
 
 sub onFocusedChildChange()
@@ -51,8 +56,16 @@ end sub
 
 sub buscar()
     consulta = m.texto.Trim()
+    m.addonSearchTimer.control = "stop"
+    if m.addonBuscaTask <> invalid then
+        m.addonBuscaTask.unobserveField("searchResults")
+        m.addonBuscaTask.control = "stop"
+        m.addonBuscaTask = invalid
+    end if
     if consulta = "" then
         m.acervo = invalid
+        m.addonBusca = invalid
+        m.addonBuscaQuery = ""
         m.busca.consulta = ""
         m.resultados.content = invalid
         m.dica.text = "Digite o nome: os resultados aparecem enquanto você digita."
@@ -60,8 +73,37 @@ sub buscar()
         return
     end if
     m.acervo = invalid
+    m.addonBusca = invalid
     m.busca.consulta = consulta
     m.dica.text = "Procurando…"
+    if Len(consulta) >= 2 and GetEnabledAddons().Count() > 0 then
+        m.addonSearchTimer.control = "start"
+    end if
+    montarResultados()
+end sub
+
+sub dispararBuscaAddons()
+    consulta = m.texto.Trim()
+    if Len(consulta) < 2 or GetEnabledAddons().Count() = 0 then return
+    if m.addonBuscaTask <> invalid then
+        m.addonBuscaTask.unobserveField("searchResults")
+        m.addonBuscaTask.control = "stop"
+        m.addonBuscaTask = invalid
+    end if
+    m.addonBuscaQuery = consulta
+    m.addonBuscaTask = CreateObject("roSGNode", "AddonCatalogTask")
+    m.addonBuscaTask.mode = "search"
+    m.addonBuscaTask.searchQuery = consulta
+    m.addonBuscaTask.observeField("searchResults", "onResultadoAddons")
+    m.addonBuscaTask.control = "run"
+end sub
+
+sub onResultadoAddons()
+    if m.addonBuscaTask = invalid then return
+    if m.addonBuscaQuery <> m.texto.Trim() then return
+    m.addonBusca = m.addonBuscaTask.searchResults
+    m.addonBuscaTask.unobserveField("searchResults")
+    m.addonBuscaTask = invalid
     montarResultados()
 end sub
 
@@ -105,9 +147,17 @@ sub montarResultados()
             nova.appendChildren(linha.getChildren(-1, 0))
         end for
     end if
+    if m.addonBusca <> invalid then
+        for each linha in m.addonBusca.getChildren(-1, 0)
+            nova = raiz.CreateChild("ContentNode")
+            nova.title = linha.title
+            nova.appendChildren(linha.getChildren(-1, 0))
+        end for
+    end if
     vazio = raiz.getChildCount() = 0
     m.dica.visible = vazio
-    if vazio and m.acervo <> invalid then m.dica.text = "Nada encontrado para " + Chr(34) + m.texto.Trim() + Chr(34) + "."
+    aguardandoAddon = (Len(m.texto.Trim()) >= 2 and GetEnabledAddons().Count() > 0 and m.addonBusca = invalid)
+    if vazio and m.acervo <> invalid and not aguardandoAddon then m.dica.text = "Nada encontrado para " + Chr(34) + m.texto.Trim() + Chr(34) + "."
     if vazio then
         m.resultados.content = invalid
         return
@@ -164,5 +214,11 @@ end function
 
 ' A tarefa de busca fica aberta esperando consulta: sai junto com a tela.
 sub cleanUp()
+    if m.addonSearchTimer <> invalid then m.addonSearchTimer.control = "stop"
+    if m.addonBuscaTask <> invalid then
+        m.addonBuscaTask.unobserveField("searchResults")
+        m.addonBuscaTask.control = "stop"
+        m.addonBuscaTask = invalid
+    end if
     if m.busca <> invalid then m.busca.control = "STOP"
 end sub

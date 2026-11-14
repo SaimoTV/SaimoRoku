@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="AddonsScreen" extends="Group">
+  <interface>
+    <field id="addonsChanged" type="boolean" alwaysNotify="true" />
+    <field id="focusUpRequested" type="boolean" alwaysNotify="true" />
+    <field id="textoRecebido" type="string" alwaysNotify="true" onChange="onTextoRecebido" />
+    <function name="cleanUp" />
+    <function name="refresh" />
+  </interface>
+
+  <children>
+    <!-- Coluna esquerda: QR Code para celular/PC em /addons -->
+    <Group translation="[124, 210]">
+      <Label text="Addons e Debrid" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="56" /></Label>
+      <Label translation="[0, 74]" width="630" wrap="true" numLines="3" lineSpacing="4" text="Instale addons Stremio (/manifest.json) ou configure suas chaves Debrid pelo celular sem digitar na TV." color="#A8B4C0"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="26" /></Label>
+
+      <Rectangle translation="[0, 200]" width="310" height="310" color="#FFFFFF" />
+      <Group id="qrGroup" translation="[15, 215]" />
+      <Label id="qrUrlLabel" translation="[0, 526]" width="640" wrap="true" numLines="2" text="http://localhost:8999/addons" color="#4FE3D0"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="26" /></Label>
+      <Label id="debridSummaryLabel" translation="[0, 606]" width="640" wrap="true" numLines="2" text="Debrid: nenhum provedor configurado" color="#94a3b8"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="24" /></Label>
+    </Group>
+
+    <!-- Coluna direita: Gerenciamento direto com controle remoto -->
+    <Group translation="[834, 210]">
+      <Label id="lblSecao" text="GERENCIAR ADDONS" color="#4FE3D0"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="24" /></Label>
+      <Label id="aviso" translation="[0, 38]" width="960" wrap="true" numLines="2" text="" color="#FFB454"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="24" /></Label>
+      <Group id="painelLista" translation="[0, 102]">
+        <MarkupList id="lista" translation="[0, 0]" itemComponentName="AjusteItem" itemSize="[960, 140]" itemSpacing="[0, 12]" numRows="5" drawFocusFeedback="false" vertFocusAnimationStyle="floatingFocus" />
+      </Group>
+    </Group>
+
+    <!-- Painel de teclado na tela (URL / API Key) -->
+    <Group id="painelTeclado" visible="false" translation="[124, 210]">
+      <Rectangle width="1672" height="790" color="#11161EF5" />
+      <Label id="tituloCampo" translation="[36, 28]" width="1600" text="URL do Addon Stremio" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="34" /></Label>
+      <Label id="subtituloCampo" translation="[36, 74]" width="1600" text="Digite pelo controle remoto ou use o QR Code / Saimo Connect" color="#A8B4C0"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="22" /></Label>
+      <Keyboard id="teclado" translation="[36, 124]" showTextEditBox="true" />
+      <LabelList id="botoes" translation="[36, 566]" itemSize="[360, 56]" itemSpacing="[0, 8]" numRows="3" color="#FFFFFF" focusedColor="#11161E" focusBitmapBlendColor="#4FE3D0" wrap="false"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="26" /><Font role="focusedFont" uri="pkg:/fonts/Roboto-Medium.ttf" size="26" /></LabelList>
+    </Group>
+  </children>
+
+  <script type="text/brightscript" uri="pkg:/source/utils/Addons.brs" />
+  <script type="text/brightscript" uri="pkg:/source/utils/Debrid.brs" />
+  <script type="text/brightscript" uri="pkg:/source/utils/QrGen.brs" />
+  <script type="text/brightscript" uri="pkg:/components/screens/AddonsScreen.brs" />
+</component>

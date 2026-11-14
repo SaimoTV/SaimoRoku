@@ -265,6 +265,9 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
             preencher()
         end if
         return true
+    else if key = "back" then
+        m.top.isOpen = false
+        return true
     end if
     return false
 end function

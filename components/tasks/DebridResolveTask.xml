@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="DebridResolveTask" extends="Task">
+  <interface>
+    <field id="streamInfo" type="assocarray" />
+    <field id="result" type="assocarray" alwaysNotify="true" />
+  </interface>
+
+  <script type="text/brightscript" uri="pkg:/source/utils/Debrid.brs" />
+  <script type="text/brightscript" uri="pkg:/components/tasks/DebridResolveTask.brs" />
+</component>

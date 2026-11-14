@@ -13,6 +13,14 @@ sub init()
     m.topNavBar.observeField("itemSelected", "onTopNavSelected")
     m.topNavBar.observeField("focusDownRequested", "onFocusDownFromNav")
     m.connectServer.observeField("receivedCommand", "onConnectCommand")
+    m.connectServer.observeField("addonsUpdated", "onConnectAddonsUpdated")
+
+    m.localDestaques = []
+    m.localVod = []
+    m.addonRails = []
+    m.addonVodItems = []
+    m.addonCatalogTask = invalid
+    m.addonSyncTask = invalid
 
     ' Observers do DataLoader
     m.dataLoader.observeField("responseChannels", "onChannelsLoaded")
@@ -88,6 +96,75 @@ sub loadAllData()
     loader7.observeField("canais", "onMinhasCarregadas")
     loader7.control = "run"
     m.loaders.Push(loader7)
+
+    loadAddonCatalogs()
+end sub
+
+sub loadAddonCatalogs()
+    if m.addonCatalogTask <> invalid then
+        m.addonCatalogTask.unobserveField("responseRails")
+        m.addonCatalogTask.control = "stop"
+        m.addonCatalogTask = invalid
+    end if
+
+    if GetEnabledAddons().Count() = 0 then
+        m.addonRails = []
+        m.addonVodItems = []
+        applyCombinedVodAndRails()
+        return
+    end if
+
+    task = CreateObject("roSGNode", "AddonCatalogTask")
+    task.mode = "discover"
+    task.includeTmdbDiscovery = true
+    task.observeField("responseRails", "onAddonCatalogsLoaded")
+    task.control = "run"
+    m.addonCatalogTask = task
+end sub
+
+sub onAddonCatalogsLoaded(evt as Object)
+    if m.addonCatalogTask = invalid then return
+    rails = evt.getData()
+    vodItems = m.addonCatalogTask.responseVodItems
+    m.addonCatalogTask.unobserveField("responseRails")
+    m.addonCatalogTask = invalid
+
+    if rails <> invalid and Type(rails) = "roArray" then
+        m.addonRails = rails
+    else
+        m.addonRails = []
+    end if
+    if vodItems <> invalid and Type(vodItems) = "roArray" then
+        m.addonVodItems = vodItems
+    else
+        m.addonVodItems = []
+    end if
+    applyCombinedVodAndRails()
+end sub
+
+sub applyCombinedVodAndRails()
+    combinedRails = []
+    if m.localDestaques <> invalid then combinedRails.Append(m.localDestaques)
+    if m.addonRails <> invalid then combinedRails.Append(m.addonRails)
+    m.cachedDestaques = combinedRails
+
+    combinedVod = []
+    if m.localVod <> invalid then combinedVod.Append(m.localVod)
+    if m.addonVodItems <> invalid then combinedVod.Append(m.addonVodItems)
+    m.cachedVod = combinedVod
+
+    if m.currentScreenName = "home" and m.currentScreenNode <> invalid then
+        m.currentScreenNode.railsData = m.cachedDestaques
+        m.currentScreenNode.vodItems = m.cachedVod
+        if m.cachedDestaques.Count() > 0 and m.cachedDestaques[0].items <> invalid and m.cachedDestaques[0].items.Count() > 0 then
+            m.currentScreenNode.featuredItem = m.cachedDestaques[0].items[0]
+        end if
+    else if m.currentScreenName = "vod" and m.currentScreenNode <> invalid then
+        if m.addonRails <> invalid then m.currentScreenNode.addonRails = m.addonRails
+        m.currentScreenNode.vodItems = m.cachedVod
+    else if (m.currentScreenName = "favorites" or m.currentScreenName = "search") and m.currentScreenNode <> invalid then
+        m.currentScreenNode.vodItems = m.cachedVod
+    end if
 end sub
 
 sub onChannelsLoaded(evt as Object)
@@ -182,26 +259,23 @@ sub onArvorePronta(evt as Object)
 end sub
 
 sub onDestaquesLoaded(evt as Object)
-    m.cachedDestaques = evt.getData()
-    if m.currentScreenName = "home" and m.currentScreenNode <> invalid then
-        m.currentScreenNode.railsData = m.cachedDestaques
-        if m.cachedDestaques.Count() > 0 and m.cachedDestaques[0].items.Count() > 0 then
-            m.currentScreenNode.featuredItem = m.cachedDestaques[0].items[0]
-        end if
+    d = evt.getData()
+    if d <> invalid and Type(d) = "roArray" then
+        m.localDestaques = d
+    else
+        m.localDestaques = []
     end if
+    applyCombinedVodAndRails()
 end sub
 
 sub onVodLoaded(evt as Object)
-    m.cachedVod = evt.getData()
-    if m.currentScreenName = "vod" and m.currentScreenNode <> invalid then
-        m.currentScreenNode.vodItems = m.cachedVod
-    else if m.currentScreenName = "home" and m.currentScreenNode <> invalid then
-        m.currentScreenNode.vodItems = m.cachedVod
-    else if m.currentScreenName = "favorites" and m.currentScreenNode <> invalid then
-        m.currentScreenNode.vodItems = m.cachedVod
-    else if m.currentScreenName = "search" and m.currentScreenNode <> invalid then
-        m.currentScreenNode.vodItems = m.cachedVod
+    v = evt.getData()
+    if v <> invalid and Type(v) = "roArray" then
+        m.localVod = v
+    else
+        m.localVod = []
     end if
+    applyCombinedVodAndRails()
 end sub
 
 ' O jogo diz o canal por um apelido (premiere-2); procura em todos os players com nome normalizado.
@@ -261,7 +335,7 @@ function screenToNavIndex(name as String) as Integer
     if name = "guide" then return 2
     if name = "radios" then return 6
     if name = "doacao" then return 7
-    if name = "settings" or name = "minhas" then return 8
+    if name = "settings" or name = "minhas" or name = "addons" then return 8
     return 1
 end function
 
@@ -286,11 +360,13 @@ sub switchScreen(screenName as String, params = invalid as Dynamic)
     if screenName = "home" then
         node = CreateObject("roSGNode", "HomeScreen")
         node.observeField("minhasListasRequested", "onAbrirMinhasListas")
+        node.observeField("addonsRequested", "onAbrirAddons")
         if m.canaisInicio <> invalid then node.channels = m.canaisInicio
         if m.cachedEpg <> invalid then node.epgMap = m.cachedEpg
+        if m.cachedVod <> invalid then node.vodItems = m.cachedVod
         if m.cachedDestaques <> invalid then
             node.railsData = m.cachedDestaques
-            if m.cachedDestaques.Count() > 0 and m.cachedDestaques[0].items.Count() > 0 then
+            if m.cachedDestaques.Count() > 0 and m.cachedDestaques[0].items <> invalid and m.cachedDestaques[0].items.Count() > 0 then
                 node.featuredItem = m.cachedDestaques[0].items[0]
             end if
         end if
@@ -319,6 +395,7 @@ sub switchScreen(screenName as String, params = invalid as Dynamic)
 
     else if screenName = "vod" then
         node = CreateObject("roSGNode", "VodScreen")
+        if m.addonRails <> invalid then node.addonRails = m.addonRails
         if m.cachedVod <> invalid then node.vodItems = m.cachedVod
         node.observeField("itemSelected", "onVodItemSelected")
         node.observeField("playRequested", "onHomePlayRequested")
@@ -383,6 +460,7 @@ sub switchScreen(screenName as String, params = invalid as Dynamic)
         node = CreateObject("roSGNode", "SettingsScreen")
         node.observeField("reloadRequested", "onSettingsReload")
         node.observeField("minhasListasRequested", "onAbrirMinhasListas")
+        node.observeField("addonsRequested", "onAbrirAddons")
         node.observeField("focusUpRequested", "onScreenFocusUp")
         m.currentScreenNode = node
 
@@ -395,6 +473,13 @@ sub switchScreen(screenName as String, params = invalid as Dynamic)
         node = CreateObject("roSGNode", "MinhasListasScreen")
         node.observeField("listasMudaram", "onListasMudaram")
         node.observeField("reloadRequested", "onSettingsReload")
+        node.observeField("addonsRequested", "onAbrirAddons")
+        node.observeField("focusUpRequested", "onScreenFocusUp")
+        m.currentScreenNode = node
+
+    else if screenName = "addons" then
+        node = CreateObject("roSGNode", "AddonsScreen")
+        node.observeField("addonsChanged", "onAddonsScreenChanged")
         node.observeField("focusUpRequested", "onScreenFocusUp")
         m.currentScreenNode = node
     end if
@@ -540,6 +625,32 @@ sub onAbrirMinhasListas()
     switchScreen("minhas")
 end sub
 
+sub onAbrirAddons()
+    switchScreen("addons")
+end sub
+
+sub onAddonsScreenChanged()
+    loadAddonCatalogs()
+end sub
+
+sub onConnectAddonsUpdated()
+    if m.currentScreenName = "addons" and m.currentScreenNode <> invalid then
+        m.currentScreenNode.callFunc("refresh")
+    end if
+    loadAddonCatalogs()
+end sub
+
+sub onSyncAddonsFinished()
+    if m.addonSyncTask <> invalid then
+        m.addonSyncTask.unobserveField("result")
+        m.addonSyncTask = invalid
+    end if
+    if m.currentScreenName = "addons" and m.currentScreenNode <> invalid then
+        m.currentScreenNode.callFunc("refresh")
+    end if
+    loadAddonCatalogs()
+end sub
+
 sub onConnectCommand(evt as Object)
     cmd = evt.getData()
     if cmd = invalid or cmd.t = invalid then return
@@ -560,29 +671,134 @@ sub onConnectCommand(evt as Object)
     else if tipo = "key" and cmd.code <> invalid then
         handleVirtualKey(cmd.code)
     else if tipo = "text" and cmd.value <> invalid then
-        if (m.currentScreenName = "minhas" or m.currentScreenName = "settings") and m.currentScreenNode <> invalid then
+        if (m.currentScreenName = "minhas" or m.currentScreenName = "settings" or m.currentScreenName = "addons") and m.currentScreenNode <> invalid then
             m.currentScreenNode.textoRecebido = cmd.value
         end if
-    else if tipo = "dados" and cmd.listas <> invalid then
-        prefs = LoadPreferences()
-        mudou = false
-        if cmd.listas.canais <> invalid and cmd.listas.canais.ToStr().Trim() <> "" then
-            novoCanais = NormalizarEnderecoSaimo(cmd.listas.canais.ToStr())
-            if novoCanais <> prefs.urlCanais then
-                prefs.urlCanais = novoCanais
-                mudou = true
+    else if tipo = "dados" then
+        mudouListas = false
+        mudouAddons = false
+
+        ' 1. Listas M3U / catálogos Saimo
+        if cmd.listas <> invalid and Type(cmd.listas) = "roAssociativeArray" then
+            prefs = LoadPreferences()
+            if cmd.listas.canais <> invalid and cmd.listas.canais.ToStr().Trim() <> "" then
+                novoCanais = NormalizarEnderecoSaimo(cmd.listas.canais.ToStr())
+                if novoCanais <> prefs.urlCanais then
+                    prefs.urlCanais = novoCanais
+                    mudouListas = true
+                end if
+            end if
+            if cmd.listas.filmes <> invalid and cmd.listas.filmes.ToStr().Trim() <> "" then
+                novoFilmes = NormalizarEnderecoSaimo(cmd.listas.filmes.ToStr())
+                if novoFilmes <> prefs.urlFilmes then
+                    prefs.urlFilmes = novoFilmes
+                    mudouListas = true
+                end if
+            end if
+            if mudouListas then
+                SavePreferences(prefs)
+                m.prefs = prefs
             end if
         end if
-        if cmd.listas.filmes <> invalid and cmd.listas.filmes.ToStr().Trim() <> "" then
-            novoFilmes = NormalizarEnderecoSaimo(cmd.listas.filmes.ToStr())
-            if novoFilmes <> prefs.urlFilmes then
-                prefs.urlFilmes = novoFilmes
-                mudou = true
-            end if
+
+        ' 2. Addons Stremio: SÓ altera os addons locais quando a chave "addons" existir explicitamente como array
+        if cmd.DoesExist("addons") and cmd.addons <> invalid and Type(cmd.addons) = "roArray" then
+            existentes = LoadAddons()
+            mapaExistente = {}
+            for each ex in existentes
+                mapaExistente[ex.baseUrl + "|" + ex.query] = ex
+            end for
+
+            novosAddons = []
+            for idx = 0 to cmd.addons.Count() - 1
+                rawEntry = cmd.addons[idx]
+                if Type(rawEntry) = "roAssociativeArray" then
+                    rawUrl = ""
+                    if rawEntry.url <> invalid then rawUrl = rawEntry.url.ToStr()
+                    if rawUrl = "" and rawEntry.transportUrl <> invalid then rawUrl = rawEntry.transportUrl.ToStr()
+                    norm = NormalizeAddonUrl(rawUrl)
+                    if norm.ok then
+                        chave = norm.baseUrl + "|" + norm.query
+                        ant = mapaExistente[chave]
+                        compact = SanitizeCompactAddonRecord(rawEntry, idx)
+                        if compact = invalid then
+                            compact = {
+                                url: norm.url,
+                                baseUrl: norm.baseUrl,
+                                query: norm.query,
+                                id: norm.baseUrl,
+                                name: norm.baseUrl,
+                                version: "1.0.0",
+                                enabled: (rawEntry.enabled <> false),
+                                order: idx,
+                                types: [],
+                                idPrefixes: [],
+                                resources: []
+                            }
+                            if rawEntry.name <> invalid and rawEntry.name.ToStr().Trim() <> "" then
+                                compact.name = rawEntry.name.ToStr().Trim()
+                            end if
+                        end if
+                        ' Preserva metadados já parseados caso o payload de Connect tenha vindo enxuto
+                        if ant <> invalid and (compact.resources = invalid or compact.resources.Count() = 0) then
+                            compact.id = ant.id
+                            compact.name = ant.name
+                            compact.version = ant.version
+                            compact.types = ant.types
+                            compact.idPrefixes = ant.idPrefixes
+                            compact.resources = ant.resources
+                        end if
+                        novosAddons.Push(compact)
+                    end if
+                end if
+            end for
+
+            SaveAddons(novosAddons)
+            mudouAddons = true
         end if
-        if mudou then
-            SavePreferences(prefs)
-            m.prefs = prefs
+
+        ' 3. Debrid: só altera quando "debrid" existir explicitamente como objeto
+        if cmd.DoesExist("debrid") and cmd.debrid <> invalid and Type(cmd.debrid) = "roAssociativeArray" then
+            curDebrid = LoadDebridConfig()
+            dIn = cmd.debrid
+            if dIn.DoesExist("sincronizarConnect") then
+                curDebrid.sincronizarConnect = (dIn.sincronizarConnect = true)
+            end if
+            for each pk in ["torbox", "realDebrid", "allDebrid", "premiumize"]
+                if dIn.DoesExist(pk) and Type(dIn[pk]) = "roAssociativeArray" then
+                    pIn = dIn[pk]
+                    pCur = curDebrid[pk]
+                    if pCur = invalid then pCur = { apiKey: "", enabled: false }
+                    if pIn.clear = true then
+                        pCur.apiKey = ""
+                        pCur.enabled = false
+                    else if pIn.apiKey <> invalid and pIn.apiKey.ToStr().Trim() <> "" then
+                        pCur.apiKey = pIn.apiKey.ToStr().Trim()
+                        pCur.enabled = (pIn.enabled <> false)
+                    else if pIn.DoesExist("enabled") then
+                        pCur.enabled = (pIn.enabled = true and pCur.apiKey <> "")
+                    end if
+                    curDebrid[pk] = pCur
+                end if
+            end for
+            SaveDebridConfig(curDebrid)
+            mudouAddons = true
+        end if
+
+        if mudouAddons then
+            if m.addonSyncTask <> invalid then
+                m.addonSyncTask.unobserveField("result")
+                m.addonSyncTask.control = "stop"
+                m.addonSyncTask = invalid
+            end if
+            syncTask = CreateObject("roSGNode", "AddonManageTask")
+            syncTask.action = "syncmissing"
+            syncTask.observeField("result", "onSyncAddonsFinished")
+            syncTask.control = "run"
+            m.addonSyncTask = syncTask
+        end if
+
+        if mudouListas then
             loadAllData()
         end if
     else if tipo = "fonte" or tipo = "sync" then
@@ -645,6 +861,9 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
             else
                 switchScreen("home")
             end if
+            return true
+        else if m.currentScreenName = "addons" and (m.previousScreenName = "settings" or m.previousScreenName = "minhas") then
+            switchScreen(m.previousScreenName)
             return true
         else if m.currentScreenName <> "home" and m.currentScreenName <> "player" then
             switchScreen("home")

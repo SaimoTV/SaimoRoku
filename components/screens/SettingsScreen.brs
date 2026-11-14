@@ -36,6 +36,7 @@ sub onFocusChange()
                 m.teclado.setFocus(true)
             end if
         else if not m.settingsList.isInFocusChain() then
+            buildSettingsList()
             m.settingsList.setFocus(true)
         end if
     end if
@@ -46,6 +47,16 @@ sub buildSettingsList()
     content = CreateObject("roSGNode", "ContentNode")
 
     addSettingItem(content, "Minhas listas", "Adicionar ou gerenciar listas M3U e Xtream Codes", "minhasListas")
+
+    addonsCount = LoadAddons().Count()
+    enabledCount = GetEnabledAddons().Count()
+    debridAtivos = GetEnabledDebridProviders()
+    descAddons = "Instalar Addons Stremio e Debrid (QR Code na TV)"
+    if addonsCount > 0 or debridAtivos.Count() > 0 then
+        descAddons = enabledCount.ToStr() + "/" + addonsCount.ToStr() + " addon(s) ativo(s)"
+        if debridAtivos.Count() > 0 then descAddons = descAddons + " · Debrid: " + debridAtivos.Join(", ")
+    end if
+    addSettingItem(content, "Addons e Debrid", descAddons, "addonsDebrid")
 
     valCanais = m.prefs.urlCanais
     if valCanais = invalid or valCanais = "" then valCanais = "Não configurado · aperte OK para digitar"
@@ -109,6 +120,9 @@ sub onItemSelected()
 
     if key = "minhasListas" then
         m.top.minhasListasRequested = true
+        return
+    else if key = "addonsDebrid" then
+        m.top.addonsRequested = true
         return
     else if key = "urlCanais" then
         abrirEditorUrl("urlCanais", "Endereço dos canais (ex: canais-saimo.pages.dev)", m.prefs.urlCanais)
@@ -215,9 +229,13 @@ sub onTextoRecebido()
     if txt = invalid or txt.Trim() = "" then return
     if not m.painelTeclado.visible then
         foco = m.settingsList.itemFocused
-        if foco = 1 then
+        focoItem = invalid
+        if m.settingsList.content <> invalid and foco >= 0 and foco < m.settingsList.content.getChildCount() then
+            focoItem = m.settingsList.content.getChild(foco)
+        end if
+        if focoItem <> invalid and focoItem.key = "urlCanais" then
             abrirEditorUrl("urlCanais", "Endereço dos canais (ex: canais-saimo.pages.dev)", m.prefs.urlCanais)
-        else if foco = 2 then
+        else if focoItem <> invalid and focoItem.key = "urlFilmes" then
             abrirEditorUrl("urlFilmes", "Endereço de filmes e séries (ex: filmes-saimo.pages.dev)", m.prefs.urlFilmes)
         end if
     end if

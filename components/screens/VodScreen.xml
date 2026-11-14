@@ -2,6 +2,7 @@
 <component name="VodScreen" extends="Group">
   <interface>
     <field id="vodItems" type="array" onChange="onItemsChange" />
+    <field id="addonRails" type="array" onChange="onAddonRailsChange" />
     <field id="selectedCategory" type="string" value="Filmes" onChange="onCategoryChange" />
     <field id="itemSelected" type="assocarray" alwaysNotify="true" />
     <field id="playRequested" type="assocarray" alwaysNotify="true" />
@@ -46,5 +47,6 @@
 
   <script type="text/brightscript" uri="pkg:/source/utils/Storage.brs" />
   <script type="text/brightscript" uri="pkg:/source/utils/Rows.brs" />
+  <script type="text/brightscript" uri="pkg:/source/utils/Addons.brs" />
   <script type="text/brightscript" uri="pkg:/components/screens/VodScreen.brs" />
 </component>

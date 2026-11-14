@@ -80,10 +80,15 @@ sub mostrarListas()
         descFilmes = prefs.urlFilmes
     end if
 
+    descAddons = "Instalar Addons Stremio e configurar Debrid (QR Code)"
+    nAtivos = GetEnabledAddons().Count()
+    if nAtivos > 0 then descAddons = nAtivos.ToStr() + " addon(s) Stremio ativo(s) · OK para gerenciar"
+
     textos = [
         ["Endereço dos canais", descCanais],
         ["Endereço de filmes e séries", descFilmes],
-        ["Adicionar lista M3U", "Adicionar lista externa .m3u ou servidor Xtream"]
+        ["Adicionar lista M3U", "Adicionar lista externa .m3u ou servidor Xtream"],
+        ["Addons e Debrid (Stremio)", descAddons]
     ]
     for each l in m.listas
         linha = l.total.ToStr() + " canais  ·  " + haQuanto(l.atualizadaEm)
@@ -106,8 +111,11 @@ sub onItem()
             abrirCampo("urlFilmes")
         else if i = 2 then
             abrirCampo("link")
+        else if i = 3 then
+            m.top.addonsRequested = true
+            return
         else
-            m.atual = m.listas[i - 3]
+            m.atual = m.listas[i - 4]
             m.modo = "acoes"
             alternar = "Desativar"
             if not m.atual.ativa then alternar = "Ativar"

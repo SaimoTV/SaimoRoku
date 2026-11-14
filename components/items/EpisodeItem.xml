@@ -4,7 +4,8 @@
     <field id="itemContent" type="node" onChange="onItemContentChange" />
     <field id="width" type="float" value="280" />
     <field id="height" type="float" value="200" />
-    <field id="rowFocusPercent" type="float" onChange="onFocusChange" />
+    <field id="focusPercent" type="float" onChange="onFocusChange" />
+    <field id="rowListHasFocus" type="boolean" onChange="onFocusChange" />
   </interface>
 
   <children>

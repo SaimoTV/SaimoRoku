@@ -25,60 +25,64 @@
         <Label id="genresLabel" translation="[0, 116]" width="1200" text="" color="#94a3b8"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="22" /></Label>
         
 
-        <!-- Botões de Ação Idênticos ao TV Box -->
+        <!-- Botões de Ação Idênticos ao TV Box + Fontes de Addons -->
         <Group id="actionsRow" translation="[0, 164]">
           <!-- 0: Botão Assistir -->
           <Group id="playBtnGroup" translation="[0, 0]">
             <Rectangle id="playBtnBorder" width="0" height="0" visible="false" />
-            <Poster id="playBtnBg" width="300" height="84" uri="pkg:/images/p_btn.9.png" blendColor="#FFFFFF24" />
-            <Label id="playBtnText" width="300" height="84" horizAlign="center" vertAlign="center" text="Assistir" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="30" /></Label>
+            <Poster id="playBtnBg" width="230" height="84" uri="pkg:/images/p_btn.9.png" blendColor="#FFFFFF24" />
+            <Label id="playBtnText" width="230" height="84" horizAlign="center" vertAlign="center" text="Assistir" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="28" /></Label>
           </Group>
 
           <!-- 1: Botão Continuar -->
-          <Group id="resumeBtnGroup" translation="[316, 0]" visible="false">
+          <Group id="resumeBtnGroup" translation="[246, 0]" visible="false">
             <Rectangle id="resumeBtnBorder" width="0" height="0" visible="false" />
-            <Poster id="resumeBtnBg" width="300" height="84" uri="pkg:/images/p_btn.9.png" blendColor="#FFFFFF24" />
-            <Label id="resumeBtnText" width="300" height="84" horizAlign="center" vertAlign="center" text="Continuar" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="30" /></Label>
+            <Poster id="resumeBtnBg" width="290" height="84" uri="pkg:/images/p_btn.9.png" blendColor="#FFFFFF24" />
+            <Label id="resumeBtnText" width="290" height="84" horizAlign="center" vertAlign="center" text="Continuar" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="26" /></Label>
           </Group>
 
           <!-- 2: Botão Versão (Dublado / Legendado) -->
-          <Group id="versionBtnGroup" translation="[316, 0]">
+          <Group id="versionBtnGroup" translation="[246, 0]">
             <Rectangle id="versionBtnBorder" width="0" height="0" visible="false" />
-            <Poster id="versionBtnBg" width="300" height="84" uri="pkg:/images/p_btn.9.png" blendColor="#FFFFFF24" />
-            <Label id="versionBtnText" width="300" height="84" horizAlign="center" vertAlign="center" text="Versão: Dublado" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="30" /></Label>
+            <Poster id="versionBtnBg" width="290" height="84" uri="pkg:/images/p_btn.9.png" blendColor="#FFFFFF24" />
+            <Label id="versionBtnText" width="290" height="84" horizAlign="center" vertAlign="center" text="Versão: Dublado" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="26" /></Label>
           </Group>
 
-          <!-- 3: Botão Favoritar -->
-          <Group id="favBtnGroup" translation="[632, 0]">
+          <!-- 3: Botão Fontes -->
+          <Group id="sourcesBtnGroup" translation="[552, 0]">
+            <Rectangle id="sourcesBtnBorder" width="0" height="0" visible="false" />
+            <Poster id="sourcesBtnBg" width="220" height="84" uri="pkg:/images/p_btn.9.png" blendColor="#FFFFFF24" />
+            <Label id="sourcesBtnText" width="220" height="84" horizAlign="center" vertAlign="center" text="Fontes" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="28" /></Label>
+          </Group>
+
+          <!-- 4: Botão Favoritar -->
+          <Group id="favBtnGroup" translation="[788, 0]">
             <Rectangle id="favBtnBorder" width="0" height="0" visible="false" />
-            <Poster id="favBtnBg" width="250" height="84" uri="pkg:/images/p_btn.9.png" blendColor="#FFFFFF24" />
-            <Label id="favBtnText" width="250" height="84" horizAlign="center" vertAlign="center" text="Favoritar" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="30" /></Label>
+            <Poster id="favBtnBg" width="240" height="84" uri="pkg:/images/p_btn.9.png" blendColor="#FFFFFF24" />
+            <Label id="favBtnText" width="240" height="84" horizAlign="center" vertAlign="center" text="Favoritar" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="28" /></Label>
           </Group>
         </Group>
       </Group>
 
       <Label id="overviewLabel" translation="[370, 272]" width="1300" height="170" maxLines="4" wrap="true" text="" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="30" /></Label>
 
-      <!-- Painel de Séries: Seletor de Temporadas e Episódios -->
+      <!-- Painel de Séries: Seletor de Temporadas Dinâmico e Episódios -->
       <Group id="seriesPanel" translation="[0, 480]" visible="false">
-        <!-- Seletor de Temporadas -->
-        <Group id="seasonsBar" translation="[0, 0]">
-          <Group id="seasonTab_1" translation="[0, 0]">
-            <Rectangle id="seasonBorder_1" width="0" height="0" visible="false" />
-            <Poster id="seasonBg_1" width="224" height="60" uri="pkg:/images/p_branca.9.png" blendColor="#FFFFFF24" />
-            <Label id="seasonText_1" width="224" height="60" horizAlign="center" vertAlign="center" text="Temporada 1" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="28" /></Label>
-          </Group>
-          <Group id="seasonTab_2" translation="[240, 0]">
-            <Rectangle id="seasonBorder_2" width="0" height="0" visible="false" />
-            <Poster id="seasonBg_2" width="224" height="60" uri="pkg:/images/p_branca.9.png" blendColor="#FFFFFF24" />
-            <Label id="seasonText_2" width="224" height="60" horizAlign="center" vertAlign="center" text="Temporada 2" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="28" /></Label>
-          </Group>
-          <Group id="seasonTab_3" translation="[480, 0]">
-            <Rectangle id="seasonBorder_3" width="0" height="0" visible="false" />
-            <Poster id="seasonBg_3" width="224" height="60" uri="pkg:/images/p_branca.9.png" blendColor="#FFFFFF24" />
-            <Label id="seasonText_3" width="224" height="60" horizAlign="center" vertAlign="center" text="Temporada 3" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="28" /></Label>
-          </Group>
-        </Group>
+        <RowList
+          id="seasonsRowList"
+          itemComponentName="SeasonTabItem"
+          translation="[0, 0]"
+          itemSize="[1696, 68]"
+          rowItemSize="[[224, 60]]"
+          rowItemSpacing="[[16, 0]]"
+          rowHeights="[68]"
+          rowLabelOffset="[[0, 0]]"
+          showRowLabel="[false]"
+          rowFocusAnimationStyle="floatingFocus"
+          vertFocusAnimationStyle="fixedFocus"
+          drawFocusFeedback="false"
+          numRows="1"
+        />
 
         <!-- Grade de Episódios -->
         <RowList
@@ -91,12 +95,28 @@
           rowHeights="[220]"
           rowLabelOffset="[[0, 0]]"
           showRowLabel="[false]"
+          rowFocusAnimationStyle="floatingFocus"
+          vertFocusAnimationStyle="fixedFocus"
+          drawFocusFeedback="false"
           numRows="1"
         />
       </Group>
     </Group>
+
+    <PainelLateral id="painelFontes" />
+
+    <!-- Diálogo de aviso Debrid -->
+    <Group id="debridDialog" translation="[560, 360]" visible="false">
+      <Rectangle width="800" height="340" color="#0b0e14FA" />
+      <Rectangle width="800" height="4" color="#4FE3D0" />
+      <Label id="debridDialogTitle" translation="[40, 36]" width="720" text="Requer conta Debrid para Torrent" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="34" /></Label>
+      <Label id="debridDialogMsg" translation="[40, 96]" width="720" height="150" wrap="true" maxLines="4" lineSpacing="6" text="Configure TorBox, Real-Debrid, AllDebrid ou Premiumize em Ajustes &gt; Addons e Debrid (ou pelo QR Code em /addons) para reproduzir torrents." color="#A8B4C0"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="26" /></Label>
+      <Label translation="[40, 276]" width="720" text="Pressione OK ou Voltar para fechar" color="#4FE3D0"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="24" /></Label>
+    </Group>
   </children>
 
   <script type="text/brightscript" uri="pkg:/source/utils/Storage.brs" />
+  <script type="text/brightscript" uri="pkg:/source/utils/Addons.brs" />
+  <script type="text/brightscript" uri="pkg:/source/utils/Debrid.brs" />
   <script type="text/brightscript" uri="pkg:/components/screens/FichaScreen.brs" />
 </component>

@@ -4,10 +4,14 @@
     <field id="port" type="integer" value="8999" />
     <field id="currentState" type="assocarray" />
     <field id="receivedCommand" type="assocarray" />
+    <field id="addonsUpdated" type="integer" value="0" alwaysNotify="true" />
     <field id="activeClients" type="integer" value="0" />
     <field id="status" type="string" />
     <field id="saida" type="string" alwaysNotify="true" />
   </interface>
 
+  <script type="text/brightscript" uri="pkg:/source/utils/Storage.brs" />
+  <script type="text/brightscript" uri="pkg:/source/utils/Addons.brs" />
+  <script type="text/brightscript" uri="pkg:/source/utils/Debrid.brs" />
   <script type="text/brightscript" uri="pkg:/components/tasks/ConnectTask.brs" />
 </component>

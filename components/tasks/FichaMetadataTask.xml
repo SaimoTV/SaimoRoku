@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="FichaMetadataTask" extends="Task">
+  <interface>
+    <field id="item" type="assocarray" />
+    <field id="seasonNumber" type="integer" value="1" />
+    <field id="metadataResult" type="assocarray" alwaysNotify="true" />
+  </interface>
+
+  <script type="text/brightscript" uri="pkg:/source/utils/Addons.brs" />
+  <script type="text/brightscript" uri="pkg:/source/utils/IdResolver.brs" />
+  <script type="text/brightscript" uri="pkg:/components/tasks/FichaMetadataTask.brs" />
+</component>
