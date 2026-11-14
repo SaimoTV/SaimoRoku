@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="DataLoaderTask" extends="Task">
+    <interface>
+        <field id="requestType" type="string" />
+        <field id="requestUrl" type="string" />
+        <field id="requestParams" type="assocarray" />
+        <field id="responseChannels" type="array" alwaysNotify="true" />
+        <field id="responseEpg" type="assocarray" alwaysNotify="true" />
+        <field id="responseDestaques" type="array" alwaysNotify="true" />
+        <field id="responseVodItems" type="array" alwaysNotify="true" />
+        <field id="responseEvents" type="array" alwaysNotify="true" />
+        <field id="responseRadios" type="array" alwaysNotify="true" />
+        <field id="error" type="string" />
+    </interface>
+    <script type="text/brightscript" uri="pkg:/source/utils/Storage.brs" />
+    <script type="text/brightscript" uri="pkg:/source/utils/Format.brs" />
+    <script type="text/brightscript" uri="pkg:/source/utils/LeitorM3u.brs" />
+    <script type="text/brightscript" uri="pkg:/components/tasks/DataLoaderTask.brs" />
+    <script type="text/brightscript" uri="pkg:/source/bslib.brs" />
+</component>

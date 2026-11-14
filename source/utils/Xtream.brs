@@ -48,18 +48,18 @@ function xtNormalizarServidor(texto as String) as Dynamic
     if p > 0 then resto = Left(resto, p - 1)
     barra = Instr(1, resto, "/")
     host = resto
-    caminho = ""
+    rota = ""
     if barra > 0 then
         host = Left(resto, barra - 1)
-        caminho = Mid(resto, barra)
+        rota = Mid(resto, barra)
     end if
     if not xtHostValido(host) then return invalid
-    baixo = LCase(caminho)
-    if baixo = "/get.php" or baixo = "/player_api.php" or baixo = "/panel_api.php" or baixo = "/c" or baixo = "/c/" then caminho = ""
-    while Len(caminho) > 0 and Right(caminho, 1) = "/"
-        caminho = Left(caminho, Len(caminho) - 1)
+    baixo = LCase(rota)
+    if baixo = "/get.php" or baixo = "/player_api.php" or baixo = "/panel_api.php" or baixo = "/c" or baixo = "/c/" then rota = ""
+    while Len(rota) > 0 and Right(rota, 1) = "/"
+        rota = Left(rota, Len(rota) - 1)
     end while
-    return esquema + "://" + LCase(host) + caminho
+    return esquema + "://" + LCase(host) + rota
 end function
 
 ' Reconhece o link de uma conta (get.php ou player_api.php com usuário e senha).

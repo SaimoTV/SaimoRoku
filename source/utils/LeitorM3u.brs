@@ -87,10 +87,9 @@ function LerM3u(texto as String, limite = 20000 as Integer) as Object
 
     for each bruta in linhas
         linha = bruta.Trim()
-        if linha = "" then continue for
-        if UCase(Left(linha, 7)) = "#EXTM3U" then continue for
-
-        if Left(linha, 7) = "#EXTINF" then
+        if linha = "" or UCase(Left(linha, 7)) = "#EXTM3U" then
+            ' ignora linha vazia ou cabeçalho
+        else if Left(linha, 7) = "#EXTINF" then
             pend = {
                 exibido: m3uExibido(linha),
                 tvgName: m3uAtributo(linha, "tvg-name"),

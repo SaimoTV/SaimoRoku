@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="GuideScreen" extends="Group">
+    <interface>
+        <field id="voltarRequested" type="boolean" alwaysNotify="true" />
+        <field id="channels" type="array" onChange="onChannelsChange" />
+        <field id="epgMap" type="assocarray" onChange="onEpgChange" />
+        <field id="tuneRequested" type="assocarray" alwaysNotify="true" />
+        <field id="focusUpRequested" type="boolean" alwaysNotify="true" />
+    </interface>
+    <script type="text/brightscript" uri="pkg:/components/screens/GuideScreen.brs" />
+    <script type="text/brightscript" uri="pkg:/source/bslib.brs" />
+    <children>
+        <Rectangle width="1920" height="1080" color="#0b0e14D8" />
+        <Label translation="[92, 60]" text="Guia" color="#FFFFFF">
+            <Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="60" />
+        </Label>
+        <Label id="relogio" translation="[1500, 72]" width="328" horizAlign="right" color="#FFFFFF">
+            <Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="46" />
+        </Label>
+        <Label id="selectedChannelHeader" translation="[300, 80]" width="1180" maxLines="1" color="#A8B4C0">
+            <Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="32" />
+        </Label>
+        <MarkupList id="guideChannelList" translation="[68, 180]" itemComponentName="CanalItem" itemSize="[810, 172]" itemSpacing="[0, 4]" numRows="5" drawFocusFeedback="false" vertFocusAnimationStyle="floatingFocus" />
+        <Rectangle translation="[924, 180]" width="2" height="880" color="#FFFFFF14" />
+        <MarkupList id="scheduleList" translation="[966, 180]" itemComponentName="ProgramaItem" itemSize="[880, 176]" itemSpacing="[0, 8]" numRows="5" drawFocusFeedback="false" vertFocusAnimationStyle="floatingFocus" />
+        <Timer id="focoTimer" duration="0.1" repeat="false" />
+    </children>
+</component>

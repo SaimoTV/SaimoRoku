@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="FonteItem" extends="Group">
+    <interface>
+        <field id="itemContent" type="node" onChange="onConteudo" />
+        <field id="focusPercent" type="float" onChange="onFoco" />
+        <field id="listHasFocus" type="boolean" onChange="onFoco" />
+    </interface>
+    <script type="text/brightscript" uri="pkg:/components/items/FonteItem.brs" />
+    <script type="text/brightscript" uri="pkg:/source/bslib.brs" />
+    <children>
+        <Poster id="fundo" width="760" height="140" uri="pkg:/images/p_btn.9.png" visible="false" />
+        <Label id="titulo" translation="[30, 24]" width="700" color="#FFFFFF">
+            <Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="34" />
+        </Label>
+        <Label id="valor" translation="[30, 78]" width="700" color="#A8B4C0">
+            <Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="26" />
+        </Label>
+    </children>
+</component>

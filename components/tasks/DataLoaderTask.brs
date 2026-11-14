@@ -51,6 +51,7 @@ function HttpGet(url as String) as String
     ut.SetUrl(url)
     ut.SetCertificatesFile("common:/certs/ca-bundle.crt")
     ut.InitClientCertificates()
+    ut.AddHeader("User-Agent", "SaimoTV/3.0.3 (RokuOS)")
     res = ut.GetToString()
     if res = invalid then return ""
     return res
@@ -120,45 +121,43 @@ sub fetchChannels(baseUrl as String)
 
     for each rawLine in lines
         line = rawLine.Trim()
-        if line = "" or Left(line, 1) = "#" then continue for
-
         colon = Instr(1, line, ":")
-        if colon <= 1 then continue for
+        if line <> "" and Left(line, 1) <> "#" and colon > 1 then
+            key = LCase(Left(line, colon - 1).Trim())
+            val = Mid(line, colon + 1).Trim()
 
-        key = LCase(Left(line, colon - 1).Trim())
-        val = Mid(line, colon + 1).Trim()
-
-        if key = "canal" then
-            if current <> invalid and current.variants.Count() > 0 then
-                channels.Push(current)
-            end if
-            current = {
-                id: "ch_" + chNumber.ToStr(),
-                number: chNumber,
-                name: val,
-                category: "Variedades",
-                logo: "",
-                variants: []
-            }
-            chNumber = chNumber + 1
-            curVariant = invalid
-        else if current <> invalid then
-            if key = "categoria" then
-                current.category = val
-            else if key = "logo" then
-                current.logo = val
-            else if key = "fonte" then
-                curVariant = { url: val, quality: "Auto" }
-                current.variants.Push(curVariant)
-            else if curVariant <> invalid then
-                if key = "qualidade" then
-                    curVariant.quality = val
-                else if key = "referer" then
-                    curVariant.referer = val
-                else if key = "agente" then
-                    curVariant.userAgent = val
-                else if key = "chave" then
-                    curVariant.clearKey = val
+            if key = "canal" then
+                if current <> invalid and current.variants.Count() > 0 then
+                    channels.Push(current)
+                end if
+                current = {
+                    id: "ch_" + chNumber.ToStr(),
+                    number: chNumber,
+                    name: val,
+                    category: "Variedades",
+                    logo: "",
+                    variants: []
+                }
+                chNumber = chNumber + 1
+                curVariant = invalid
+            else if current <> invalid then
+                if key = "categoria" then
+                    current.category = val
+                else if key = "logo" then
+                    current.logo = val
+                else if key = "fonte" then
+                    curVariant = { url: val, quality: "Auto" }
+                    current.variants.Push(curVariant)
+                else if curVariant <> invalid then
+                    if key = "qualidade" then
+                        curVariant.quality = val
+                    else if key = "referer" then
+                        curVariant.referer = val
+                    else if key = "agente" then
+                        curVariant.userAgent = val
+                    else if key = "chave" then
+                        curVariant.clearKey = val
+                    end if
                 end if
             end if
         end if
@@ -283,60 +282,77 @@ sub fetchDestaques(baseUrl as String)
     if Right(baseUrl, 1) <> "/" then baseUrl = baseUrl + "/"
     url = baseUrl + "destaques.txt"
     text = HttpGet(url)
-    if text = "" then
-        m.top.responseDestaques = []
-        m.top.responseVodItems = []
-        return
+    rails = []
+    allVodItems = []
+    capaBase = "https://image.tmdb.org/t/p/w342"
+
+    if text <> "" then
+        lines = text.Split(Chr(10))
+        currentRail = invalid
+
+        for each rawLine in lines
+            line = rawLine.Trim()
+            if line <> "" and Left(line, 1) <> "#" then
+                if Left(line, 5) = "capa:" then
+                    capaBase = Mid(line, 6).Trim()
+                else if Left(line, 4) = "fila" then
+                    tabParts = line.Split(Chr(9))
+                    railTitle = "Em Destaque"
+                    if tabParts.Count() >= 2 then railTitle = tabParts[1].Trim()
+                    currentRail = {
+                        title: railTitle,
+                        items: []
+                    }
+                    rails.Push(currentRail)
+                else if currentRail <> invalid then
+                    tabParts = line.Split(Chr(9))
+                    if tabParts.Count() >= 5 then
+                        tipo = tabParts[0].Trim()
+                        title = tabParts[1].Trim()
+                        letter = tabParts[2].Trim()
+                        year = tabParts[3].Trim()
+                        posterPath = tabParts[4].Trim()
+                        posterUrl = posterPath
+                        if Left(posterPath, 1) = "/" then
+                            posterUrl = capaBase + posterPath
+                        end if
+
+                        item = {
+                            title: title,
+                            letter: letter,
+                            poster: posterUrl,
+                            backdrop: posterUrl,
+                            isSeries: (tipo = "s"),
+                            year: year,
+                            category: currentRail.title
+                        }
+                        currentRail.items.Push(item)
+                        allVodItems.Push(item)
+                    end if
+                end if
+            end if
+        end for
     end if
 
-    lines = text.Split(Chr(10))
-    rails = []
-    currentRail = invalid
-    capaBase = "https://image.tmdb.org/t/p/w342"
-    allVodItems = []
-
-    for each rawLine in lines
-        line = rawLine.Trim()
-        if line = "" or Left(line, 1) = "#" then continue for
-
-        if Left(line, 5) = "capa:" then
-            capaBase = Mid(line, 6).Trim()
-        else if Left(line, 4) = "fila" then
-            tabParts = line.Split(Chr(9))
-            railTitle = "Em Destaque"
-            if tabParts.Count() >= 2 then railTitle = tabParts[1].Trim()
-            currentRail = {
-                title: railTitle,
-                items: []
-            }
-            rails.Push(currentRail)
-        else if currentRail <> invalid then
-            tabParts = line.Split(Chr(9))
-            if tabParts.Count() >= 5 then
-                tipo = tabParts[0].Trim()
-                title = tabParts[1].Trim()
-                letter = tabParts[2].Trim()
-                year = tabParts[3].Trim()
-                posterPath = tabParts[4].Trim()
-                posterUrl = posterPath
-                if Left(posterPath, 1) = "/" then
-                    posterUrl = capaBase + posterPath
+    ' Fallback caso o servidor Saimo não possua destaques.txt
+    if rails.Count() = 0 then
+        amostra = HttpGet(baseUrl + "roku/filmes-A-1.txt")
+        if amostra <> "" then
+            trilho = { title: "Filmes", items: [] }
+            for each bruta in amostra.Split(Chr(10))
+                p = bruta.Trim().Split(Chr(9))
+                if p.Count() >= 3 and p[0] <> "" then
+                    posterUrl = p[2]
+                    if Left(p[2], 1) = "/" then posterUrl = capaBase + p[2]
+                    it = { title: p[0], letter: "A", poster: posterUrl, backdrop: posterUrl, isSeries: false, year: p[1], category: "Filmes" }
+                    trilho.items.Push(it)
+                    allVodItems.Push(it)
+                    if trilho.items.Count() >= 25 then exit for
                 end if
-
-                item = {
-                    title: title,
-                    letter: letter,
-                    poster: posterUrl,
-                    backdrop: posterUrl,
-                    isSeries: (tipo = "s"),
-                    year: year,
-                    category: currentRail.title
-                }
-                currentRail.items.Push(item)
-                allVodItems.Push(item)
-            end if
+            end for
+            if trilho.items.Count() > 0 then rails.Push(trilho)
         end if
-    end for
+    end if
 
     m.top.responseDestaques = rails
     m.top.responseVodItems = allVodItems
@@ -411,22 +427,23 @@ sub fetchRadios(baseUrl as String)
 
     for each rawLine in lines
         line = rawLine.Trim()
-        if line = "" or Left(line, 1) = "#" then continue for
-        parts = line.Split("|")
-        if parts.Count() >= 2 then
-            name = parts[0].Trim()
-            streamUrl = parts[1].Trim()
-            logo = ""
-            if parts.Count() >= 3 then logo = parts[2].Trim()
-            genre = estiloDaRadio(name)
+        if line <> "" and Left(line, 1) <> "#" then
+            parts = line.Split("|")
+            if parts.Count() >= 2 then
+                name = parts[0].Trim()
+                streamUrl = parts[1].Trim()
+                logo = ""
+                if parts.Count() >= 3 then logo = parts[2].Trim()
+                genre = estiloDaRadio(name)
 
-            item = {
-                name: name,
-                url: streamUrl,
-                genre: genre,
-                logo: logo
-            }
-            radios.Push(item)
+                item = {
+                    name: name,
+                    url: streamUrl,
+                    genre: genre,
+                    logo: logo
+                }
+                radios.Push(item)
+            end if
         end if
     end for
 

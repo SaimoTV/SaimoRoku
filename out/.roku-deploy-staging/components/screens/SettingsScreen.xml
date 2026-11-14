@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="SettingsScreen" extends="Group">
+    <interface>
+        <field id="minhasListasRequested" type="boolean" alwaysNotify="true" />
+        <field id="reloadRequested" type="boolean" value="false" alwaysNotify="true" />
+        <field id="focusUpRequested" type="boolean" alwaysNotify="true" />
+        <field id="textoRecebido" type="string" alwaysNotify="true" onChange="onTextoRecebido" />
+        <function name="cleanUp" />
+    </interface>
+    <script type="text/brightscript" uri="pkg:/source/utils/Storage.brs" />
+    <script type="text/brightscript" uri="pkg:/components/screens/SettingsScreen.brs" />
+    <script type="text/brightscript" uri="pkg:/source/bslib.brs" />
+    <children>
+        <Label translation="[124, 240]" text="Ajustes" color="#FFFFFF">
+            <Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="60" />
+        </Label>
+        <Label id="versao" translation="[124, 340]" text="Saimo TV" color="#A8B4C0">
+            <Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="28" />
+        </Label>
+        <Label translation="[124, 380]" width="580" text="Saimo Connect: controle pelo celular na mesma rede Wi-Fi." wrap="true" numLines="2" color="#A8B4C0">
+            <Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="28" />
+        </Label>
+        <Label id="lblSecao" translation="[884, 244]" text="REPRODUÇÃO" color="#4FE3D0">
+            <Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="24" />
+        </Label>
+        <MarkupList id="settingsList" translation="[854, 284]" itemComponentName="AjusteItem" itemSize="[940, 140]" itemSpacing="[0, 12]" numRows="5" drawFocusFeedback="false" vertFocusAnimationStyle="floatingFocus" />
+        <Group id="painelTeclado" visible="false" translation="[124, 240]">
+            <Rectangle width="1672" height="760" color="#11161EEF" />
+            <Label id="tituloCampo" translation="[36, 28]" text="Endereço dos canais" color="#FFFFFF">
+                <Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="34" />
+            </Label>
+            <Label id="subtituloCampo" translation="[36, 72]" text="Digite pelo controle ou envie pelo Saimo Connect no celular" color="#A8B4C0">
+                <Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="22" />
+            </Label>
+            <Keyboard id="teclado" translation="[36, 120]" showTextEditBox="true" />
+            <LabelList id="botoes" translation="[36, 560]" itemSize="[360, 56]" itemSpacing="[0, 8]" numRows="3" color="#FFFFFF" focusedColor="#11161E" focusBitmapBlendColor="#4FE3D0" wrap="false">
+                <Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="26" />
+                <Font role="focusedFont" uri="pkg:/fonts/Roboto-Medium.ttf" size="26" />
+            </LabelList>
+        </Group>
+    </children>
+</component>

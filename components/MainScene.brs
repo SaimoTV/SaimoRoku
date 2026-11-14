@@ -562,6 +562,28 @@ sub onConnectCommand(evt as Object)
         if (m.currentScreenName = "minhas" or m.currentScreenName = "settings") and m.currentScreenNode <> invalid then
             m.currentScreenNode.textoRecebido = cmd.value
         end if
+    else if tipo = "dados" and cmd.listas <> invalid then
+        prefs = LoadPreferences()
+        mudou = false
+        if cmd.listas.canais <> invalid and cmd.listas.canais.ToStr().Trim() <> "" then
+            novoCanais = NormalizarEnderecoSaimo(cmd.listas.canais.ToStr())
+            if novoCanais <> prefs.urlCanais then
+                prefs.urlCanais = novoCanais
+                mudou = true
+            end if
+        end if
+        if cmd.listas.filmes <> invalid and cmd.listas.filmes.ToStr().Trim() <> "" then
+            novoFilmes = NormalizarEnderecoSaimo(cmd.listas.filmes.ToStr())
+            if novoFilmes <> prefs.urlFilmes then
+                prefs.urlFilmes = novoFilmes
+                mudou = true
+            end if
+        end if
+        if mudou then
+            SavePreferences(prefs)
+            m.prefs = prefs
+            loadAllData()
+        end if
     else if tipo = "fonte" or tipo = "sync" then
         avisarCelular()
     end if

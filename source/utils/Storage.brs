@@ -7,29 +7,64 @@ function GetRegistry() as Object
     return CreateObject("roRegistrySection", "saimo_tv")
 end function
 
-function NormalizarEnderecoSaimo(url as String) as String
-    u = url.Trim()
+function NormalizarEnderecoSaimo(url as Dynamic) as String
+    if url = invalid then return ""
+    u = url.ToStr().Trim()
     if u = "" then return ""
     l = LCase(u)
-    if Left(l, 7) <> "http://" and Left(l, 8) <> "https://" then
-        u = "https://" + u
-        l = LCase(u)
+    esquema = "https://"
+    resto = u
+    if Left(l, 7) = "http://" then
+        esquema = "http://"
+        resto = Mid(u, 8)
+    else if Left(l, 8) = "https://" then
+        esquema = "https://"
+        resto = Mid(u, 9)
     end if
+    u = esquema + resto
+    l = LCase(u)
     if Instr(1, l, ".m3u") > 0 or Instr(1, l, "get.php") > 0 or Instr(1, l, "type=m3u") > 0 then
         return u
     end if
-    while Right(u, 1) = "/"
-        u = Left(u, Len(u) - 1)
+
+    hashPos = Instr(1, resto, "#")
+    if hashPos > 0 then resto = Left(resto, hashPos - 1).Trim()
+    queryPos = Instr(1, resto, "?")
+    if queryPos > 0 then resto = Left(resto, queryPos - 1).Trim()
+    while Len(resto) > 0 and Right(resto, 1) = "/"
+        resto = Left(resto, Len(resto) - 1)
     end while
-    l = LCase(u)
-    sufixos = ["/catalogo.txt", "/destaques.txt", "/roku/indice.txt", "/indice.txt", "/eventos.txt"]
-    for each s in sufixos
-        if Right(l, Len(s)) = s then
-            u = Left(u, Len(u) - Len(s))
-            exit for
+    if resto = "" then return ""
+
+    barra = Instr(1, resto, "/")
+    host = resto
+    rota = ""
+    if barra > 0 then
+        host = Left(resto, barra - 1)
+        rota = Mid(resto, barra)
+    end if
+    host = LCase(host.Trim())
+    if host = "" then return ""
+
+    if rota <> "" then
+        partes = rota.Split("/")
+        if partes.Count() > 0 then
+            ultimo = LCase(partes[partes.Count() - 1])
+            if Right(ultimo, 4) = ".txt" or Right(ultimo, 5) = ".json" or ultimo = "catalogo" or ultimo = "destaques" or ultimo = "indice" then
+                partes.Pop()
+            end if
         end if
-    end for
-    return u + "/"
+        if partes.Count() > 0 and LCase(partes[partes.Count() - 1]) = "roku" then
+            partes.Pop()
+        end if
+        novaRota = ""
+        for each seg in partes
+            if seg <> "" then novaRota = novaRota + "/" + seg
+        end for
+        rota = novaRota
+    end if
+
+    return esquema + host + rota + "/"
 end function
 
 function GetDefaultPreferences() as Object
@@ -59,6 +94,12 @@ function LoadPreferences() as Object
                     parsed[key] = defaults[key]
                 end if
             end for
+            if parsed.urlCanais <> invalid and parsed.urlCanais <> "" then
+                parsed.urlCanais = NormalizarEnderecoSaimo(parsed.urlCanais)
+            end if
+            if parsed.urlFilmes <> invalid and parsed.urlFilmes <> "" then
+                parsed.urlFilmes = NormalizarEnderecoSaimo(parsed.urlFilmes)
+            end if
             return parsed
         end if
     end if
@@ -67,6 +108,12 @@ end function
 
 sub SavePreferences(prefs as Object)
     if prefs = invalid then return
+    if prefs.urlCanais <> invalid and prefs.urlCanais <> "" then
+        prefs.urlCanais = NormalizarEnderecoSaimo(prefs.urlCanais)
+    end if
+    if prefs.urlFilmes <> invalid and prefs.urlFilmes <> "" then
+        prefs.urlFilmes = NormalizarEnderecoSaimo(prefs.urlFilmes)
+    end if
     reg = GetRegistry()
     json = FormatJson(prefs)
     reg.Write("prefs", json)

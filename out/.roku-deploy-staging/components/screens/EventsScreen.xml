@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="EventsScreen" extends="Group">
+    <interface>
+        <field id="events" type="array" onChange="onEventsChange" />
+        <field id="tuneRequested" type="string" alwaysNotify="true" />
+        <field id="focusUpRequested" type="boolean" alwaysNotify="true" />
+        <function name="cleanUp" />
+    </interface>
+    <script type="text/brightscript" uri="pkg:/components/screens/EventsScreen.brs" />
+    <script type="text/brightscript" uri="pkg:/source/bslib.brs" />
+    <children>
+        <HeroBanner id="heroBanner" />
+        <Label id="vazio" translation="[0, 520]" width="1920" horizAlign="center" text="Nenhum jogo agora." color="#A8B4C0" visible="false">
+            <Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="34" />
+        </Label>
+        <RowList id="eventsRows" itemComponentName="PosterItem" translation="[100, 330]" itemSize="[1820, 424]" rowHeights="[424]" rowItemSize="[[528, 400]]" rowItemSpacing="[[32, 0]]" itemSpacing="[0, 28]" showRowLabel="[true]" rowLabelOffset="[[12, 18]]" rowLabelColor="#FFFFFF" rowFocusAnimationStyle="floatingFocus" vertFocusAnimationStyle="fixedFocus" drawFocusFeedback="false" numRows="2" wrap="false">
+            <Font role="rowLabelFont" uri="pkg:/fonts/Roboto-Medium.ttf" size="36" />
+        </RowList>
+    </children>
+</component>

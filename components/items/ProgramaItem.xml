@@ -13,24 +13,5 @@
     <Rectangle id="trilho" translation="[196, 146]" width="640" height="6" color="#FFFFFF33" visible="false" />
     <Rectangle id="barra" translation="[196, 146]" width="0" height="6" color="#4FE3D0" visible="false" />
   </children>
-  <script type="text/brightscript"><![CDATA[
-sub init()
-    m.moldura = m.top.findNode("moldura")
-end sub
-sub onConteudo()
-    c = m.top.itemContent
-    if c = invalid then return
-    m.top.findNode("hora").text = c.hora
-    m.top.findNode("titulo").text = c.title
-    m.top.findNode("detalhe").text = c.description
-    tem = c.progresso > 0
-    m.top.findNode("trilho").visible = tem
-    b = m.top.findNode("barra")
-    b.visible = tem
-    b.width = Int(640 * c.progresso)
-end sub
-sub onFoco()
-    m.moldura.visible = m.top.focusPercent > 0.5 and m.top.listHasFocus
-end sub
-  ]]></script>
+  <script type="text/brightscript" uri="pkg:/components/items/ProgramaItem.brs" />
 </component>

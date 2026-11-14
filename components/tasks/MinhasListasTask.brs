@@ -141,7 +141,7 @@ function tentarSalvarCatalogoSaimo(link as String) as Boolean
 
     ' Testa se é servidor de canais (catalogo.txt)
     txtCanais = xtBuscar(base + "catalogo.txt")
-    if txtCanais <> invalid and Instr(1, txtCanais, "|") > 0 then
+    if txtCanais <> invalid and Instr(1, LCase(txtCanais), "canal:") > 0 and Instr(1, LCase(txtCanais), "fonte:") > 0 then
         prefs = LoadPreferences()
         prefs.urlCanais = base
         SavePreferences(prefs)

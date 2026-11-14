@@ -152,13 +152,14 @@ function resolveMovieStream(title as String, letter as String, bases as Object) 
 
     for each rawLine in lines
         line = rawLine.Trim()
-        if line = "" then continue for
-        tabIdx = Instr(1, line, Chr(9))
-        if tabIdx > 1 then
-            lineTitle = LCase(Left(line, tabIdx - 1).Trim())
-            if lineTitle = cleanTitle then
-                targetLine = line
-                exit for
+        if line <> "" then
+            tabIdx = Instr(1, line, Chr(9))
+            if tabIdx > 1 then
+                lineTitle = LCase(Left(line, tabIdx - 1).Trim())
+                if lineTitle = cleanTitle then
+                    targetLine = line
+                    exit for
+                end if
             end if
         end if
     end for
@@ -169,13 +170,14 @@ function resolveMovieStream(title as String, letter as String, bases as Object) 
         baseTitle = Left(cleanTitle, openParen - 1).Trim()
         for each rawLine in lines
             line = rawLine.Trim()
-            if line = "" then continue for
-            tabIdx = Instr(1, line, Chr(9))
-            if tabIdx > 1 then
-                lineTitle = LCase(Left(line, tabIdx - 1).Trim())
-                if lineTitle = baseTitle or Instr(1, lineTitle, baseTitle) = 1 then
-                    targetLine = line
-                    exit for
+            if line <> "" then
+                tabIdx = Instr(1, line, Chr(9))
+                if tabIdx > 1 then
+                    lineTitle = LCase(Left(line, tabIdx - 1).Trim())
+                    if lineTitle = baseTitle or Instr(1, lineTitle, baseTitle) = 1 then
+                        targetLine = line
+                        exit for
+                    end if
                 end if
             end if
         end for
@@ -224,13 +226,14 @@ function resolveSeriesStream(title as String, letter as String, season as Intege
         lines = text.Split(Chr(10))
         for each rawLine in lines
             line = rawLine.Trim()
-            if line = "" then continue for
-            fields = line.Split(Chr(9))
-            if fields.Count() >= 3 then
-                sTitle = LCase(fields[0].Trim())
-                if sTitle = cleanTitle or Instr(1, sTitle, cleanTitle) = 1 then
-                    pedaco = Val(fields[2].Trim())
-                    exit for
+            if line <> "" then
+                fields = line.Split(Chr(9))
+                if fields.Count() >= 3 then
+                    sTitle = LCase(fields[0].Trim())
+                    if sTitle = cleanTitle or Instr(1, sTitle, cleanTitle) = 1 then
+                        pedaco = Val(fields[2].Trim())
+                        exit for
+                    end if
                 end if
             end if
         end for
@@ -248,31 +251,31 @@ function resolveSeriesStream(title as String, letter as String, season as Intege
 
         for each rawLine in lines
             line = rawLine.Trim()
-            if line = "" then continue for
-
-            if Left(line, 1) = "@" then
-                if inSeries then
-                    exit for
-                end if
-                headerTitle = LCase(line)
-                if headerTitle = targetHeader or Instr(1, headerTitle, targetHeader) = 1 then
-                    inSeries = true
-                end if
-            else if inSeries then
-                epFields = line.Split(Chr(9))
-                if epFields.Count() >= 4 then
-                    epSeason = Val(epFields[0].Trim())
-                    epNum = Val(epFields[1].Trim())
-                    if epSeason = season and epNum = episode then
-                        urlsStr = epFields[3].Trim()
-                        candidates = urlsStr.Split(",")
-                        for each c in candidates
-                            cand = c.Trim()
-                            resolved = buildCandidateUrl(cand, bases)
-                            if resolved <> "" then
-                                results.Push(resolved)
-                            end if
-                        end for
+            if line <> "" then
+                if Left(line, 1) = "@" then
+                    if inSeries then
+                        exit for
+                    end if
+                    headerTitle = LCase(line)
+                    if headerTitle = targetHeader or Instr(1, headerTitle, targetHeader) = 1 then
+                        inSeries = true
+                    end if
+                else if inSeries then
+                    epFields = line.Split(Chr(9))
+                    if epFields.Count() >= 4 then
+                        epSeason = Val(epFields[0].Trim())
+                        epNum = Val(epFields[1].Trim())
+                        if epSeason = season and epNum = episode then
+                            urlsStr = epFields[3].Trim()
+                            candidates = urlsStr.Split(",")
+                            for each c in candidates
+                                cand = c.Trim()
+                                resolved = buildCandidateUrl(cand, bases)
+                                if resolved <> "" then
+                                    results.Push(resolved)
+                                end if
+                            end for
+                        end if
                     end if
                 end if
             end if
@@ -375,28 +378,28 @@ function findInRedeflix(url as String, cleanTitle as String, season as Integer, 
 
     for each rawLine in lines
         line = rawLine.Trim()
-        if line = "" then continue for
-
-        if Left(line, 1) = "@" then
-            if inSeries then exit for
-            headerTitle = LCase(line)
-            if headerTitle = targetHeader or Instr(1, headerTitle, targetHeader) = 1 then
-                inSeries = true
-            end if
-        else if inSeries then
-            epFields = line.Split(Chr(9))
-            if epFields.Count() >= 4 then
-                epSeason = Val(epFields[0].Trim())
-                epNum = Val(epFields[1].Trim())
-                if epSeason = season and epNum = episode then
-                    urlsStr = epFields[3].Trim()
-                    candidates = urlsStr.Split(",")
-                    for each c in candidates
-                        resolved = buildCandidateUrl(c.Trim(), bases)
-                        if resolved <> "" then
-                            results.Push(resolved)
-                        end if
-                    end for
+        if line <> "" then
+            if Left(line, 1) = "@" then
+                if inSeries then exit for
+                headerTitle = LCase(line)
+                if headerTitle = targetHeader or Instr(1, headerTitle, targetHeader) = 1 then
+                    inSeries = true
+                end if
+            else if inSeries then
+                epFields = line.Split(Chr(9))
+                if epFields.Count() >= 4 then
+                    epSeason = Val(epFields[0].Trim())
+                    epNum = Val(epFields[1].Trim())
+                    if epSeason = season and epNum = episode then
+                        urlsStr = epFields[3].Trim()
+                        candidates = urlsStr.Split(",")
+                        for each c in candidates
+                            resolved = buildCandidateUrl(c.Trim(), bases)
+                            if resolved <> "" then
+                                results.Push(resolved)
+                            end if
+                        end for
+                    end if
                 end if
             end if
         end if
