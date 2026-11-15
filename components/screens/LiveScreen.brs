@@ -494,14 +494,7 @@ sub playCurrentVariant()
     content = CreateObject("roSGNode", "ContentNode")
     content.url = playUrl
     content.title = ch.name
-    lowerPlay = LCase(playUrl)
-    if Instr(1, lowerPlay, ".mpd") > 0 then
-        content.streamFormat = "dash"
-    else if Instr(1, lowerPlay, ".mp4") > 0 then
-        content.streamFormat = "mp4"
-    else
-        content.streamFormat = "hls"
-    end if
+    content.streamFormat = formatoDoFluxo(rawUrl)
     content.live = true
     content.HttpSendClientHeaders = true
 
@@ -530,6 +523,19 @@ sub playCurrentVariant()
     m.vigiaTimer.control = "start"
     m.ancora.setFocus(true)
 end sub
+
+' O formato sai do endereço original (o do proxy leva o original na query).
+' Lista de provedor (Xtream) entrega canal em .ts puro: declarado como HLS, o
+' Roku tenta ler o vídeo como playlist e o canal nunca abre.
+function formatoDoFluxo(url as String) as String
+    caminho = LCase(url)
+    q = Instr(1, caminho, "?")
+    if q > 0 then caminho = Left(caminho, q - 1)
+    if Right(caminho, 4) = ".mpd" then return "dash"
+    if Right(caminho, 4) = ".mp4" then return "mp4"
+    if Right(caminho, 3) = ".ts" then return "ts"
+    return "hls"
+end function
 
 sub onVigia()
     if m.encerrado = true or m.liveVideo = invalid then return
