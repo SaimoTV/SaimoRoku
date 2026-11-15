@@ -550,12 +550,17 @@ function SaveAddons(addons as Object) as Object
     end for
 
     json = FormatJson(cleanList)
-    ' Proteção explícita contra o limite rígido de 16 KB do roRegistrySection no Roku
-    if Len(json) > 15400 then
-        return { ok: false, error: "Limite de armazenamento (16 KB) do Roku atingido. Remova um addon antes de adicionar outro." }
+    ' Os 16 KB do registro são do app inteiro (ajustes, favoritos, continuar
+    ' assistindo, listas, Debrid), não só dos addons. Encher o registro com addons
+    ' fazia as outras gravações falharem caladas.
+    reg = GetAddonsRegistry()
+    atual = reg.Read("addons")
+    if atual = invalid then atual = ""
+    livre = CreateObject("roRegistry").GetSpaceAvailable() + Len(atual)
+    if Len(json) > 8000 or Len(json) + 1024 > livre then
+        return { ok: false, error: "Sem espaço no Roku para mais addons. Remova um addon antes de adicionar outro." }
     end if
 
-    reg = GetAddonsRegistry()
     reg.Write("addons", json)
     reg.Flush()
     return { ok: true, addons: cleanList, error: "" }

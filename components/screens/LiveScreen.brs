@@ -61,19 +61,25 @@ sub init()
 end sub
 
 sub onPinOpenChange()
-    if not m.pinModal.isOpen and not m.channelDrawer.isOpen and not m.painelFontes.aberto then
-        m.ancora.setFocus(true)
-    end if
+    focarAncora()
 end sub
 
 sub onFocusedChildChange()
     if m.top.isInFocusChain() and not m.painelFontes.aberto and not m.pinModal.isOpen then
         if m.channelDrawer.isOpen then
-            m.channelDrawer.setFocus(true)
-        else
+            if not m.channelDrawer.isInFocusChain() then m.channelDrawer.setFocus(true)
+        else if not m.ancora.hasFocus() then
             m.ancora.setFocus(true)
         end if
     end if
+end sub
+
+' O foco só volta para a âncora quando nada está aberto por cima do vídeo.
+' Tirar o foco do painel de canais enquanto a pessoa navega nele deixava a
+' lista visível mas surda: as setas paravam de responder.
+sub focarAncora()
+    if m.channelDrawer.isOpen or m.painelFontes.aberto or m.pinModal.isOpen then return
+    if not m.ancora.hasFocus() then m.ancora.setFocus(true)
 end sub
 
 sub onFavoriteToastTimer()
@@ -317,6 +323,8 @@ sub onFonteEscolhida()
     end for
     m.currentVariantIndex = i
     m.tryingProxy = false
+    m.formatoTrocado = false
+    m.reconexoes = 0
     playCurrentVariant()
     if m.channelDrawer.isOpen then m.channelDrawer.isOpen = false
 end sub
@@ -351,15 +359,33 @@ sub onArvore()
     if m.encerrado = true then return
     arvore = m.top.arvore
     if arvore = invalid then return
-    nos = []
+    ' roArray.SortBy só ordena arrays associativos: com nós a ordem ficava a das
+    ' seções e o índice do zapping não batia com o número do canal.
+    soltos = []
+    total = 0
+    for i = 0 to arvore.getChildCount() - 1
+        total = total + arvore.getChild(i).getChildCount()
+    end for
+    porNumero = CreateObject("roArray", total, true)
     for i = 0 to arvore.getChildCount() - 1
         secao = arvore.getChild(i)
         for j = 0 to secao.getChildCount() - 1
             c = secao.getChild(j)
-            if c <> invalid then nos.Push(c)
+            if c <> invalid then
+                n = c.number
+                if n <> invalid and n >= 1 and n <= total and porNumero[n - 1] = invalid then
+                    porNumero[n - 1] = c
+                else
+                    soltos.Push(c)
+                end if
+            end if
         end for
     end for
-    nos.SortBy("number")
+    nos = []
+    for each c in porNumero
+        if c <> invalid then nos.Push(c)
+    end for
+    nos.Append(soltos)
     m.canais = nos
     m.channelDrawer.selectedIndex = m.top.currentChannelIndex
     m.channelDrawer.arvore = arvore
@@ -426,6 +452,8 @@ sub playChannel(index as Integer)
     m.ultimoCanal = ch.name
     m.currentVariantIndex = 0
     m.tryingProxy = false
+    m.formatoTrocado = false
+    m.reconexoes = 0
     m.vigiaTimer.control = "stop"
     updateHUDInfo()
     playCurrentVariant()
@@ -442,7 +470,7 @@ sub playCurrentVariant()
         m.vigiaTimer.control = "stop"
         m.liveVideo.control = "stop"
         m.liveVideo.content = invalid
-        m.ancora.setFocus(true)
+        focarAncora()
         return
     end if
 
@@ -453,7 +481,7 @@ sub playCurrentVariant()
         m.vigiaTimer.control = "stop"
         m.liveVideo.control = "stop"
         m.liveVideo.content = invalid
-        m.ancora.setFocus(true)
+        focarAncora()
         return
     end if
 
@@ -494,7 +522,11 @@ sub playCurrentVariant()
     content = CreateObject("roSGNode", "ContentNode")
     content.url = playUrl
     content.title = ch.name
-    content.streamFormat = formatoDoFluxo(rawUrl)
+    formato = formatoDoFluxo(rawUrl)
+    if m.formatoTrocado = true then
+        if formato = "ts" then formato = "hls" else formato = "ts"
+    end if
+    content.streamFormat = formato
     content.live = true
     content.HttpSendClientHeaders = true
 
@@ -521,7 +553,7 @@ sub playCurrentVariant()
     ' Fonte que não abre nem dá erro não pode prender o canal.
     m.vigiaTimer.control = "stop"
     m.vigiaTimer.control = "start"
-    m.ancora.setFocus(true)
+    focarAncora()
 end sub
 
 ' O formato sai do endereço original (o do proxy leva o original na query).
@@ -534,7 +566,36 @@ function formatoDoFluxo(url as String) as String
     if Right(caminho, 4) = ".mpd" then return "dash"
     if Right(caminho, 4) = ".mp4" then return "mp4"
     if Right(caminho, 3) = ".ts" then return "ts"
+    if Right(caminho, 5) = ".m3u8" or Right(caminho, 4) = ".m3u" then return "hls"
+    ' Sem extensão e terminando no número do canal (http://host/usuario/senha/123
+    ' ou /live/...): é o padrão do Xtream, que entrega MPEG-TS. Tratado como HLS,
+    ' o Roku lia o vídeo sem fim como se fosse playlist e o aparelho travava.
+    partes = caminho.Split("/")
+    if partes.Count() > 0 then
+        ultimo = partes[partes.Count() - 1]
+        if ultimo <> "" and soDigitos(ultimo) then return "ts"
+    end if
     return "hls"
+end function
+
+function soDigitos(t as String) as Boolean
+    for i = 1 to Len(t)
+        c = Asc(Mid(t, i, 1))
+        if c < 48 or c > 57 then return false
+    end for
+    return true
+end function
+
+' Endereço sem extensão: o formato é um palpite. Se falhar, vale tentar o outro
+' antes de gastar o proxy ou pular de fonte.
+function formatoIncerto(url as String) as Boolean
+    caminho = LCase(url)
+    q = Instr(1, caminho, "?")
+    if q > 0 then caminho = Left(caminho, q - 1)
+    for each ext in [".mpd", ".mp4", ".ts", ".m3u8", ".m3u"]
+        if Right(caminho, Len(ext)) = ext then return false
+    end for
+    return true
 end function
 
 sub onVigia()
@@ -553,7 +614,7 @@ sub onVigia()
             m.vigiaTimer.control = "stop"
             m.liveVideo.control = "stop"
             m.liveVideo.content = invalid
-            m.ancora.setFocus(true)
+            focarAncora()
         end if
     end if
 end sub
@@ -608,6 +669,7 @@ sub onVideoState()
     state = m.liveVideo.state
     if state = "playing" then
         m.jaTocou = true
+        m.reconexoes = 0
         m.ultimoAvanco = CreateObject("roDateTime").AsSeconds()
         m.bufferingGroup.visible = false
         m.vigiaTimer.control = "stop"
@@ -621,7 +683,11 @@ sub onVideoState()
         m.vigiaTimer.control = "start"
     else if state = "finished" then
         m.bufferingGroup.visible = false
-        if m.jaTocou then
+        ' Ao vivo que "termina" é queda: reconecta, mas sem laço infinito de
+        ' para-e-toca (cada volta ocupa a rede e o decodificador do aparelho).
+        if m.reconexoes = invalid then m.reconexoes = 0
+        if m.jaTocou and m.reconexoes < 3 then
+            m.reconexoes = m.reconexoes + 1
             playCurrentVariant()
         else
             tryNextVariant()
@@ -643,7 +709,7 @@ sub tryNextVariant()
         m.vigiaTimer.control = "stop"
         m.liveVideo.control = "stop"
         m.liveVideo.content = invalid
-        m.ancora.setFocus(true)
+        focarAncora()
         return
     end if
 
@@ -653,7 +719,7 @@ sub tryNextVariant()
         m.vigiaTimer.control = "stop"
         m.liveVideo.control = "stop"
         m.liveVideo.content = invalid
-        m.ancora.setFocus(true)
+        focarAncora()
         return
     end if
 
@@ -663,9 +729,17 @@ sub tryNextVariant()
     end if
     ehHttp = (Left(rawUrl, 7) = "http://")
 
+    ' Endereço sem extensão: antes de tudo, o outro formato (TS <-> HLS).
+    if rawUrl <> "" and m.formatoTrocado <> true and formatoIncerto(rawUrl) then
+        m.formatoTrocado = true
+        playCurrentVariant()
+        return
+    end if
+
     ' Se ainda não tentou a fonte atual via proxy (e não é http puro), tenta via proxy antes de avançar
     if not m.tryingProxy and not ehHttp and rawUrl <> "" then
         m.tryingProxy = true
+        m.formatoTrocado = false
         playCurrentVariant()
         return
     end if
@@ -673,6 +747,8 @@ sub tryNextVariant()
     ' Avança para a próxima fonte da lista
     m.currentVariantIndex = m.currentVariantIndex + 1
     m.tryingProxy = false
+    m.formatoTrocado = false
+    m.reconexoes = 0
     playCurrentVariant()
 end sub
 
