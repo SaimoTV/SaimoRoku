@@ -167,13 +167,30 @@ sub applyCombinedVodAndRails()
     end if
 end sub
 
+' A tarefa que já entregou sai da lista: o campo de resposta dela guardava uma
+' cópia inteira dos canais (ou do guia) enquanto o app estivesse aberto. Com
+' lista grande, eram várias cópias vivas ao mesmo tempo num aparelho de 512 MB.
+sub soltarTarefa(evt as Object)
+    no = evt.getRoSGNode()
+    if no = invalid or m.loaders = invalid then return
+    for i = m.loaders.Count() - 1 to 0 step -1
+        if m.loaders[i].isSameNode(no) then
+            m.loaders[i].unobserveField(evt.getField())
+            m.loaders.Delete(i)
+            exit for
+        end if
+    end for
+end sub
+
 sub onChannelsLoaded(evt as Object)
     m.canaisCatalogo = evt.getData()
+    soltarTarefa(evt)
     juntarCanais()
 end sub
 
 sub onMinhasCarregadas(evt as Object)
     m.canaisMinhas = evt.getData()
+    soltarTarefa(evt)
     if m.canaisMinhas <> invalid and m.canaisMinhas.Count() > 0 then juntarCanais()
 end sub
 
@@ -236,6 +253,7 @@ end sub
 
 sub onEpgLoaded(evt as Object)
     m.cachedEpg = evt.getData()
+    soltarTarefa(evt)
     montarArvore()
     if m.currentScreenName = "home" and m.currentScreenNode <> invalid then
         m.currentScreenNode.epgMap = m.cachedEpg
@@ -255,6 +273,8 @@ end sub
 
 sub onArvorePronta(evt as Object)
     m.arvoreCanais = evt.getData()
+    ' A árvore é um nó (vai por referência); a tarefa só guardava a cópia dos canais.
+    m.tarefaArvore = invalid
     if m.currentScreenName = "live" and m.currentScreenNode <> invalid then m.currentScreenNode.arvore = m.arvoreCanais
 end sub
 
@@ -270,6 +290,7 @@ end sub
 
 sub onVodLoaded(evt as Object)
     v = evt.getData()
+    soltarTarefa(evt)
     if v <> invalid and Type(v) = "roArray" then
         m.localVod = v
     else
@@ -298,6 +319,7 @@ end function
 
 sub onEventsLoaded(evt as Object)
     m.eventosCrus = evt.getData()
+    soltarTarefa(evt)
     juntarEventos()
 end sub
 
@@ -316,6 +338,7 @@ end sub
 
 sub onRadiosLoaded(evt as Object)
     m.cachedRadios = evt.getData()
+    soltarTarefa(evt)
     if m.currentScreenName = "radios" and m.currentScreenNode <> invalid then
         m.currentScreenNode.radios = m.cachedRadios
     end if
