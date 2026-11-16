@@ -29,6 +29,11 @@ sub init()
     m.ancora = m.top.findNode("ancora")
     m.vigiaTimer = m.top.findNode("vigiaTimer")
     m.vigiaTimer.observeField("fire", "onVigia")
+    m.logoBase = m.top.findNode("logoBase")
+    m.logoCor = m.top.findNode("logoCor")
+    m.logoCorRecorte = m.top.findNode("logoCorRecorte")
+    m.logoTimer = m.top.findNode("logoTimer")
+    m.logoTimer.observeField("fire", "onLogoTimer")
     m.esperaParada = m.top.findNode("esperaParada")
     m.esperaParada.observeField("fire", "onEsperaParada")
     m.conteudoPendente = invalid
@@ -545,6 +550,7 @@ sub playCurrentVariant()
     m.jaTocou = false
     m.ultimoAvanco = CreateObject("roDateTime").AsSeconds()
     m.bufferingGroup.visible = true
+    iniciarLogoCarregando(ch)
     m.servidorAtual = servidor
     ' Fonte que não abre nem dá erro não pode prender o canal.
     m.vigiaTimer.control = "stop"
@@ -565,6 +571,32 @@ sub playCurrentVariant()
     else
         abrirConteudoPendente()
     end if
+end sub
+
+' Logo do canal em cinza que ganha cor da esquerda para a direita até o vídeo
+' começar. Sem medida real de progresso, a cor sobe rápido e desacelera (0 a
+' 92 % em ~12 s); o grupo some quando o vídeo toca e a imagem já está quase cheia.
+sub iniciarLogoCarregando(ch as Object)
+    uri = "pkg:/images/icon_hd.png"
+    if ch <> invalid and ch.logo <> invalid and ch.logo <> "" then uri = ch.logo
+    m.logoBase.uri = uri
+    m.logoCor.uri = uri
+    m.logoInicio = CreateObject("roTimespan")
+    m.logoInicio.Mark()
+    m.logoCorRecorte.clippingRect = [0, 0, 0, 160]
+    m.logoTimer.control = "stop"
+    m.logoTimer.control = "start"
+end sub
+
+sub onLogoTimer()
+    if m.bufferingGroup.visible = false or m.logoInicio = invalid then
+        m.logoTimer.control = "stop"
+        return
+    end if
+    t = m.logoInicio.TotalMilliseconds() / 4000.0
+    ' 1 - e^(-t): sobe rápido e desacelera perto do fim.
+    p = 0.92 * (1.0 - Exp(-t))
+    m.logoCorRecorte.clippingRect = [0, 0, Int(160 * p), 160]
 end sub
 
 sub abrirConteudoPendente()
