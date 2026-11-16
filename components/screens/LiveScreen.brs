@@ -29,6 +29,9 @@ sub init()
     m.ancora = m.top.findNode("ancora")
     m.vigiaTimer = m.top.findNode("vigiaTimer")
     m.vigiaTimer.observeField("fire", "onVigia")
+    m.esperaParada = m.top.findNode("esperaParada")
+    m.esperaParada.observeField("fire", "onEsperaParada")
+    m.conteudoPendente = invalid
     m.zapTimer = m.top.findNode("zapTimer")
     m.zapTimer.observeField("fire", "onZap")
     m.holdTimer = m.top.findNode("holdTimer")
@@ -539,21 +542,48 @@ sub playCurrentVariant()
     end if
     content.HttpHeaders = headers
 
-    m.trocandoStream = true
     m.jaTocou = false
     m.ultimoAvanco = CreateObject("roDateTime").AsSeconds()
     m.bufferingGroup.visible = true
-    m.liveVideo.control = "stop"
-    m.liveVideo.content = invalid
-    m.liveVideo.mute = false
-    m.liveVideo.content = content
-    m.liveVideo.control = "play"
-    m.trocandoStream = false
     m.servidorAtual = servidor
     ' Fonte que não abre nem dá erro não pode prender o canal.
     m.vigiaTimer.control = "stop"
     m.vigiaTimer.control = "start"
     focarAncora()
+
+    ' Troca de canal em aparelho de 512 MB: abrir o fluxo novo com o decodificador
+    ' ainda preso ao anterior é o que travava a imagem e os botões. A Roku manda
+    ' parar e esperar o estado "stopped" antes de dar o conteúdo seguinte; se a
+    ' confirmação não vier em 1 s, segue assim mesmo.
+    m.conteudoPendente = content
+    estado = m.liveVideo.state
+    if estado = "playing" or estado = "buffering" or estado = "paused" then
+        m.trocandoStream = true
+        m.liveVideo.control = "stop"
+        m.esperaParada.control = "stop"
+        m.esperaParada.control = "start"
+    else
+        abrirConteudoPendente()
+    end if
+end sub
+
+sub abrirConteudoPendente()
+    m.esperaParada.control = "stop"
+    content = m.conteudoPendente
+    m.conteudoPendente = invalid
+    if content = invalid or m.encerrado = true then
+        m.trocandoStream = false
+        return
+    end if
+    m.trocandoStream = true
+    m.liveVideo.mute = false
+    m.liveVideo.content = content
+    m.liveVideo.control = "play"
+    m.trocandoStream = false
+end sub
+
+sub onEsperaParada()
+    if m.conteudoPendente <> invalid then abrirConteudoPendente()
 end sub
 
 ' O formato sai do endereço original (o do proxy leva o original na query).
@@ -665,8 +695,14 @@ sub onVideoPosition()
 end sub
 
 sub onVideoState()
-    if m.encerrado = true or m.trocandoStream = true or m.liveVideo = invalid then return
+    if m.encerrado = true or m.liveVideo = invalid then return
     state = m.liveVideo.state
+    ' O decodificador confirmou que parou: agora sim abre o canal seguinte.
+    if m.conteudoPendente <> invalid and (state = "stopped" or state = "none" or state = "finished" or state = "error") then
+        abrirConteudoPendente()
+        return
+    end if
+    if m.trocandoStream = true then return
     if state = "playing" then
         m.jaTocou = true
         m.reconexoes = 0
@@ -867,6 +903,8 @@ sub cleanUp()
     m.encerrado = true
     m.trocandoStream = true
     if m.inicioTimer <> invalid then m.inicioTimer.control = "stop"
+    m.conteudoPendente = invalid
+    if m.esperaParada <> invalid then m.esperaParada.control = "stop"
     if m.vigiaTimer <> invalid then m.vigiaTimer.control = "stop"
     if m.zapTimer <> invalid then m.zapTimer.control = "stop"
     if m.holdTimer <> invalid then m.holdTimer.control = "stop"

@@ -40,6 +40,7 @@
     <Timer id="holdTimer" duration="0.6" repeat="false" />
     <Timer id="zapTimer" duration="0.2" repeat="false" />
     <Timer id="vigiaTimer" duration="7" repeat="false" />
+    <Timer id="esperaParada" duration="1" repeat="false" />
     <Group id="ancora" focusable="true" />
     <Timer id="sonoTimer" repeat="false" />
 
