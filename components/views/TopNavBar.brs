@@ -11,6 +11,8 @@ sub init()
     m.clockTimer = m.top.findNode("clockTimer")
     m.clockTimer.observeField("fire", "updateClock")
     m.clockTimer.control = "start"
+    m.top.findNode("apoieCores").control = "start"
+    m.top.findNode("apoieBrilho").control = "start"
     updateClock()
 
     m.itemNames = ["search", "home", "live", "events", "vod", "favorites", "radios", "doacao", "settings"]
