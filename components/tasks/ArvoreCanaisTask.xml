@@ -5,5 +5,6 @@
     <field id="epg" type="assocarray" />
     <field id="arvore" type="node" alwaysNotify="true" />
   </interface>
+  <script type="text/brightscript" uri="pkg:/source/utils/Guia.brs" />
   <script type="text/brightscript" uri="pkg:/components/tasks/ArvoreCanaisTask.brs" />
 </component>

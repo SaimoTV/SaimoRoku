@@ -33,8 +33,8 @@ sub montar()
             no.hdPosterUrl = logo
         end if
         campos = { name: c.name, number: c.number, category: g, logo: logo, variants: c.variants, numero: c.number.ToStr(), grupoTexto: UCase(g), programa: "", progresso: 0.0, ini: 0, fim: 0, seguinte: "" }
-        if epg <> invalid and epg[c.name] <> invalid then
-            lista = epg[c.name]
+        lista = GuiaDoCanal(epg, c.name)
+        if lista <> invalid then
             for i = 0 to lista.Count() - 1
                 p = lista[i]
                 if agora >= p.startSec and agora < p.stopSec then

@@ -83,8 +83,9 @@ sub montarFileiras()
             ch = channels[i]
             itemNode = rowLive.CreateChild("ContentNode")
             progTitle = invalid
-            if epg <> invalid and epg[ch.name] <> invalid and epg[ch.name].Count() > 0 then
-                for each p in epg[ch.name]
+            guiaCanal = GuiaDoCanal(epg, ch.name)
+            if guiaCanal <> invalid and guiaCanal.Count() > 0 then
+                for each p in guiaCanal
                     if p.isCurrent then
                         progTitle = p.title
                         exit for

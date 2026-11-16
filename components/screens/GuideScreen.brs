@@ -63,7 +63,7 @@ sub loadMoreChannels(count as Integer)
         prog = ""
         pct = 0.0
         lista = invalid
-        if m.epg <> invalid then lista = m.epg[ch.name]
+        lista = GuiaDoCanal(m.epg, ch.name)
         if lista <> invalid and lista.Count() > 0 then
             prog = lista[0].title
             pct = progressoDe(lista[0])
@@ -120,8 +120,9 @@ sub updateSchedule(idx as Integer)
 
     epgMap = m.epg
     root = CreateObject("roSGNode", "ContentNode")
-    if epgMap <> invalid and epgMap[ch.name] <> invalid then
-        for each p in epgMap[ch.name]
+    guiaCanal = GuiaDoCanal(epgMap, ch.name)
+    if guiaCanal <> invalid then
+        for each p in guiaCanal
             node = root.CreateChild("ContentNode")
             node.title = p.title
             node.description = p.durationMin.ToStr() + " min"

@@ -20,5 +20,6 @@
     <Timer id="focoTimer" duration="0.1" repeat="false" />
   </children>
 
+  <script type="text/brightscript" uri="pkg:/source/utils/Guia.brs" />
   <script type="text/brightscript" uri="pkg:/components/screens/GuideScreen.brs" />
 </component>

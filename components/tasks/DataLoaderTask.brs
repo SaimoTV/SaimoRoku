@@ -216,7 +216,7 @@ end sub
 ' guia.txt diz o código de cada canal no meuguia.tv; a página do canal traz a
 ' programação. O resultado fica 6 h no cachefs para abrir o app sem esperar.
 sub fetchEpg(baseUrl as String)
-    cache = "cachefs:/epg.json"
+    cache = "cachefs:/epg2.json"
     agora = CreateObject("roDateTime").AsSeconds()
     bruto = ""
     if CreateObject("roFileSystem").Exists(cache) then
@@ -231,27 +231,67 @@ sub fetchEpg(baseUrl as String)
     end if
 
     ' Abrir o app e o primeiro canal vêm antes do guia.
-    sleep(15000)
+    sleep(4000)
     text = HttpGet(baseUrl + "guia.txt")
     if text = "" then return
 
-    fila = []
+    meuguia = []
+    guiadetv = []
     for each rawLine in text.Split(Chr(10))
         parts = rawLine.Trim().Split(Chr(9))
-        if parts.Count() >= 3 and parts[0] = "meuguia" then fila.Push({ nome: parts[1], codigo: parts[2] })
+        if parts.Count() >= 3 then
+            if parts[0] = "meuguia" then meuguia.Push({ nome: parts[1], codigo: parts[2] })
+            if parts[0] = "guiadetv" then guiadetv.Push({ nome: parts[1], codigo: parts[2] })
+        end if
     end for
 
     epgMap = {}
-    for i = 0 to fila.Count() - 1
-        c = fila[i]
-        ' A página traz a semana inteira (270 KB); o começo já tem hoje e amanhã.
-        lista = lerMeuGuia(Left(HttpGet("https://meuguia.tv/programacao/canal/" + c.codigo), 60000), agora)
-        if lista.Count() > 0 then epgMap[c.nome] = lista
-        sleep(150)
-    end for
+    ' Guia central: um arquivo só, montado no servidor às 11h e às 18h. Antes
+    ' eram 69 páginas de ~300 KB baixadas e lidas aqui a cada abertura.
+    central = invalid
+    texto = HttpGet(baseUrl + "epg-leve.json")
+    if texto <> "" then central = ParseJson(texto)
+    texto = ""
+    if central <> invalid and central.m <> invalid and central.g <> invalid then
+        ' guiadetv primeiro (horários exatos), pelo nome normalizado; meuguia
+        ' pelo nome do catálogo, para quem o guiadetv não cobre.
+        for each c in guiadetv
+            lista = programasDoCentral(central.g[c.codigo], agora)
+            if lista.Count() > 0 then epgMap[NormalizarNomeCanal(c.nome)] = lista
+        end for
+        for each c in meuguia
+            if epgMap[NormalizarNomeCanal(c.nome)] = invalid then
+                lista = programasDoCentral(central.m[c.codigo], agora)
+                if lista.Count() > 0 then epgMap[c.nome] = lista
+            end if
+        end for
+    else
+        ' Endereço sem guia central (lista antiga): página por página.
+        for i = 0 to meuguia.Count() - 1
+            c = meuguia[i]
+            ' A página traz a semana inteira (270 KB); o começo já tem hoje e amanhã.
+            lista = lerMeuGuia(Left(HttpGet("https://meuguia.tv/programacao/canal/" + c.codigo), 60000), agora)
+            if lista.Count() > 0 then epgMap[c.nome] = lista
+            sleep(150)
+        end for
+    end if
+    central = invalid
     m.top.responseEpg = epgMap
     WriteAsciiFile(cache, FormatJson({ quando: agora, mapa: epgMap }))
 end sub
+
+' [[inicio, fim, "título"], ...] do guia central: de agora em diante, até 12.
+function programasDoCentral(lista as Dynamic, agora as Integer) as Object
+    saida = []
+    if lista = invalid then return saida
+    for each p in lista
+        if p.Count() >= 3 and p[1] > agora then
+            saida.Push({ title: p[2], startSec: p[0], stopSec: p[1], durationMin: Int((p[1] - p[0]) / 60), remainingMin: Int((p[1] - agora) / 60), isCurrent: agora >= p[0] })
+            if saida.Count() >= 12 then exit for
+        end if
+    end for
+    return saida
+end function
 
 function entre(texto as String, abre as String, fecha as String) as Dynamic
     p = Instr(1, texto, abre)
