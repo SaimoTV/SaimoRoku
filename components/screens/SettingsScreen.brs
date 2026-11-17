@@ -130,7 +130,7 @@ sub buildSettingsList()
     if not KidsAtivo() then
         senha = "senha própria"
         h = GetRegistry().Read("parental_senha")
-        if h = invalid or h = "" then senha = "senha inicial 0000"
+        if h = invalid or h = "" then senha = "senha de fábrica"
         addSettingItem(content, "Controle parental", "No Roku o conteúdo adulto fica sempre de fora · trocar a senha (" + senha + ")", "parental")
     end if
 
