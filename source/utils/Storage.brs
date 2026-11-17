@@ -137,7 +137,7 @@ end sub
 
 function LoadAllProgress() as Object
     reg = GetRegistry()
-    raw = reg.Read("vod_progress")
+    raw = reg.Read(ChavePerfil("vod_progress"))
     if raw <> "" then
         parsed = ParseJson(raw)
         if parsed <> invalid then return parsed
@@ -161,7 +161,7 @@ sub SaveVODProgress(title as String, posSec as Integer, durSec as Integer, seaso
         if all[title] <> invalid then
             all.Delete(title)
             reg = GetRegistry()
-            reg.Write("vod_progress", FormatJson(all))
+            reg.Write(ChavePerfil("vod_progress"), FormatJson(all))
             reg.Flush()
         end if
         return
@@ -195,7 +195,7 @@ sub SaveVODProgress(title as String, posSec as Integer, durSec as Integer, seaso
     }
 
     reg = GetRegistry()
-    reg.Write("vod_progress", FormatJson(all))
+    reg.Write(ChavePerfil("vod_progress"), FormatJson(all))
     reg.Flush()
 end sub
 
@@ -203,7 +203,7 @@ end sub
 
 function LoadFavoriteChannels() as Object
     reg = GetRegistry()
-    raw = reg.Read("fav_channels")
+    raw = reg.Read(ChavePerfil("fav_channels"))
     if raw <> "" then
         parsed = ParseJson(raw)
         if parsed <> invalid then return parsed
@@ -226,7 +226,7 @@ sub ToggleFavoriteChannel(channelName as String)
         favs.Push(channelName)
     end if
     reg = GetRegistry()
-    reg.Write("fav_channels", FormatJson(favs))
+    reg.Write(ChavePerfil("fav_channels"), FormatJson(favs))
     reg.Flush()
 end sub
 
@@ -242,7 +242,7 @@ end function
 
 function LoadFavoriteVOD() as Object
     reg = GetRegistry()
-    raw = reg.Read("fav_vod")
+    raw = reg.Read(ChavePerfil("fav_vod"))
     if raw <> "" then
         parsed = ParseJson(raw)
         if parsed <> invalid then return parsed
@@ -277,7 +277,7 @@ sub ToggleFavoriteVOD(item as Object)
         favs.Push(clean)
     end if
     reg = GetRegistry()
-    reg.Write("fav_vod", FormatJson(favs))
+    reg.Write(ChavePerfil("fav_vod"), FormatJson(favs))
     reg.Flush()
 end sub
 
@@ -315,7 +315,7 @@ sub RemoveInProgress(title as String)
     end for
     if changed then
         reg = GetRegistry()
-        reg.Write("vod_progress", FormatJson(all))
+        reg.Write(ChavePerfil("vod_progress"), FormatJson(all))
         reg.Flush()
     end if
 end sub
@@ -335,3 +335,179 @@ sub SaveMinhasListas(listas as Object)
     reg.Write("minhas_listas", FormatJson(listas))
     reg.Flush()
 end sub
+
+' ====================================================================
+' Perfis: cada um com os seus favoritos e onde parou; listas e ajustes são
+' do aparelho todo. Contrato em SaimoPlayer/docs/perfis.md. O perfil
+' principal usa as chaves de sempre; os outros, a chave com "@<id>". No Roku
+' os perfis ficam só no aparelho (o Connect daqui é só controle remoto).
+' ====================================================================
+
+function PerfisAvatares() as Object
+    return ["gato", "cachorro", "raposa", "urso", "panda", "coelho", "coruja", "pinguim", "sapo", "leao", "coala", "robo", "alien", "monstro", "dino", "polvo", "pintinho", "tigre", "astronauta", "abelha", "fantasma"]
+end function
+
+function PerfisEstado() as Object
+    raw = GetRegistry().Read("perfis")
+    e = invalid
+    if raw <> invalid and raw <> "" then e = ParseJson(raw)
+    if e = invalid or type(e) <> "roAssociativeArray" then e = {}
+    if e.lista = invalid then e.lista = []
+    if e.ativo = invalid then e.ativo = "principal"
+    if e.perguntar = invalid then e.perguntar = true
+    temPrincipal = false
+    for each p in e.lista
+        if p.id = "principal" then
+            temPrincipal = true
+            p.kids = false
+            p.codigo = ""
+        end if
+    end for
+    if not temPrincipal then e.lista.Unshift({ id: "principal", nome: "Principal", avatar: "gato", em: 0, kids: false, codigo: "" })
+    existe = false
+    for each p in e.lista
+        if p.id = e.ativo then existe = true
+    end for
+    if not existe then e.ativo = "principal"
+    return e
+end function
+
+sub PerfisGravar(e as Object)
+    reg = GetRegistry()
+    reg.Write("perfis", FormatJson(e))
+    reg.Flush()
+end sub
+
+function PerfilAtivo() as Object
+    e = PerfisEstado()
+    for each p in e.lista
+        if p.id = e.ativo then return p
+    end for
+    return e.lista[0]
+end function
+
+function KidsAtivo() as Boolean
+    p = PerfilAtivo()
+    return p.kids = true
+end function
+
+function ChavePerfil(nome as String) as String
+    id = PerfisEstado().ativo
+    if id = "principal" then return nome
+    return nome + "@" + id
+end function
+
+function PerfisSha256(texto as String) as String
+    ba = CreateObject("roByteArray")
+    ba.FromAsciiString(texto)
+    d = CreateObject("roEVPDigest")
+    d.Setup("sha256")
+    return LCase(d.Process(ba))
+end function
+
+function PerfisHashCodigo(id as String, codigo as String) as String
+    return PerfisSha256("saimo-kids:" + id + ":" + codigo)
+end function
+
+function PerfisPedeCodigo(p as Object) as Boolean
+    return p.kids = true and p.codigo <> invalid and p.codigo <> ""
+end function
+
+function PerfisConferirCodigo(p as Object, codigo as String) as Boolean
+    if not PerfisPedeCodigo(p) then return true
+    return PerfisHashCodigo(p.id, codigo) = p.codigo
+end function
+
+function PerfisNovoId() as String
+    letras = "abcdefghijklmnopqrstuvwxyz0123456789"
+    s = "p"
+    for i = 1 to 9
+        s = s + Mid(letras, Rnd(36), 1)
+    end for
+    return s
+end function
+
+function PerfisAgoraMs() as Double
+    dt = CreateObject("roDateTime")
+    return dt.AsSeconds() * 1000#
+end function
+
+' kidsCodigo: "" = perfil comum; 4 dígitos = Kids com esse código.
+function PerfisCriar(nome as String, avatar as String, kidsCodigo as String) as Boolean
+    e = PerfisEstado()
+    nome = Left(nome.Trim(), 20)
+    if nome = "" or e.lista.Count() >= 10 then return false
+    id = PerfisNovoId()
+    p = { id: id, nome: nome, avatar: avatar, em: PerfisAgoraMs(), kids: false, codigo: "" }
+    if Len(kidsCodigo) = 4 then
+        p.kids = true
+        p.codigo = PerfisHashCodigo(id, kidsCodigo)
+    end if
+    e.lista.Push(p)
+    PerfisGravar(e)
+    return true
+end function
+
+' kidsCodigo: invalid mantém; "" desliga o Kids; 4 dígitos liga ou troca o código.
+sub PerfisEditar(id as String, nome as String, avatar as String, kidsCodigo as Dynamic)
+    e = PerfisEstado()
+    nome = Left(nome.Trim(), 20)
+    if nome = "" then return
+    for each p in e.lista
+        if p.id = id then
+            p.nome = nome
+            p.avatar = avatar
+            p.em = PerfisAgoraMs()
+            if kidsCodigo <> invalid then
+                if kidsCodigo = "" then
+                    p.kids = false
+                    p.codigo = ""
+                else if id <> "principal" and Len(kidsCodigo) = 4 then
+                    p.kids = true
+                    p.codigo = PerfisHashCodigo(id, kidsCodigo)
+                end if
+            end if
+        end if
+    end for
+    PerfisGravar(e)
+end sub
+
+sub PerfisApagar(id as String)
+    if id = "principal" then return
+    e = PerfisEstado()
+    nova = []
+    for each p in e.lista
+        if p.id <> id then nova.Push(p)
+    end for
+    e.lista = nova
+    if e.ativo = id then e.ativo = "principal"
+    PerfisGravar(e)
+    reg = GetRegistry()
+    for each k in ["vod_progress", "fav_channels", "fav_vod"]
+        reg.Delete(k + "@" + id)
+    end for
+    reg.Flush()
+end sub
+
+sub PerfisEntrar(id as String)
+    e = PerfisEstado()
+    e.ativo = id
+    PerfisGravar(e)
+end sub
+
+' Controle parental: no Roku o conteúdo adulto fica sempre de fora; a senha
+' (padrão 0000) só existe para manter o mesmo controle dos outros apps.
+function ParentalConferir(senha as String) as Boolean
+    if KidsAtivo() then return false
+    h = GetRegistry().Read("parental_senha")
+    if h = invalid or h = "" then return senha = "0000"
+    return PerfisSha256("saimo-parental:" + senha) = h
+end function
+
+function ParentalTrocar(atual as String, nova as String) as Boolean
+    if not ParentalConferir(atual) or Len(nova) <> 4 then return false
+    reg = GetRegistry()
+    reg.Write("parental_senha", PerfisSha256("saimo-parental:" + nova))
+    reg.Flush()
+    return true
+end function

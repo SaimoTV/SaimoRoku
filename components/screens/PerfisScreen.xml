@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- "Quem está assistindo?": escolher, gerenciar e editar perfis (até 10, com avatar). -->
+<component name="PerfisScreen" extends="Group">
+  <interface>
+    <field id="obrigatoria" type="boolean" value="false" />
+    <field id="modo" type="string" value="escolher" onChange="onModoChange" />
+    <field id="perfilEscolhido" type="string" alwaysNotify="true" />
+    <field id="fechar" type="boolean" alwaysNotify="true" />
+  </interface>
+  <children>
+    <Rectangle width="1920" height="1080" color="#0B0F2A" />
+    <Label id="titulo" translation="[0, 150]" width="1920" horizAlign="center" color="#FFFFFF"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="64" /></Label>
+    <Label id="sub" translation="[0, 240]" width="1920" horizAlign="center" color="#A8B4C0"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="28" /></Label>
+    <MarkupGrid id="grade" translation="[160, 320]" itemComponentName="PerfilItem" itemSize="[200, 270]" itemSpacing="[60, 30]" numColumns="6" numRows="2" drawFocusFeedback="false" />
+    <LabelList id="acoes" translation="[660, 900]" itemSize="[600, 60]" textHorizAlign="center" />
+    <Label id="nota" translation="[160, 1010]" width="1600" horizAlign="center" color="#FFFFFF80" wrap="true" text="Cada perfil tem os seus favoritos e o que está assistindo. As listas e os ajustes valem para todos. Até 10 perfis. No Roku o perfil Kids mostra canais, rádios e jogos, sem nada adulto."><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="20" /></Label>
+  </children>
+  <script type="text/brightscript" uri="pkg:/source/utils/Storage.brs" />
+  <script type="text/brightscript" uri="pkg:/components/screens/PerfisScreen.brs" />
+</component>

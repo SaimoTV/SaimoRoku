@@ -3,6 +3,7 @@
   <interface>
     <field id="minhasListasRequested" type="boolean" alwaysNotify="true" />
     <field id="addonsRequested" type="boolean" alwaysNotify="true" />
+    <field id="perfisRequested" type="boolean" alwaysNotify="true" />
     <field id="reloadRequested" type="boolean" value="false" alwaysNotify="true" />
     <field id="focusUpRequested" type="boolean" alwaysNotify="true" />
     <field id="textoRecebido" type="string" alwaysNotify="true" onChange="onTextoRecebido" />

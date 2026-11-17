@@ -41,12 +41,19 @@ sub init()
     m.currentScreenNode = invalid
     m.currentScreenName = ""
 
-    ' Abre na tela configurada (padrão: "home")
-    prefs = LoadPreferences()
-    if prefs.abrirEm = "canal" then
-        switchScreen("live")
+    ' Com 2 ou mais perfis, a partida pergunta quem está assistindo.
+    e = PerfisEstado()
+    ' (Sem "return" aqui: o init não pode sair no meio.)
+    if e.perguntar = true and e.lista.Count() >= 2 then
+        abrirPerfis(true, "escolher")
     else
-        switchScreen("home")
+        ' Abre na tela configurada (padrão: "home")
+        prefs = LoadPreferences()
+        if prefs.abrirEm = "canal" then
+            switchScreen("live")
+        else
+            switchScreen("home")
+        end if
     end if
 end sub
 
@@ -152,6 +159,13 @@ sub applyCombinedVodAndRails()
     if m.localVod <> invalid then combinedVod.Append(m.localVod)
     if m.addonVodItems <> invalid then combinedVod.Append(m.addonVodItems)
     m.cachedVod = combinedVod
+
+    ' Perfil Kids: no Roku a classificação de cada título não fica na memória
+    ' (pesa demais num stick de 512 MB), então filmes e séries ficam de fora.
+    if KidsAtivo() then
+        m.cachedDestaques = []
+        m.cachedVod = []
+    end if
 
     if m.currentScreenName = "home" and m.currentScreenNode <> invalid then
         m.currentScreenNode.railsData = m.cachedDestaques
@@ -491,6 +505,7 @@ sub switchScreen(screenName as String, params = invalid as Dynamic)
         node.observeField("reloadRequested", "onSettingsReload")
         node.observeField("minhasListasRequested", "onAbrirMinhasListas")
         node.observeField("addonsRequested", "onAbrirAddons")
+        node.observeField("perfisRequested", "onAbrirPerfis")
         node.observeField("focusUpRequested", "onScreenFocusUp")
         m.currentScreenNode = node
 
@@ -910,3 +925,45 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
 
     return false
 end function
+
+' ====================================================================
+' Perfis: "Quem está assistindo?" por cima de tudo.
+' ====================================================================
+sub abrirPerfis(obrigatoria as Boolean, modo as String)
+    if m.telaPerfis <> invalid then return
+    m.telaPerfis = CreateObject("roSGNode", "PerfisScreen")
+    m.telaPerfis.obrigatoria = obrigatoria
+    m.telaPerfis.modo = modo
+    m.telaPerfis.observeField("perfilEscolhido", "onPerfilEscolhido")
+    m.telaPerfis.observeField("fechar", "onPerfisFechar")
+    m.topNavBar.visible = false
+    m.top.appendChild(m.telaPerfis)
+    ' Foco direto na grade: o grupo em si não repassa o foco em todo aparelho.
+    m.telaPerfis.findNode("grade").setFocus(true)
+end sub
+
+sub onPerfisFechar()
+    if m.telaPerfis = invalid then return
+    m.top.removeChild(m.telaPerfis)
+    m.telaPerfis = invalid
+    m.topNavBar.visible = true
+    if m.currentScreenNode = invalid then
+        switchScreen("home")
+    else
+        m.currentScreenNode.setFocus(true)
+    end if
+end sub
+
+sub onPerfilEscolhido(evt as Object)
+    PerfisEntrar(evt.getData())
+    onPerfisFechar()
+    ' Favoritos e o que está assistindo são do perfil: refaz as telas.
+    applyCombinedVodAndRails()
+    m.screenStack = []
+    m.currentScreenName = ""
+    switchScreen("home")
+end sub
+
+sub onAbrirPerfis()
+    abrirPerfis(false, "escolher")
+end sub

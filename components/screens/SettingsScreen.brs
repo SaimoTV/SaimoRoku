@@ -27,9 +27,39 @@ sub init()
     m.top.observeField("focusedChild", "onFocusChange")
 
     buildSettingsList()
+    m.liberado = not PerfisPedeCodigo(PerfilAtivo())
+end sub
+
+' No perfil Kids os Ajustes pedem o código: a criança não mexe nas listas nem nos ajustes.
+sub pedirCodigoDosAjustes()
+    m.settingsList.visible = false
+    p = PerfilAtivo()
+    d = CreateObject("roSGNode", "StandardPinPadDialog")
+    d.title = "Código do perfil " + p.nome
+    d.message = ["Os Ajustes ficam trancados no perfil Kids. Digite o código para abrir."]
+    d.buttons = ["Confirmar", "Cancelar"]
+    d.observeField("buttonSelected", "onCodigoDosAjustes")
+    m.top.getScene().dialog = d
+end sub
+
+sub onCodigoDosAjustes(evt as Object)
+    d = evt.getRoSGNode()
+    pin = d.pin
+    d.close = true
+    if evt.getData() = 0 and PerfisConferirCodigo(PerfilAtivo(), pin) then
+        m.liberado = true
+        m.settingsList.visible = true
+        m.settingsList.setFocus(true)
+    else
+        m.top.focusUpRequested = true
+    end if
 end sub
 
 sub onFocusChange()
+    if m.top.isInFocusChain() and not m.liberado then
+        if m.top.getScene().dialog = invalid then pedirCodigoDosAjustes()
+        return
+    end if
     if m.top.isInFocusChain() then
         if m.painelTeclado.visible then
             if not m.teclado.isInFocusChain() and not m.botoes.isInFocusChain() then
@@ -46,6 +76,10 @@ sub buildSettingsList()
     m.prefs = LoadPreferences()
     content = CreateObject("roSGNode", "ContentNode")
 
+    perfil = PerfilAtivo()
+    descPerfil = perfil.nome
+    if perfil.kids = true then descPerfil = descPerfil + " (Kids)"
+    addSettingItem(content, "Perfis", descPerfil + " · trocar, criar, avatares e perfil Kids", "perfis")
     addSettingItem(content, "Minhas listas", "Adicionar ou gerenciar listas M3U e Xtream Codes", "minhasListas")
 
     addonsCount = LoadAddons().Count()
@@ -92,6 +126,13 @@ sub buildSettingsList()
     addSettingItem(content, "Próximo episódio automático", valProximo, "proximoAutomatico")
 
     addSettingItem(content, "Limpar histórico e progresso", "Remove todos os itens de Continuar Assistindo", "limparCache")
+    ' Controle parental: no fim, discreto. No Roku o conteúdo adulto fica sempre de fora.
+    if not KidsAtivo() then
+        senha = "senha própria"
+        h = GetRegistry().Read("parental_senha")
+        if h = invalid or h = "" then senha = "senha inicial 0000"
+        addSettingItem(content, "Controle parental", "No Roku o conteúdo adulto fica sempre de fora · trocar a senha (" + senha + ")", "parental")
+    end if
 
     idx = m.settingsList.itemFocused
     m.settingsList.content = content
@@ -118,7 +159,18 @@ sub onItemSelected()
     key = item.key
     m.prefs = LoadPreferences()
 
-    if key = "minhasListas" then
+    if key = "perfis" then
+        m.top.perfisRequested = true
+        return
+    else if key = "parental" then
+        d = CreateObject("roSGNode", "StandardPinPadDialog")
+        d.title = "Controle parental"
+        d.message = ["Digite a senha atual."]
+        d.buttons = ["Confirmar", "Cancelar"]
+        d.observeField("buttonSelected", "onSenhaAtual")
+        m.top.getScene().dialog = d
+        return
+    else if key = "minhasListas" then
         m.top.minhasListasRequested = true
         return
     else if key = "addonsDebrid" then
@@ -150,7 +202,7 @@ sub onItemSelected()
         m.prefs.proximoAutomatico = not m.prefs.proximoAutomatico
     else if key = "limparCache" then
         reg = GetRegistry()
-        reg.Delete("vod_progress")
+        reg.Delete(ChavePerfil("vod_progress"))
         reg.Flush()
         m.top.reloadRequested = true
     end if
@@ -291,3 +343,42 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
     end if
     return false
 end function
+
+sub onSenhaAtual(evt as Object)
+    d = evt.getRoSGNode()
+    m.senhaAtual = d.pin
+    d.close = true
+    if evt.getData() <> 0 then return
+    if not ParentalConferir(m.senhaAtual) then
+        mensagem("Senha errada.")
+        return
+    end if
+    n = CreateObject("roSGNode", "StandardPinPadDialog")
+    n.title = "Controle parental"
+    n.message = ["Digite a senha nova (4 números)."]
+    n.buttons = ["Confirmar", "Cancelar"]
+    n.observeField("buttonSelected", "onSenhaNova")
+    m.top.getScene().dialog = n
+end sub
+
+sub onSenhaNova(evt as Object)
+    d = evt.getRoSGNode()
+    nova = d.pin
+    d.close = true
+    if evt.getData() <> 0 then return
+    if ParentalTrocar(m.senhaAtual, nova) then mensagem("Senha trocada.") else mensagem("A senha nova tem 4 números.")
+    buildSettingsList()
+end sub
+
+sub mensagem(texto as String)
+    d = CreateObject("roSGNode", "StandardMessageDialog")
+    d.title = "Controle parental"
+    d.message = [texto]
+    d.buttons = ["OK"]
+    d.observeField("buttonSelected", "onFecharMensagem")
+    m.top.getScene().dialog = d
+end sub
+
+sub onFecharMensagem(evt as Object)
+    evt.getRoSGNode().close = true
+end sub
