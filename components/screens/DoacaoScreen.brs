@@ -1,6 +1,6 @@
 ' ====================================================================
 ' Saimo TV - DoacaoScreen (BrightScript)
-' Apoie o Saimo TV: texto, QR code para abrir no celular e o link escrito.
+' Apoie o Saimo TV: texto, QR code do Pix direto e o nome do favorecido.
 ' ====================================================================
 
 sub init()
