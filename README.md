@@ -46,3 +46,15 @@ O pacote final será gerado em `dist/SaimoTV-Roku.zip`.
 1. Ative o modo desenvolvedor no Roku (sequência no controle: `Home 3x`, `Up 2x`, `Right`, `Left`, `Right`, `Left`, `Right`).
 2. Acesse o endereço IP da sua TV pelo navegador (`http://<ip-do-roku>`).
 3. Envie o arquivo `dist/SaimoTV-Roku.zip` e clique em **Install**.
+
+## Perfis, Kids e controle parental (3.2.0)
+
+Contrato comum dos apps: `SaimoPlayer/docs/perfis.md`. Até 10 perfis, cada um com avatar (21, de
+`SaimoPlayer/docs/avatares`), os seus favoritos, onde parou e recentes; listas, fontes e ajustes valem
+para o aparelho todo. O perfil principal usa os dados de antes (ninguém perde nada ao atualizar).
+Com 2 ou mais perfis o app abre em "Quem está assistindo?". Perfil Kids: só filmes e séries com
+classificação até 12 anos (sem classificação, escondido), nada adulto, sem addons; sair dele,
+gerenciar perfis e abrir os Ajustes pedem um código de 4 dígitos (guardado como SHA-256). Controle
+parental visível no fim dos Ajustes, discreto: senha padrão 0000, trocável; no Kids nunca libera.
+
+No Roku: perfis no registro (`chave@id`), `PerfisScreen` com o teclado e o PIN do próprio Roku. O Kids aqui esconde filmes e séries por inteiro (a classificação não cabe na memória do stick) e mostra canais, rádios e jogos. Sem sincronia de dados (o Connect do Roku é só controle).
