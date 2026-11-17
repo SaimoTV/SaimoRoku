@@ -5,6 +5,7 @@
     <field id="addonRails" type="array" onChange="onAddonRailsChange" />
     <field id="selectedCategory" type="string" value="Filmes" onChange="onCategoryChange" />
     <field id="itemSelected" type="assocarray" alwaysNotify="true" />
+    <field id="novelinhaSelected" type="assocarray" alwaysNotify="true" />
     <field id="playRequested" type="assocarray" alwaysNotify="true" />
     <field id="focusUpRequested" type="boolean" alwaysNotify="true" />
     <function name="cleanUp" />

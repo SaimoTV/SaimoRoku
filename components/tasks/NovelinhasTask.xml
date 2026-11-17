@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="NovelinhasTask" extends="Task">
+  <interface>
+    <!-- roku/novelinhas.txt: base e, por novelinha, id, título, pasta, episódios, áudio e capa -->
+    <field id="lista" type="array" />
+  </interface>
+  <script type="text/brightscript" uri="pkg:/source/utils/Storage.brs" />
+  <script type="text/brightscript" uri="pkg:/components/tasks/NovelinhasTask.brs" />
+</component>

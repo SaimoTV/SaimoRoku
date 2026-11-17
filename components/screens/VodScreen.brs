@@ -13,11 +13,17 @@ sub init()
     m.vodRowList.observeField("rowItemFocused", "onRowItemFocused")
 
     m.currentCategoryIdx = 0
-    m.categories = ["Filmes", "Séries", "Animes", "Doramas"]
-    m.cores = ["#4FE3D0", "#7AA2FF", "#FFB454", "#FF7EB6"]
-    m.icones = ["m_movie", "m_live_tv", "m_star", "m_more"]
-    m.chaves = ["filmes", "series", "animes", "doramas"]
-    m.grupos = [[], [], [], []]
+    m.categories = ["Filmes", "Séries", "Animes", "Doramas", "Novelas", "Novelinhas", "Kids"]
+    m.cores = ["#4FE3D0", "#7AA2FF", "#FFB454", "#FF7EB6", "#C792EA", "#FF7EB6", "#7EE787"]
+    m.icones = ["m_movie", "m_live_tv", "m_star", "m_more", "m_favorite", "m_play", "m_star_outline"]
+    m.chaves = ["filmes", "series", "animes", "doramas", "novelas", "novelinhas", "kids"]
+    m.NOVELINHAS = 5
+    m.grupos = [[], [], [], [], [], [], []]
+    ' As novelinhas vêm de uma lista própria (roku/novelinhas.txt).
+    m.novelinhas = []
+    m.tarefaNovelinhas = CreateObject("roSGNode", "NovelinhasTask")
+    m.tarefaNovelinhas.observeField("lista", "onNovelinhas")
+    m.tarefaNovelinhas.control = "RUN"
     m.indice = invalid
     m.linhas = {}
     m.geracao = 0
@@ -40,6 +46,13 @@ sub init()
     m.tarefaIndice.control = "RUN"
 end sub
 
+sub onNovelinhas()
+    m.novelinhas = m.tarefaNovelinhas.lista
+    m.tarefaNovelinhas = invalid
+    if m.novelinhas = invalid then m.novelinhas = []
+    if m.grupos <> invalid then montar()
+end sub
+
 sub onIndice()
     m.indice = m.tarefaIndice.indice
     m.tarefaIndice = invalid
@@ -48,6 +61,7 @@ sub onIndice()
 end sub
 
 function totalDaCategoria(i as Integer) as Integer
+    if i = m.NOVELINHAS then return m.novelinhas.Count()
     total = 0
     if m.indice <> invalid and m.indice.letras[m.chaves[i]] <> invalid then
         for each l in m.indice.letras[m.chaves[i]]
@@ -92,7 +106,7 @@ sub onCategoryChange()
 end sub
 
 sub separar()
-    m.grupos = [[], [], [], []]
+    m.grupos = [[], [], [], [], [], [], []]
     allItems = m.top.vodItems
     if allItems = invalid then return
     for each it in allItems
@@ -136,16 +150,53 @@ sub montar()
     raiz = CreateObject("roSGNode", "ContentNode")
     cats = raiz.CreateChild("ContentNode")
     cats.title = "Categorias"
-    for i = 0 to 3
+    for i = 0 to m.categories.Count() - 1
         g = m.grupos[i]
-        capas = []
-        for c = 0 to 3
-            if c < g.Count() and g[c].poster <> invalid then capas.Push(g[c].poster)
-        end for
-        no = cats.CreateChild("ContentNode")
-        no.title = m.categories[i]
-        no.addFields({ itemType: "categoria", indice: i, subTitulo: textoTitulos(totalDaCategoria(i)), cor: m.cores[i], icone: "pkg:/images/icons/" + m.icones[i] + ".png", capas: capas })
+        if i = m.NOVELINHAS then g = m.novelinhas
+        ' Novelas, Novelinhas e Kids só aparecem quando a lista traz o arquivo delas.
+        if i < 4 or totalDaCategoria(i) > 0 then
+            capas = []
+            for c = 0 to 3
+                if c < g.Count() and g[c].poster <> invalid then capas.Push(g[c].poster)
+            end for
+            no = cats.CreateChild("ContentNode")
+            no.title = m.categories[i]
+            no.addFields({ itemType: "categoria", indice: i, subTitulo: textoTitulos(totalDaCategoria(i)), cor: m.cores[i], icone: "pkg:/images/icons/" + m.icones[i] + ".png", capas: capas })
+        end if
     end for
+
+    ' Novelinhas: fileiras próprias (dubladas e legendadas), sem filtros nem letras.
+    if m.currentCategoryIdx = m.NOVELINHAS then
+        m.geracao = m.geracao + 1
+        m.linhas = {}
+        dub = []
+        leg = []
+        for each n in m.novelinhas
+            if n.dublada then dub.Push(n) else leg.Push(n)
+        end for
+        fileiraNovelinhas(raiz, "Dubladas", dub)
+        pagina = []
+        numero = 1
+        for each n in leg
+            pagina.Push(n)
+            if pagina.Count() = 50 then
+                titulo = "Legendadas"
+                if numero > 1 then titulo = "Legendadas · " + numero.ToStr()
+                fileiraNovelinhas(raiz, titulo, pagina)
+                pagina = []
+                numero = numero + 1
+            end if
+        end for
+        if pagina.Count() > 0 then
+            titulo = "Legendadas"
+            if numero > 1 then titulo = "Legendadas · " + numero.ToStr()
+            fileiraNovelinhas(raiz, titulo, pagina)
+        end if
+        AjustarFileiras(m.vodRowList, raiz)
+        m.vodRowList.content = raiz
+        mostrarCategoria(m.currentCategoryIdx)
+        return
+    end if
 
     filaDeFiltros(raiz)
     m.geracao = m.geracao + 1
@@ -217,12 +268,25 @@ sub montar()
     carregarPerto(0)
 end sub
 
+sub fileiraNovelinhas(raiz as Object, titulo as String, itens as Object)
+    if itens = invalid or itens.Count() = 0 then return
+    linha = raiz.CreateChild("ContentNode")
+    linha.title = titulo
+    for each n in itens
+        no = linha.CreateChild("ContentNode")
+        no.title = n.title
+        no.hdPosterUrl = n.poster
+        no.addFields({ itemType: "vod", rawItem: n })
+    end for
+end sub
+
 function railCombinaComCategoria(rail as Object, catIdx as Integer) as Boolean
     lt = LCase(rail.title.ToStr())
     ehAnime = (Instr(1, lt, "anime") > 0)
     ehDorama = (Instr(1, lt, "dorama") > 0 or Instr(1, lt, "k-drama") > 0 or Instr(1, lt, "kdrama") > 0)
     if catIdx = 2 then return ehAnime
     if catIdx = 3 then return ehDorama
+    if catIdx >= 4 then return false
     if catIdx = 1 then return (rail.isSeries = true and not ehAnime and not ehDorama)
     return (rail.isSeries <> true and not ehAnime and not ehDorama)
 end function
@@ -328,6 +392,12 @@ sub mostrarCategoria(i as Integer)
         end if
     else if (u = invalid or u = "") and enabledCount > 0 then
         desc = "Descoberta TMDB e catálogos dos seus Addons Stremio ativos."
+    else if i = 4 then
+        desc = "Novelas brasileiras, mexicanas e turcas, do primeiro ao último capítulo."
+    else if i = m.NOVELINHAS then
+        desc = "Minisséries em pé, de um minuto por episódio. Cima e baixo trocam de episódio."
+    else if i = 6 then
+        desc = "Desenhos, animações e filmes para a família, com classificação livre."
     end if
     m.heroBanner.featuredItem = { title: m.categories[i], genres: textoTitulos(totalDaCategoria(i)), overview: desc, semFundo: true }
 end sub
@@ -379,7 +449,11 @@ sub onRowItemSelected()
             m.vodRowList.jumpToRowItem = [0, no.indice]
         end if
     else if no.rawItem <> invalid then
-        m.top.itemSelected = no.rawItem
+        if no.rawItem.novelinha = true then
+            m.top.novelinhaSelected = no.rawItem
+        else
+            m.top.itemSelected = no.rawItem
+        end if
     end if
 end sub
 

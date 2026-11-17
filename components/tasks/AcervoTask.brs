@@ -118,11 +118,14 @@ sub lerPagina(base as String, categoria as String, letra as String, pagina as In
                     posterUrl = capa + p[2]
                     backdropUrl = capaGrande + p[2]
                 end if
+                ' Novelas e kids misturam filmes e séries: a 4ª coluna diz qual.
+                serieDaLinha = serie
+                if p.Count() >= 4 then serieDaLinha = (p[3] = "s")
                 no = linha.CreateChild("ContentNode")
                 no.title = p[0]
                 no.hdPosterUrl = posterUrl
                 no.addFields({ itemType: "vod", rawItem: {
-                    title: p[0], letter: letra, isSeries: serie, year: p[1],
+                    title: p[0], letter: letra, isSeries: serieDaLinha, year: p[1],
                     poster: posterUrl, backdrop: backdropUrl
                 } })
             end if

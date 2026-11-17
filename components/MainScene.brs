@@ -364,7 +364,7 @@ end function
 
 sub switchScreen(screenName as String, params = invalid as Dynamic)
     ' Guarda tela anterior para retorno ao sair do player
-    if m.currentScreenName <> "" and m.currentScreenName <> "player" then
+    if m.currentScreenName <> "" and m.currentScreenName <> "player" and m.currentScreenName <> "novelinha" then
         m.previousScreenName = m.currentScreenName
         m.previousScreenParams = m.currentScreenParams
     end if
@@ -421,6 +421,7 @@ sub switchScreen(screenName as String, params = invalid as Dynamic)
         if m.addonRails <> invalid then node.addonRails = m.addonRails
         if m.cachedVod <> invalid then node.vodItems = m.cachedVod
         node.observeField("itemSelected", "onVodItemSelected")
+        node.observeField("novelinhaSelected", "onNovelinhaSelected")
         node.observeField("playRequested", "onHomePlayRequested")
         node.observeField("focusUpRequested", "onScreenFocusUp")
         m.currentScreenNode = node
@@ -439,6 +440,12 @@ sub switchScreen(screenName as String, params = invalid as Dynamic)
         if params <> invalid then node.item = params
         node.observeField("playRequested", "onFichaPlayRequested")
         node.observeField("focusUpRequested", "onScreenFocusUp")
+        m.currentScreenNode = node
+
+    else if screenName = "novelinha" then
+        node = CreateObject("roSGNode", "NovelinhaScreen")
+        node.observeField("exitRequested", "onPlayerExit")
+        if params <> invalid then node.item = params
         m.currentScreenNode = node
 
     else if screenName = "player" then
@@ -516,7 +523,7 @@ sub switchScreen(screenName as String, params = invalid as Dynamic)
     avisarCelular()
 
     ' Atualiza visibilidade da barra de navegação (oculta no player de VOD e Live em tela cheia)
-    if screenName = "player" or screenName = "guide" then
+    if screenName = "player" or screenName = "guide" or screenName = "novelinha" then
         m.topNavBar.visible = false
     else if screenName = "live" and m.currentScreenNode.telaCheia then
         m.topNavBar.visible = false
@@ -544,13 +551,17 @@ sub onVodItemSelected(evt as Object)
     switchScreen("ficha", item)
 end sub
 
+sub onNovelinhaSelected(evt as Object)
+    switchScreen("novelinha", evt.getData())
+end sub
+
 sub onFichaPlayRequested(evt as Object)
     item = evt.getData()
     switchScreen("player", item)
 end sub
 
 sub onPlayerExit()
-    if m.previousScreenName <> invalid and m.previousScreenName <> "" and m.previousScreenName <> "player" then
+    if m.previousScreenName <> invalid and m.previousScreenName <> "" and m.previousScreenName <> "player" and m.previousScreenName <> "novelinha" then
         switchScreen(m.previousScreenName, m.previousScreenParams)
     else
         switchScreen("home")
