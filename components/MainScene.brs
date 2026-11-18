@@ -4,6 +4,7 @@
 ' ====================================================================
 
 sub init()
+    iniciarConta()
     m.sceneBg = m.top.findNode("sceneBg")
     m.screensContainer = m.top.findNode("screensContainer")
     m.topNavBar = m.top.findNode("topNavBar")
@@ -1012,4 +1013,26 @@ end sub
 
 sub onAbrirPerfis()
     abrirPerfis(false, "escolher")
+end sub
+
+' Conta Saimo (opcional): sem login não faz nada. Com login, sincroniza
+' alguns segundos depois de abrir e a cada 10 minutos.
+sub iniciarConta()
+    m.contaRelogio = CreateObject("roSGNode", "Timer")
+    m.contaRelogio.duration = 8
+    m.contaRelogio.repeat = false
+    m.contaRelogio.observeField("fire", "onContaRelogio")
+    m.contaRelogio.control = "start"
+end sub
+
+sub onContaRelogio()
+    m.contaRelogio.duration = 600
+    m.contaRelogio.repeat = true
+    m.contaRelogio.control = "start"
+    if not ContaLogado() then return
+    if m.contaSincronia <> invalid then m.contaSincronia.control = "stop"
+    t = CreateObject("roSGNode", "ContaTask")
+    t.acao = "sincronizar"
+    m.contaSincronia = t
+    t.control = "run"
 end sub

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="ContaTask" extends="Task">
+  <interface>
+    <!-- acao: pedir | estado | senha | sincronizar | sair -->
+    <field id="acao" type="string" />
+    <field id="aparelhoCodigo" type="string" />
+    <field id="email" type="string" />
+    <field id="senha" type="string" />
+    <field id="resultado" type="assocarray" alwaysNotify="true" />
+  </interface>
+
+  <script type="text/brightscript" uri="pkg:/source/utils/Storage.brs" />
+  <script type="text/brightscript" uri="pkg:/source/utils/Conta.brs" />
+  <script type="text/brightscript" uri="pkg:/components/tasks/ContaTask.brs" />
+</component>
