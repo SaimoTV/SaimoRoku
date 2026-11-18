@@ -9,5 +9,6 @@
   <script type="text/brightscript" uri="pkg:/source/utils/Addons.brs" />
   <script type="text/brightscript" uri="pkg:/source/utils/Debrid.brs" />
   <script type="text/brightscript" uri="pkg:/source/utils/IdResolver.brs" />
+  <script type="text/brightscript" uri="pkg:/source/utils/Format.brs" />
   <script type="text/brightscript" uri="pkg:/components/tasks/StreamResolverTask.brs" />
 </component>

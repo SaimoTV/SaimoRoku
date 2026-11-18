@@ -83,6 +83,8 @@ sub buildSettingsList()
     m.prefs = LoadPreferences()
     content = CreateObject("roSGNode", "ContentNode")
 
+    if not KidsAtivo() then addSettingItem(content, "Conta Saimo", ContaResumo(), "conta")
+
     perfil = PerfilAtivo()
     descPerfil = perfil.nome
     if perfil.kids = true then descPerfil = descPerfil + " (Kids)"
@@ -173,7 +175,10 @@ sub onItemSelected()
     key = item.key
     m.prefs = LoadPreferences()
 
-    if key = "perfis" then
+    if key = "conta" then
+        abrirConta()
+        return
+    else if key = "perfis" then
         m.top.perfisRequested = true
         return
     else if key = "brilho" then
@@ -325,6 +330,8 @@ sub onTextoRecebido()
 end sub
 
 sub cleanUp()
+    if m.contaTimer <> invalid then m.contaTimer.control = "stop"
+    if m.contaTask <> invalid then m.contaTask.unobserveField("resultado")
     if m.painelTeclado <> invalid and m.painelTeclado.visible then
         m.painelTeclado.visible = false
         m.settingsList.visible = true
@@ -335,6 +342,11 @@ end sub
 
 function onKeyEvent(key as String, press as Boolean) as Boolean
     if not press then return false
+
+    if m.painelConta <> invalid and m.painelConta.visible then
+        if key = "back" then fecharConta()
+        return true
+    end if
 
     if m.painelTeclado.visible then
         if key = "back" then
@@ -406,4 +418,189 @@ end sub
 
 sub onFecharMensagem(evt as Object)
     evt.getRoSGNode().close = true
+end sub
+
+
+' ===================== Conta Saimo =====================
+' Sem conta: QR e código curto (o celular logado aprova) e, se a pessoa
+' quiser, e-mail e senha. A rede fica no ContaTask; aqui só a tela.
+
+sub abrirConta()
+    if m.painelConta = invalid then
+        m.painelConta = m.top.findNode("painelConta")
+        m.contaQr = m.top.findNode("contaQr")
+        m.contaQrFundo = m.top.findNode("contaQrFundo")
+        m.contaTitulo = m.top.findNode("contaTitulo")
+        m.contaTexto = m.top.findNode("contaTexto")
+        m.contaCodigo = m.top.findNode("contaCodigo")
+        m.contaSituacao = m.top.findNode("contaSituacao")
+        m.contaBotoes = m.top.findNode("contaBotoes")
+        m.contaBotoes.observeField("itemSelected", "onContaBotao")
+        m.contaTimer = m.top.findNode("contaTimer")
+        m.contaTimer.observeField("fire", "onContaTimer")
+    end if
+    m.settingsList.visible = false
+    m.painelConta.visible = true
+    desenharConta()
+end sub
+
+sub fecharConta()
+    m.contaTimer.control = "stop"
+    m.contaPedido = invalid
+    m.painelConta.visible = false
+    m.settingsList.visible = true
+    buildSettingsList()
+    m.settingsList.setFocus(true)
+end sub
+
+sub contaBotoes(rotulos as Object)
+    c = CreateObject("roSGNode", "ContentNode")
+    for each r in rotulos
+        c.CreateChild("ContentNode").title = r
+    end for
+    m.contaBotoes.content = c
+    m.contaBotoes.jumpToItem = 0
+    m.contaBotoes.setFocus(true)
+end sub
+
+sub desenharConta()
+    while m.contaQr.getChildCount() > 0
+        m.contaQr.removeChildIndex(0)
+    end while
+    if ContaLogado() then
+        m.contaTimer.control = "stop"
+        m.contaQrFundo.visible = false
+        m.contaTitulo.text = "Conta Saimo"
+        s = ContaSessao()
+        m.contaTexto.text = s.email
+        m.contaCodigo.text = ""
+        m.contaSituacao.text = ContaResumo() + ". Perfis, onde parou e favoritos. Sair mantém os dados nesta TV."
+        m.contaBotoes.translation = [520, 300]
+        contaBotoes(["Sincronizar agora", "Sair da conta", "Voltar"])
+    else
+        m.contaQrFundo.visible = true
+        m.contaTitulo.text = "Entrar na Conta Saimo"
+        m.contaTexto.text = "No celular com o Saimo e a sua conta, leia o QR com a câmera. Ou abra Ajustes > Conta Saimo > Entrar numa TV e digite o código:"
+        m.contaCodigo.text = "…"
+        m.contaSituacao.text = "Pedindo um código…"
+        m.contaBotoes.translation = [520, 420]
+        contaBotoes(["Entrar com e-mail e senha", "Voltar"])
+        contaRodar("pedir", {})
+    end if
+end sub
+
+sub contaRodar(acao as String, campos as Object)
+    if m.contaTask <> invalid then m.contaTask.unobserveField("resultado")
+    t = CreateObject("roSGNode", "ContaTask")
+    for each k in campos
+        t[k] = campos[k]
+    end for
+    t.acao = acao
+    t.observeField("resultado", "onContaResultado")
+    m.contaTask = t
+    t.control = "run"
+end sub
+
+sub onContaTimer()
+    if m.contaPedido = invalid then return
+    if CreateObject("roDateTime").AsSeconds() > m.contaPedido.vence then
+        ' Código vencido (10 min): pede outro sozinho.
+        m.contaTimer.control = "stop"
+        m.contaPedido = invalid
+        contaRodar("pedir", {})
+        return
+    end if
+    contaRodar("estado", { aparelhoCodigo: m.contaPedido.aparelhoCodigo })
+end sub
+
+sub onContaResultado(evt as Object)
+    r = evt.getData()
+    if r = invalid or not m.painelConta.visible then return
+    if r.acao = "pedir" then
+        if r.ok then
+            m.contaPedido = { aparelhoCodigo: r.aparelhoCodigo, vence: CreateObject("roDateTime").AsSeconds() + 590 }
+            m.contaCodigo.text = r.codigo
+            m.contaSituacao.text = "Esperando o celular…"
+            while m.contaQr.getChildCount() > 0
+                m.contaQr.removeChildIndex(0)
+            end while
+            QrRenderToGroup(m.contaQr, r.url, 380)
+            m.contaTimer.control = "start"
+        else
+            m.contaSituacao.text = r.erro + " Tentando de novo…"
+            m.contaPedido = { aparelhoCodigo: "", vence: 0 }
+            m.contaTimer.control = "start"
+        end if
+    else if r.acao = "estado" then
+        if r.ok then
+            m.contaTimer.control = "stop"
+            m.contaPedido = invalid
+            desenharConta()
+        else if r.estado = "vencido" then
+            m.contaPedido.vence = 0
+        end if
+    else if r.acao = "senha" then
+        if r.ok then
+            desenharConta()
+        else
+            m.contaSituacao.text = r.erro
+        end if
+    else if r.acao = "sincronizar" then
+        if r.ok then m.contaSituacao.text = "Sincronizado. Perfis, onde parou e favoritos." else m.contaSituacao.text = r.erro
+        if not ContaLogado() then desenharConta()
+    else if r.acao = "sair" then
+        desenharConta()
+    end if
+end sub
+
+sub onContaBotao()
+    rotulo = m.contaBotoes.content.getChild(m.contaBotoes.itemSelected).title
+    if rotulo = "Voltar" then
+        fecharConta()
+    else if rotulo = "Sincronizar agora" then
+        m.contaSituacao.text = "Sincronizando…"
+        contaRodar("sincronizar", {})
+    else if rotulo = "Sair da conta" then
+        contaRodar("sair", {})
+    else if rotulo = "Entrar com e-mail e senha" then
+        d = CreateObject("roSGNode", "StandardKeyboardDialog")
+        d.title = "Seu e-mail"
+        d.message = ["Entre com a sua conta ou crie uma agora."]
+        d.buttons = ["Continuar", "Cancelar"]
+        d.observeField("buttonSelected", "onContaEmail")
+        m.top.getScene().dialog = d
+    end if
+end sub
+
+sub onContaEmail(evt as Object)
+    d = evt.getRoSGNode()
+    m.contaEmail = d.text.Trim()
+    d.close = true
+    if evt.getData() <> 0 or Instr(1, m.contaEmail, "@") = 0 then
+        m.contaBotoes.setFocus(true)
+        return
+    end if
+    s = CreateObject("roSGNode", "StandardKeyboardDialog")
+    s.title = "Senha"
+    s.message = [m.contaEmail]
+    s.buttons = ["Entrar", "Criar conta", "Cancelar"]
+    if s.textEditBox <> invalid then s.textEditBox.secureMode = true
+    s.observeField("buttonSelected", "onContaSenha")
+    m.top.getScene().dialog = s
+end sub
+
+sub onContaSenha(evt as Object)
+    d = evt.getRoSGNode()
+    senha = d.text
+    d.close = true
+    m.contaBotoes.setFocus(true)
+    botao = evt.getData()
+    if botao = 2 or senha = "" then return
+    criar = (botao = 1)
+    if criar and Len(senha) < 8 then
+        m.contaSituacao.text = "A senha precisa ter 8 ou mais caracteres"
+        return
+    end if
+    if criar then m.contaSituacao.text = "Criando a conta…" else m.contaSituacao.text = "Entrando…"
+    contaRodar("senha", { email: m.contaEmail, senha: senha, criar: criar })
 end sub
