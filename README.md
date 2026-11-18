@@ -65,3 +65,7 @@ Ajustes > Brilho do app (100, 75, 50, 25, 0) e Saimo Connect (`brilho`): véu `v
 `MainScene`. Em 0 o foco vai para o véu e qualquer botão traz o brilho de volta, devagar. O timer
 do ao vivo fecha o app e mostra "Fecha em N min" no canto. O campo do teclado tem caixa branca e
 texto escuro (o padrão deixava letra branca na caixa clara).
+
+## Conta Saimo (opcional)
+
+Ajustes > Conta Saimo mostra o QR e o código (o celular ou o site logado aprova) e tem "Entrar com e-mail e senha". Sincroniza perfis, onde parou e favoritos (listas e addons não vão nem voltam do Roku). Lógica em `source/utils/Conta.brs`, rede em `components/tasks/ContaTask.brs`. Servidor de teste: chave `conta_api` no registro. Contrato: SaimoPlayer/docs/conta.md. Sem conta, nada muda.
