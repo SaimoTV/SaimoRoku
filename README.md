@@ -58,3 +58,10 @@ gerenciar perfis e abrir os Ajustes pedem um código de 4 dígitos (guardado com
 parental visível no fim dos Ajustes, discreto: senha padrão 0000, trocável; no Kids nunca libera.
 
 No Roku: perfis no registro (`chave@id`), `PerfisScreen` com o teclado e o PIN do próprio Roku. O Kids aqui esconde filmes e séries por inteiro (a classificação não cabe na memória do stick) e mostra canais, rádios e jogos. Sem sincronia de dados (o Connect do Roku é só controle).
+
+## Brilho do app e timer
+
+Ajustes > Brilho do app (100, 75, 50, 25, 0) e Saimo Connect (`brilho`): véu `veuBrilho` na
+`MainScene`. Em 0 o foco vai para o véu e qualquer botão traz o brilho de volta, devagar. O timer
+do ao vivo fecha o app e mostra "Fecha em N min" no canto. O campo do teclado tem caixa branca e
+texto escuro (o padrão deixava letra branca na caixa clara).
