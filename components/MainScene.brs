@@ -9,6 +9,12 @@ sub init()
     m.topNavBar = m.top.findNode("topNavBar")
     m.dataLoader = m.top.findNode("dataLoader")
     m.connectServer = m.top.findNode("connectServer")
+    m.veuBrilho = m.top.findNode("veuBrilho")
+    m.voltaDoBrilho = m.top.findNode("voltaDoBrilho")
+    m.voltaDoBrilho.observeField("state", "onVoltaDoBrilho")
+    m.focoAntesDoEscuro = invalid
+    salvo = GetRegistry().Read("brilho_app")
+    if salvo <> invalid and salvo <> "" then m.top.brilho = salvo.ToInt()
 
     m.topNavBar.observeField("itemSelected", "onTopNavSelected")
     m.topNavBar.observeField("focusDownRequested", "onFocusDownFromNav")
@@ -705,7 +711,9 @@ sub onConnectCommand(evt as Object)
     if cmd = invalid or cmd.t = invalid then return
     tipo = cmd.t
 
-    if tipo = "tune" and cmd.channel <> invalid then
+    if tipo = "brilho" and cmd.valor <> invalid then
+        m.top.brilho = cmd.valor
+    else if tipo = "tune" and cmd.channel <> invalid then
         tuneChannelByName(cmd.channel)
     else if tipo = "playVod" then
         switchScreen("player", { title: cmd.title, url: cmd.url, isSeries: false })
@@ -883,7 +891,45 @@ end sub
 ' Tratamento de Teclas Globais do Controle Remoto
 ' ====================================================================
 
+' ---------- Brilho do app ----------
+' Um véu preto por cima de tudo (não o brilho da TV). Com a tela escura (0 a 5%)
+' o foco vai para o véu: qualquer botão só traz o brilho de volta, devagar.
+sub onBrilho()
+    v = m.top.brilho
+    if v < 0 then v = 0
+    if v > 100 then v = 100
+    GetRegistry().Write("brilho_app", v.ToStr())
+    GetRegistry().Flush()
+    if m.veuBrilho = invalid then return
+    m.voltaDoBrilho.control = "stop"
+    m.veuBrilho.opacity = 1.0 - (v / 100.0)
+    m.veuBrilho.visible = v < 100
+    if v <= 5 then
+        if m.focoAntesDoEscuro = invalid then m.focoAntesDoEscuro = m.top.focusedChild
+        m.veuBrilho.setFocus(true)
+    end if
+end sub
+
+sub voltarDoEscuro()
+    m.interpBrilho = m.top.findNode("interpBrilho")
+    m.interpBrilho.keyValue = [m.veuBrilho.opacity, 0.0]
+    GetRegistry().Write("brilho_app", "100")
+    GetRegistry().Flush()
+    m.voltaDoBrilho.control = "start"
+    foco = m.focoAntesDoEscuro
+    m.focoAntesDoEscuro = invalid
+    if foco <> invalid then foco.setFocus(true) else m.screensContainer.setFocus(true)
+end sub
+
+sub onVoltaDoBrilho()
+    if m.voltaDoBrilho.state = "stopped" and m.veuBrilho.opacity <= 0.01 then m.veuBrilho.visible = false
+end sub
+
 function onKeyEvent(key as String, press as Boolean) as Boolean
+    if m.veuBrilho <> invalid and m.veuBrilho.hasFocus() then
+        if press then voltarDoEscuro()
+        return true
+    end if
     if not press then return false
 
     ' Se o foco está na barra superior

@@ -43,6 +43,11 @@ sub init()
     m.holdTimer.observeField("fire", "onHold")
     m.sonoTimer = m.top.findNode("sonoTimer")
     m.sonoTimer.observeField("fire", "onSono")
+    m.seloTimer = m.top.findNode("seloTimer")
+    m.seloTimerTexto = m.top.findNode("seloTimerTexto")
+    m.tiqueSono = m.top.findNode("tiqueSono")
+    m.tiqueSono.observeField("fire", "atualizarSeloTimer")
+    m.sonoFim = 0
     m.channelDrawer.observeField("menuRequested", "onDrawerMenu")
     m.pinModal.observeField("isUnlocked", "onPinUnlocked")
     m.pinModal.observeField("isOpen", "onPinOpenChange")
@@ -196,7 +201,7 @@ sub abrirMenu(ch as Object)
     m.acoes.Push({ id: "favorito", titulo: fav })
     m.acoes.Push({ id: "audio", titulo: "Áudio e legenda" })
     if ch.variants.Count() > 1 then m.acoes.Push({ id: "fontes", titulo: "Trocar fonte", detalhe: ch.variants.Count().ToStr() + " fontes" })
-    m.acoes.Push({ id: "timer", titulo: "Timer de sono" })
+    m.acoes.Push({ id: "timer", titulo: "Timer (fechar o app)" })
     mostrarPainel(ch.name, "", m.acoes)
 end sub
 
@@ -220,7 +225,21 @@ sub onHold()
     end if
 end sub
 
+sub atualizarSeloTimer()
+    agora = CreateObject("roDateTime").AsSeconds()
+    if m.sonoFim <= agora then
+        m.seloTimer.visible = false
+        m.tiqueSono.control = "stop"
+        return
+    end if
+    resta = Int((m.sonoFim - agora + 59) / 60)
+    m.seloTimerTexto.text = "Fecha em " + resta.ToStr() + " min"
+    m.seloTimer.visible = true
+end sub
+
 sub onSono()
+    m.sonoFim = 0
+    atualizarSeloTimer()
     m.liveVideo.control = "stop"
     m.top.sairRequested = true
 end sub
@@ -285,7 +304,7 @@ sub executarMenu(i as Integer)
         for each q in [30, 60, 90, 120]
             lista.Push({ titulo: q.ToStr() + " minutos" })
         end for
-        mostrarPainel("Timer de sono", "", lista)
+        mostrarPainel("Fechar o app em", "", lista)
     end if
 end sub
 
@@ -297,10 +316,14 @@ sub onFonteEscolhida()
     else if m.modoPainel = "timer" then
         m.painelFontes.aberto = false
         m.sonoTimer.control = "stop"
+        m.sonoFim = 0
         if m.minutos[i] > 0 then
             m.sonoTimer.duration = m.minutos[i] * 60
             m.sonoTimer.control = "start"
+            m.sonoFim = CreateObject("roDateTime").AsSeconds() + m.minutos[i] * 60
+            m.tiqueSono.control = "start"
         end if
+        atualizarSeloTimer()
         return
     else if m.modoPainel = "audio" then
         f = m.faixas[i]

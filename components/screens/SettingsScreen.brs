@@ -9,6 +9,13 @@ sub init()
     m.painelTeclado = m.top.findNode("painelTeclado")
     m.tituloCampo = m.top.findNode("tituloCampo")
     m.teclado = m.top.findNode("teclado")
+    ' O campo do teclado: caixa branca e texto escuro. O padrão do Roku deixava,
+    ' em alguns aparelhos, letra branca sobre a caixa clara (não se via o que se digitava).
+    if m.teclado.textEditBox <> invalid then
+        m.teclado.textEditBox.backgroundUri = "pkg:/images/p_branca.9.png"
+        m.teclado.textEditBox.textColor = "0x11161EFF"
+        m.teclado.textEditBox.hintTextColor = "0x6B7280FF"
+    end if
     m.botoes = m.top.findNode("botoes")
     m.campoAtivo = ""
 
@@ -125,6 +132,13 @@ sub buildSettingsList()
     if not m.prefs.proximoAutomatico then valProximo = "Desativado"
     addSettingItem(content, "Próximo episódio automático", valProximo, "proximoAutomatico")
 
+    brilho = 100
+    b = GetRegistry().Read("brilho_app")
+    if b <> invalid and b <> "" then brilho = b.ToInt()
+    descBrilho = brilho.ToStr() + "% · OK diminui 25% (em 0% a tela apaga; qualquer botão volta)"
+    if brilho >= 100 then descBrilho = "100% (normal) · OK diminui 25%"
+    addSettingItem(content, "Brilho do app", descBrilho, "brilho")
+
     addSettingItem(content, "Limpar histórico e progresso", "Remove todos os itens de Continuar Assistindo", "limparCache")
     ' Controle parental: no fim, discreto. No Roku o conteúdo adulto fica sempre de fora.
     if not KidsAtivo() then
@@ -161,6 +175,17 @@ sub onItemSelected()
 
     if key = "perfis" then
         m.top.perfisRequested = true
+        return
+    else if key = "brilho" then
+        ' 100 -> 75 -> 50 -> 25 -> 0 -> 100. Em 0 qualquer botão traz de volta.
+        atual = 100
+        b = GetRegistry().Read("brilho_app")
+        if b <> invalid and b <> "" then atual = b.ToInt()
+        novo = atual - 25
+        if atual <= 0 then novo = 100
+        if novo < 0 then novo = 0
+        m.top.getScene().brilho = novo
+        buildSettingsList()
         return
     else if key = "parental" then
         d = CreateObject("roSGNode", "StandardPinPadDialog")

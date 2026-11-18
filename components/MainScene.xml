@@ -3,6 +3,8 @@
   <interface>
     <field id="deepLink" type="assocarray" onChange="onDeepLinkChange" />
     <field id="sairDoApp" type="boolean" alwaysNotify="true" />
+    <!-- Brilho do app, 0 a 100 (100 = normal). Ver onBrilho em MainScene.brs. -->
+    <field id="brilho" type="integer" value="100" alwaysNotify="true" onChange="onBrilho" />
   </interface>
 
   <children>
@@ -20,6 +22,12 @@
 
     <!-- Servidor Saimo Connect (Porta 8999) -->
     <ConnectTask id="connectServer" />
+
+    <!-- Véu do brilho do app: por cima de tudo. -->
+    <Rectangle id="veuBrilho" width="1920" height="1080" color="0x000000FF" opacity="0" visible="false" focusable="true" />
+    <Animation id="voltaDoBrilho" duration="1.5" easeFunction="linear">
+      <FloatFieldInterpolator id="interpBrilho" key="[0.0, 1.0]" keyValue="[1.0, 0.0]" fieldToInterp="veuBrilho.opacity" />
+    </Animation>
   </children>
 
   <script type="text/brightscript" uri="pkg:/source/utils/Storage.brs" />

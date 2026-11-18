@@ -15,6 +15,13 @@ sub init()
     m.tituloCampo = m.top.findNode("tituloCampo")
     m.subtituloCampo = m.top.findNode("subtituloCampo")
     m.teclado = m.top.findNode("teclado")
+    ' O campo do teclado: caixa branca e texto escuro. O padrão do Roku deixava,
+    ' em alguns aparelhos, letra branca sobre a caixa clara (não se via o que se digitava).
+    if m.teclado.textEditBox <> invalid then
+        m.teclado.textEditBox.backgroundUri = "pkg:/images/p_branca.9.png"
+        m.teclado.textEditBox.textColor = "0x11161EFF"
+        m.teclado.textEditBox.hintTextColor = "0x6B7280FF"
+    end if
     m.botoes = m.top.findNode("botoes")
 
     m.modo = "main" ' main | addonActions | debrid | debridProvider | addUrl | debridKey
