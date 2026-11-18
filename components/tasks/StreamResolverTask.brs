@@ -569,12 +569,7 @@ function buildCandidateUrl(cand as String) as String
             parsed = ParseJson(respText)
             if parsed <> invalid and parsed.url <> invalid and parsed.url <> "" then
                 finalUrl = parsed.url
-                ' Se a URL final termina em .txt, passa pelo proxy da Cloudflare
-                if Instr(1, LCase(finalUrl), ".txt") > 0 and Instr(1, finalUrl, "api/proxy") = 0 then
-                    ut = CreateObject("roUrlTransfer")
-                    finalUrl = "https://saimo-tv.pages.dev/api/proxy?url=" + ut.Escape(finalUrl)
-                end if
-                return finalUrl
+                return DesembrulharProxy(finalUrl)
             end if
         end if
         return ""
@@ -582,12 +577,7 @@ function buildCandidateUrl(cand as String) as String
 
     if Left(cand, 7) = "http://" or Left(cand, 8) = "https://" then
         finalUrl = cand
-        ' Se termina em .txt (playlist servida como texto), usa proxy Cloudflare para converter text/plain -> mpegurl
-        if Instr(1, LCase(finalUrl), ".txt") > 0 and Instr(1, finalUrl, "api/proxy") = 0 then
-            ut = CreateObject("roUrlTransfer")
-            finalUrl = "https://saimo-tv.pages.dev/api/proxy?url=" + ut.Escape(finalUrl)
-        end if
-        return finalUrl
+        return DesembrulharProxy(finalUrl)
     end if
 
     colonIdx = Instr(1, cand, ":")
@@ -601,10 +591,6 @@ function buildCandidateUrl(cand as String) as String
                 res = baseHost + streamPath
                 if Instr(1, streamPath, ".") = 0 then
                     res = res + ".mp4"
-                end if
-                if Instr(1, LCase(res), ".txt") > 0 and Instr(1, res, "api/proxy") = 0 then
-                    ut = CreateObject("roUrlTransfer")
-                    res = "https://saimo-tv.pages.dev/api/proxy?url=" + ut.Escape(res)
                 end if
                 return res
             end if

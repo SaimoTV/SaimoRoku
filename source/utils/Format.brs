@@ -63,3 +63,43 @@ function HexByte(n as Integer) as String
     digits = "0123456789ABCDEF"
     return Mid(digits, Int(n / 16) + 1, 1) + Mid(digits, (n mod 16) + 1, 1)
 end function
+
+' Desfaz o UrlEncode (sem roUrlTransfer: roda também na render thread).
+function UrlDecode(raw as String) as String
+    hex = ""
+    i = 1
+    n = Len(raw)
+    while i <= n
+        ch = Mid(raw, i, 1)
+        if ch = "%" and i + 2 <= n then
+            hex = hex + Mid(raw, i + 1, 2)
+            i = i + 3
+        else
+            if ch = "+" then
+                hex = hex + "20"
+            else if Asc(ch) < 128 then
+                hex = hex + HexByte(Asc(ch))
+            else
+                hex = hex + UrlEncode(ch).Replace("%", "")
+            end if
+            i = i + 1
+        end if
+    end while
+    ba = CreateObject("roByteArray")
+    ba.FromHexString(hex)
+    return ba.ToAsciiString()
+end function
+
+' Endereço que ainda chegue embrulhado no proxy antigo do site (.../api/proxy?url=...):
+' devolve a origem. O proxy saiu na 3.3; o Roku toca direto.
+function DesembrulharProxy(url as String) as String
+    if Instr(1, url, "/api/proxy?") = 0 then return url
+    p = Instr(1, url, "url=")
+    if p = 0 then return url
+    valor = Mid(url, p + 4)
+    fim = Instr(1, valor, "&")
+    if fim > 0 then valor = Left(valor, fim - 1)
+    origem = UrlDecode(valor)
+    if Left(origem, 4) <> "http" then return url
+    return origem
+end function

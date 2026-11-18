@@ -537,17 +537,9 @@ sub playCurrentVariant()
     partesUrl = rawUrl.Split("/")
     if partesUrl.Count() >= 3 then servidor = partesUrl[2]
 
-    ' Igual ao site (commit 1b4eda4 e streamUrl.ts): fontes .txt (segmentos .png)
-    ' ou que exigem Referer/User-Agent vão direto pelo proxy para não tomar 403/timeout.
-    if isTxt or hasReferer or hasUa or (servidor <> "" and m.pedemProxy.DoesExist(servidor)) then
-        m.tryingProxy = true
-    end if
-
-    if m.tryingProxy and Instr(1, rawUrl, "/api/proxy") = 0 then
-        playUrl = "https://saimo-tv.pages.dev/api/proxy?url=" + UrlEncode(rawUrl)
-        if hasReferer then playUrl = playUrl + "&referer=" + UrlEncode(v.referer)
-        if hasUa then playUrl = playUrl + "&ua=" + UrlEncode(v.userAgent)
-    end if
+    ' Sem proxy (3.3): o Roku toca direto, com Referer e User-Agent nos cabeçalhos
+    ' do vídeo (abaixo). Endereço que já venha embrulhado no proxy antigo é desembrulhado.
+    playUrl = DesembrulharProxy(rawUrl)
 
     content = CreateObject("roSGNode", "ContentNode")
     content.url = playUrl
@@ -825,13 +817,6 @@ sub tryNextVariant()
         return
     end if
 
-    ' Se ainda não tentou a fonte atual via proxy (e não é http puro), tenta via proxy antes de avançar
-    if not m.tryingProxy and not ehHttp and rawUrl <> "" then
-        m.tryingProxy = true
-        m.formatoTrocado = false
-        playCurrentVariant()
-        return
-    end if
 
     ' Avança para a próxima fonte da lista
     m.currentVariantIndex = m.currentVariantIndex + 1

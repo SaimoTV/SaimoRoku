@@ -308,10 +308,8 @@ sub playCandidate(idx as Integer, useProxy as Boolean)
     playUrl = rawUrl
     isTxt = (Instr(1, LCase(rawUrl), ".txt") > 0)
 
-    ' Se está no modo proxy ou é .txt e ainda não está com api/proxy
-    if (useProxy or isTxt) and Instr(1, playUrl, "api/proxy") = 0 then
-        playUrl = "https://saimo-tv.pages.dev/api/proxy?url=" + UrlEncode(rawUrl)
-    end if
+    ' Sem proxy (3.3): .txt toca direto como HLS (o formato é escolhido em startPlayback).
+    playUrl = DesembrulharProxy(playUrl)
 
     startPlayback(playUrl, m.resumePos, streamObj)
 end sub
@@ -374,11 +372,6 @@ sub tryNextCandidate()
     ' 1. Tenta a fonte atual via proxy da Cloudflare apenas se NÃO tiver proxyHeaders customizados e for HTTPS
     hasCustomHeaders = (currentStream <> invalid and currentStream.httpHeadersArray <> invalid and currentStream.httpHeadersArray.Count() > 0)
     isTorrentResolved = (currentStream <> invalid and currentStream.isTorrent = true)
-    if currentUrl <> "" and not m.tryingProxy and not ehHttp and not hasCustomHeaders and not isTorrentResolved and Instr(1, currentUrl, "api/proxy") = 0 then
-        m.tryingProxy = true
-        playCandidate(m.candidateIdx, true)
-        return
-    end if
 
     ' 2. Se o proxy da fonte atual também falhou, avança para a próxima fonte
     m.candidateIdx = m.candidateIdx + 1
@@ -473,7 +466,7 @@ sub startPlayback(streamUrl as String, resumePos as Dynamic, streamObj = invalid
     lowerUrl = LCase(streamUrl)
     hintFmt = ""
     if streamObj <> invalid and streamObj.streamFormat <> invalid then hintFmt = streamObj.streamFormat
-    if Instr(1, lowerUrl, ".m3u8") > 0 or Instr(1, lowerUrl, "master.txt") > 0 or Instr(1, lowerUrl, "/hls/") > 0 or Instr(1, lowerUrl, "api/proxy") > 0 then
+    if Instr(1, lowerUrl, ".m3u8") > 0 or Instr(1, lowerUrl, ".txt") > 0 or Instr(1, lowerUrl, "/hls/") > 0 or Instr(1, lowerUrl, "api/proxy") > 0 then
         content.streamFormat = "hls"
     else if Instr(1, lowerUrl, ".mpd") > 0 then
         content.streamFormat = "dash"
