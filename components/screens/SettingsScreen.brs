@@ -565,7 +565,7 @@ sub onContaBotao()
     else if rotulo = "Entrar com e-mail e senha" then
         d = CreateObject("roSGNode", "StandardKeyboardDialog")
         d.title = "Seu e-mail"
-        d.message = ["Quem criou uma senha no celular ou no site entra aqui."]
+        d.message = ["Entre com a sua conta ou crie uma agora."]
         d.buttons = ["Continuar", "Cancelar"]
         d.observeField("buttonSelected", "onContaEmail")
         m.top.getScene().dialog = d
@@ -583,7 +583,7 @@ sub onContaEmail(evt as Object)
     s = CreateObject("roSGNode", "StandardKeyboardDialog")
     s.title = "Senha"
     s.message = [m.contaEmail]
-    s.buttons = ["Entrar", "Cancelar"]
+    s.buttons = ["Entrar", "Criar conta", "Cancelar"]
     if s.textEditBox <> invalid then s.textEditBox.secureMode = true
     s.observeField("buttonSelected", "onContaSenha")
     m.top.getScene().dialog = s
@@ -594,7 +594,13 @@ sub onContaSenha(evt as Object)
     senha = d.text
     d.close = true
     m.contaBotoes.setFocus(true)
-    if evt.getData() <> 0 or senha = "" then return
-    m.contaSituacao.text = "Entrando…"
-    contaRodar("senha", { email: m.contaEmail, senha: senha })
+    botao = evt.getData()
+    if botao = 2 or senha = "" then return
+    criar = (botao = 1)
+    if criar and Len(senha) < 8 then
+        m.contaSituacao.text = "A senha precisa ter 8 ou mais caracteres"
+        return
+    end if
+    if criar then m.contaSituacao.text = "Criando a conta…" else m.contaSituacao.text = "Entrando…"
+    contaRodar("senha", { email: m.contaEmail, senha: senha, criar: criar })
 end sub

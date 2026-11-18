@@ -6,6 +6,7 @@
     <field id="aparelhoCodigo" type="string" />
     <field id="email" type="string" />
     <field id="senha" type="string" />
+    <field id="criar" type="boolean" value="false" />
     <field id="resultado" type="assocarray" alwaysNotify="true" />
   </interface>
 

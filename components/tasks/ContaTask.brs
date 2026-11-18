@@ -97,7 +97,9 @@ sub executar()
             res.erro = ContaMensagem(r)
         end if
     else if acao = "senha" then
-        r = ContaChamar("POST", "/v1/senha/entrar", { email: m.top.email, senha: m.top.senha, aparelho: ContaNomeDoAparelho() }, "")
+        rota = "/v1/senha/entrar"
+        if m.top.criar = true then rota = "/v1/senha/cadastrar"
+        r = ContaChamar("POST", rota, { email: m.top.email, senha: m.top.senha, aparelho: ContaNomeDoAparelho() }, "")
         if r.status = 200 and r.json <> invalid and r.json.token <> invalid then
             ContaEntrou(r.json)
             res.ok = true
