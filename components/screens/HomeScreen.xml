@@ -4,7 +4,7 @@
     <field id="featuredItem" type="assocarray" onChange="onFeaturedChange" />
     <field id="railsData" type="array" onChange="onRailsChange" />
     <field id="channels" type="array" onChange="onRailsChange" />
-    <field id="epgMap" type="assocarray" />
+    <field id="epgMap" type="assocarray" onChange="onRailsChange" />
     <field id="vodItems" type="array" />
     <field id="itemSelected" type="assocarray" alwaysNotify="true" />
         <field id="tuneRequested" type="assocarray" alwaysNotify="true" />
@@ -35,11 +35,19 @@
       vertFocusAnimationStyle="fixedFocus"
       drawFocusFeedback="false"
       numRows="2"
-      wrap="false"
     ><Font role="rowLabelFont" uri="pkg:/fonts/Roboto-Medium.ttf" size="36" /></RowList>
     <!-- Sem lista nenhuma nem addons: boas-vindas e os caminhos para começar -->
     <Label id="boasVindas" visible="false" translation="[100, 420]" width="1600" wrap="true" lineSpacing="6" text="Bem-vindo ao Saimo! Para começar, adicione uma lista M3U (só o link já basta), usuário e senha, ou instale Addons Stremio." color="#A8B4C0"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="34" /></Label>
-    <LabelList id="botaoLista" visible="false" translation="[100, 560]" itemSize="[820, 72]" itemSpacing="[0, 12]" numRows="2" wrap="false" color="#D5DCE5" focusedColor="#0b0e14" focusBitmapBlendColor="#4FE3D0"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="30" /><Font role="focusedFont" uri="pkg:/fonts/Roboto-Medium.ttf" size="30" /></LabelList>
+    <Group id="botoesBoasVindas" visible="false">
+      <Group id="botaoLista" focusable="true" translation="[100, 560]">
+        <Poster id="botaoListaFundo" width="820" height="72" uri="pkg:/images/p_chip.9.png" opacity="0" />
+        <Label translation="[22, 19]" width="776" text="Adicionar lista (M3U ou usuário e senha)" color="#D5DCE5"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="30" /></Label>
+      </Group>
+      <Group id="botaoAddons" focusable="true" translation="[100, 644]">
+        <Poster id="botaoAddonsFundo" width="820" height="72" uri="pkg:/images/p_chip.9.png" opacity="0" />
+        <Label translation="[22, 19]" width="776" text="Instalar Addons Stremio / Debrid (QR Code)" color="#D5DCE5"><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="30" /></Label>
+      </Group>
+    </Group>
     <Timer id="heroTimer" duration="0.3" repeat="false" />
     <Timer id="montarTimer" duration="0.15" repeat="false" />
   </children>

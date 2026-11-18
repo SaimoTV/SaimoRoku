@@ -17,7 +17,7 @@ sub init()
     m.cores = ["#4FE3D0", "#7AA2FF", "#FFB454", "#FF7EB6", "#C792EA", "#FF7EB6", "#7EE787"]
     m.icones = ["m_movie", "m_live_tv", "m_star", "m_more", "m_favorite", "m_play", "m_star_outline"]
     m.chaves = ["filmes", "series", "animes", "doramas", "novelas", "novelinhas", "kids"]
-    m.NOVELINHAS = 5
+    m.idxNovelinhas = 5
     m.grupos = [[], [], [], [], [], [], []]
     ' As novelinhas vêm de uma lista própria (roku/novelinhas.txt).
     m.novelinhas = []
@@ -61,7 +61,7 @@ sub onIndice()
 end sub
 
 function totalDaCategoria(i as Integer) as Integer
-    if i = m.NOVELINHAS then return m.novelinhas.Count()
+    if i = m.idxNovelinhas then return m.novelinhas.Count()
     total = 0
     if m.indice <> invalid and m.indice.letras[m.chaves[i]] <> invalid then
         for each l in m.indice.letras[m.chaves[i]]
@@ -152,7 +152,7 @@ sub montar()
     cats.title = "Categorias"
     for i = 0 to m.categories.Count() - 1
         g = m.grupos[i]
-        if i = m.NOVELINHAS then g = m.novelinhas
+        if i = m.idxNovelinhas then g = m.novelinhas
         ' Novelas, Novelinhas e Kids só aparecem quando a lista traz o arquivo delas.
         if i < 4 or totalDaCategoria(i) > 0 then
             capas = []
@@ -166,7 +166,7 @@ sub montar()
     end for
 
     ' Novelinhas: fileiras próprias (dubladas e legendadas), sem filtros nem letras.
-    if m.currentCategoryIdx = m.NOVELINHAS then
+    if m.currentCategoryIdx = m.idxNovelinhas then
         m.geracao = m.geracao + 1
         m.linhas = {}
         dub = []
@@ -394,7 +394,7 @@ sub mostrarCategoria(i as Integer)
         desc = "Descoberta TMDB e catálogos dos seus Addons Stremio ativos."
     else if i = 4 then
         desc = "Novelas brasileiras, mexicanas e turcas, do primeiro ao último capítulo."
-    else if i = m.NOVELINHAS then
+    else if i = m.idxNovelinhas then
         desc = "Minisséries em pé, de um minuto por episódio. Cima e baixo trocam de episódio."
     else if i = 6 then
         desc = "Desenhos, animações e filmes para a família, com classificação livre."
@@ -471,8 +471,32 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
 end function
 
 sub cleanUp()
-    ' A tarefa de filtros fica aberta esperando pedido: sai junto com a tela.
-    if m.filtro <> invalid then m.filtro.control = "STOP"
+    if m.filtro <> invalid then
+        m.filtro.unobserveField("resultado")
+        m.filtro.unobserveField("generos")
+        m.filtro.control = "STOP"
+        m.filtro = invalid
+    end if
+    if m.tarefaNovelinhas <> invalid then
+        m.tarefaNovelinhas.unobserveField("lista")
+        m.tarefaNovelinhas.control = "STOP"
+        m.tarefaNovelinhas = invalid
+    end if
+    if m.tarefaIndice <> invalid then
+        m.tarefaIndice.unobserveField("indice")
+        m.tarefaIndice.control = "STOP"
+        m.tarefaIndice = invalid
+    end if
+    if m.tarefas <> invalid then
+        for each k in m.tarefas
+            t = m.tarefas[k]
+            if t <> invalid then
+                t.unobserveField("linha")
+                t.control = "STOP"
+            end if
+        end for
+        m.tarefas = {}
+    end if
 end sub
 
 

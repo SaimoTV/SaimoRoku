@@ -19,7 +19,6 @@ sub executar()
     ut = CreateObject("roUrlTransfer")
     ut.SetUrl(base + "roku/novelinhas.txt")
     ut.SetCertificatesFile("common:/certs/ca-bundle.crt")
-    ut.InitClientCertificates()
     texto = ut.GetToString()
     lista = []
     if texto = invalid or texto = "" then

@@ -41,7 +41,6 @@ sub carregar(categoria as String)
     ut = CreateObject("roUrlTransfer")
     ut.SetUrl(m.base + "roku/filtros-" + categoria + ".txt")
     ut.SetCertificatesFile("common:/certs/ca-bundle.crt")
-    ut.InitClientCertificates()
     ut.AddHeader("User-Agent", "SaimoTV/3.0.3 (RokuOS)")
     texto = ut.GetToString()
     if texto = invalid then texto = ""

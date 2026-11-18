@@ -29,7 +29,6 @@
       vertFocusAnimationStyle="fixedFocus"
       drawFocusFeedback="false"
       numRows="2"
-      wrap="false"
     ><Font role="rowLabelFont" uri="pkg:/fonts/Roboto-Medium.ttf" size="36" /></RowList>
     <Timer id="heroTimer" duration="0.3" repeat="false" />
 

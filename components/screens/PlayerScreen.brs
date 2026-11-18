@@ -310,8 +310,7 @@ sub playCandidate(idx as Integer, useProxy as Boolean)
 
     ' Se está no modo proxy ou é .txt e ainda não está com api/proxy
     if (useProxy or isTxt) and Instr(1, playUrl, "api/proxy") = 0 then
-        ut = CreateObject("roUrlTransfer")
-        playUrl = "https://saimo-tv.pages.dev/api/proxy?url=" + ut.Escape(rawUrl)
+        playUrl = "https://saimo-tv.pages.dev/api/proxy?url=" + UrlEncode(rawUrl)
     end if
 
     startPlayback(playUrl, m.resumePos, streamObj)
@@ -470,7 +469,6 @@ sub startPlayback(streamUrl as String, resumePos as Dynamic, streamObj = invalid
     if not hasUserAgent then headers.Push("User-Agent: SaimoTV/3.0.5 (RokuOS)")
     if not hasAccept then headers.Push("Accept: */*")
     content.HttpHeaders = headers
-    content.HttpSendClientHeaders = true
 
     lowerUrl = LCase(streamUrl)
     hintFmt = ""
@@ -839,4 +837,14 @@ sub cleanUp()
         m.videoPlayer.content = invalid
         m.videoPlayer.visible = false
     end if
+end sub
+
+sub playPause()
+    if m.encerrado = true then return
+    onOsdPlayPause()
+end sub
+
+sub seek(delta as Dynamic)
+    if m.encerrado = true or delta = invalid then return
+    m.playerOsd.seekRequested = Int(Val(delta.ToStr()))
 end sub

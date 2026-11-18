@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <component name="SearchScreen" extends="Group">
   <interface>
-    <field id="channels" type="array" />
+    <field id="channels" type="array" onChange="onChannelsChange" />
     <field id="vodItems" type="array" />
     <field id="itemSelected" type="assocarray" alwaysNotify="true" />
     <field id="tuneRequested" type="assocarray" alwaysNotify="true" />
@@ -33,7 +33,6 @@
       vertFocusAnimationStyle="fixedFocus"
       drawFocusFeedback="false"
       numRows="2"
-      wrap="false"
     ><Font role="rowLabelFont" uri="pkg:/fonts/Roboto-Medium.ttf" size="36" /></RowList>
     </Group>
     <Timer id="addonSearchTimer" duration="0.45" repeat="false" />

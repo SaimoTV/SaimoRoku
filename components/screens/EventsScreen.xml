@@ -26,7 +26,6 @@
       vertFocusAnimationStyle="fixedFocus"
       drawFocusFeedback="false"
       numRows="2"
-      wrap="false"
     ><Font role="rowLabelFont" uri="pkg:/fonts/Roboto-Medium.ttf" size="36" /></RowList>
   </children>
 

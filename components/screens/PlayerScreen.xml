@@ -4,11 +4,14 @@
     <field id="playItem" type="assocarray" onChange="onPlayItemChange" />
     <field id="exitRequested" type="boolean" value="false" />
     <function name="cleanUp" />
+    <function name="playPause" />
+    <function name="abrirOpcoes" />
+    <function name="seek" />
   </interface>
 
   <children>
     <!-- Player de Vídeo Nativo por Hardware -->
-    <Video id="videoPlayer" width="1920" height="1080" translation="[0, 0]" enableUI="false" />
+    <Video id="videoPlayer" width="1920" height="1080" translation="[0, 0]" enableUI="false" focusable="false" />
 
     <!-- Indicador de Buffer / Carregamento -->
     <Group id="bufferingGroup" translation="[760, 500]" visible="false">
@@ -42,6 +45,7 @@
   </children>
 
   <script type="text/brightscript" uri="pkg:/source/utils/Storage.brs" />
+  <script type="text/brightscript" uri="pkg:/source/utils/Format.brs" />
   <script type="text/brightscript" uri="pkg:/source/utils/Addons.brs" />
   <script type="text/brightscript" uri="pkg:/source/utils/Debrid.brs" />
   <script type="text/brightscript" uri="pkg:/components/screens/PlayerScreen.brs" />
