@@ -3,7 +3,7 @@
   <interface>
     <field id="port" type="integer" value="8999" />
     <field id="currentState" type="assocarray" />
-    <field id="receivedCommand" type="assocarray" />
+    <field id="receivedCommand" type="assocarray" alwaysNotify="true" />
     <field id="addonsUpdated" type="integer" value="0" alwaysNotify="true" />
     <field id="activeClients" type="integer" value="0" />
     <field id="status" type="string" />

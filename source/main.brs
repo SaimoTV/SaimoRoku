@@ -1,38 +1,37 @@
 ' ====================================================================
-' Saimo TV para Roku - Versão 2.6.0
+' Saimo TV para Roku
 ' Ponto de entrada nativo BrightScript / SceneGraph
 ' ====================================================================
 
 sub Main(args as Dynamic)
-    ' Inicializa o display SceneGraph
     screen = CreateObject("roSGScreen")
     m.port = CreateObject("roMessagePort")
     screen.SetMessagePort(m.port)
 
-    ' Cria a cena principal
+    ' Necessário para receber ECP/deep links enquanto o app já está aberto.
+    m.input = CreateObject("roInput")
+    if m.input <> invalid then m.input.SetMessagePort(m.port)
     scene = screen.CreateScene("MainScene")
     scene.observeField("sairDoApp", m.port)
     screen.Show()
 
-    ' Passa argumentos de deep linking (se houver, ex.: do Saimo Connect)
-    if args <> invalid and args.contentId <> invalid then
-        scene.deepLink = args
-    end if
+    ' Deep link: o nome da chave pode vir em qualquer caixa (contentId/contentid).
+    ' A cena faz a leitura case-insensitive e ignora links inválidos.
+    if args <> invalid then scene.deepLink = args
 
-    ' Loop de eventos do canal
     while true
         msg = wait(0, m.port)
         msgType = type(msg)
 
         if msgType = "roSGScreenEvent" then
-            if msg.isScreenClosed() then
-                exit while
+            if msg.isScreenClosed() then exit while
+        else if msgType = "roInputEvent" then
+            if msg.IsInput() then
+                info = msg.GetInfo()
+                if info <> invalid then scene.deepLink = info
             end if
         else if msgType = "roSGNodeEvent" then
-            ' Timer de sono: fecha o app
-            exit while
-        else if msgType = "roSocketEvent" then
-            ' Eventos de socket tratados no contexto global se necessário
+            if msg.getField() = "sairDoApp" and msg.getData() = true then exit while
         end if
     end while
 end sub

@@ -182,7 +182,6 @@ sub executarDescoberta()
             ut.SetMessagePort(porta)
             ut.SetUrl(r.url)
             ut.SetCertificatesFile("common:/certs/ca-bundle.crt")
-            ut.InitClientCertificates()
             ut.RetainBodyOnError(true)
             ut.AddHeader("User-Agent", "SaimoTV/3.0.5 (RokuOS)")
             if ut.AsyncGetToString() then
@@ -317,7 +316,6 @@ sub executarBusca()
             ut.SetMessagePort(porta)
             ut.SetUrl(r.url)
             ut.SetCertificatesFile("common:/certs/ca-bundle.crt")
-            ut.InitClientCertificates()
             ut.AddHeader("User-Agent", "SaimoTV/3.0.5 (RokuOS)")
             if ut.AsyncGetToString() then
                 r.ut = ut

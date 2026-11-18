@@ -38,7 +38,7 @@ sub executeRequest()
             fetchDestaques(urlFilmes)
         end if
     else if reqType = "events" then
-        fetchEvents(urlCanais)
+        fetchEvents()
     else if reqType = "radios" then
         if urlCanais <> "" then fetchRadios(urlCanais)
     end if
@@ -50,7 +50,6 @@ function HttpGet(url as String) as String
     ut = CreateObject("roUrlTransfer")
     ut.SetUrl(url)
     ut.SetCertificatesFile("common:/certs/ca-bundle.crt")
-    ut.InitClientCertificates()
     ut.AddHeader("User-Agent", "SaimoTV/3.0.3 (RokuOS)")
     res = ut.GetToString()
     if res = invalid then return ""
@@ -444,7 +443,7 @@ sub fetchDestaques(baseUrl as String)
 end sub
 
 ' ----- Eventos Esportivos -----
-sub fetchEvents(baseUrl as String)
+sub fetchEvents()
     events = []
     ' Agenda do Saimo (nenhum site de streaming de terceiros é consultado).
     texto = HttpGet("https://saimo-tv.pages.dev/eventos-extra.json")

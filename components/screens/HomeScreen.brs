@@ -17,8 +17,11 @@ sub init()
     m.montarTimer.observeField("fire", "montarFileiras")
 
     m.boasVindas = m.top.findNode("boasVindas")
+    m.botoesBoasVindas = m.top.findNode("botoesBoasVindas")
     m.botaoLista = m.top.findNode("botaoLista")
-    m.botaoLista.observeField("itemSelected", "onBotaoLista")
+    m.botaoAddons = m.top.findNode("botaoAddons")
+    m.botaoListaFundo = m.top.findNode("botaoListaFundo")
+    m.botaoAddonsFundo = m.top.findNode("botaoAddonsFundo")
 
     m.top.observeField("focusedChild", "onFocusedChildChange")
     saudar()
@@ -35,8 +38,23 @@ sub saudar()
 end sub
 
 sub onFocusedChildChange()
-    if m.top.isInFocusChain() and not m.contentRowList.isInFocusChain() and not m.botaoLista.isInFocusChain() then
-        if m.botaoLista.visible then m.botaoLista.setFocus(true) else m.contentRowList.setFocus(true)
+    atualizarFocoBotoes()
+    if not m.top.isInFocusChain() then return
+    if m.contentRowList.isInFocusChain() or m.botoesBoasVindas.isInFocusChain() then return
+    if m.botoesBoasVindas.visible then m.botaoLista.setFocus(true) else m.contentRowList.setFocus(true)
+end sub
+
+sub atualizarFocoBotoes()
+    if m.botaoListaFundo = invalid or m.botaoAddonsFundo = invalid then return
+    if m.botaoLista.hasFocus() then
+        m.botaoListaFundo.opacity = 1
+    else
+        m.botaoListaFundo.opacity = 0
+    end if
+    if m.botaoAddons.hasFocus() then
+        m.botaoAddonsFundo.opacity = 1
+    else
+        m.botaoAddonsFundo.opacity = 0
     end if
 end sub
 
@@ -144,15 +162,12 @@ sub montarFileiras()
     prefs = LoadPreferences()
     semListas = (rootNode.GetChildCount() = 0) and (LoadMinhasListas().Count() = 0) and (prefs.urlCanais = "") and (prefs.urlFilmes = "") and (GetEnabledAddons().Count() = 0)
     m.boasVindas.visible = semListas
-    m.botaoLista.visible = semListas
+    m.botoesBoasVindas.visible = semListas
     m.contentRowList.visible = not semListas
     if semListas then
-        itens = CreateObject("roSGNode", "ContentNode")
-        itens.CreateChild("ContentNode").title = "Adicionar lista (M3U ou usuário e senha)"
-        itens.CreateChild("ContentNode").title = "Instalar Addons Stremio / Debrid (QR Code)"
-        m.botaoLista.content = itens
         if m.top.isInFocusChain() then m.botaoLista.setFocus(true)
-    else if m.top.isInFocusChain() and m.botaoLista.isInFocusChain() then
+        atualizarFocoBotoes()
+    else if m.top.isInFocusChain() and m.botoesBoasVindas.isInFocusChain() then
         m.contentRowList.setFocus(true)
     end if
 
@@ -221,17 +236,21 @@ sub onRowItemSelected()
     end if
 end sub
 
-sub onBotaoLista()
-    idx = m.botaoLista.itemSelected
-    if idx = 1 then
-        m.top.addonsRequested = true
-    else
-        m.top.minhasListasRequested = true
-    end if
-end sub
 
 function onKeyEvent(key as String, press as Boolean) as Boolean
     if not press then return false
+
+    if key = "OK" then
+        if m.botaoAddons <> invalid and m.botaoAddons.hasFocus() then
+            m.top.addonsRequested = true
+            return true
+        end if
+        if m.botaoLista <> invalid and m.botaoLista.hasFocus() then
+            m.top.minhasListasRequested = true
+            return true
+        end if
+    end if
+
     if key = "options" or key = "replay" then
         root = m.contentRowList.content
         if root <> invalid and m.focoLinha >= 0 and m.focoLinha < root.getChildCount() then
