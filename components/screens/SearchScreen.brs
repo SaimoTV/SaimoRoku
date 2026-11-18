@@ -32,6 +32,11 @@ sub init()
     m.addonSearchTimer = m.top.findNode("addonSearchTimer")
     m.addonSearchTimer.observeField("fire", "dispararBuscaAddons")
 end sub
+sub onChannelsChange()
+    m.canais = invalid
+    if m.texto.Trim() <> "" then montarResultados()
+end sub
+
 
 sub onFocusedChildChange()
     if m.top.isInFocusChain() and not m.teclas.isInFocusChain() and not m.resultados.isInFocusChain() then

@@ -34,7 +34,6 @@ function xtBuscar(url as String) as Dynamic
     ut.SetMessagePort(porta)
     ut.SetUrl(url)
     ut.SetCertificatesFile("common:/certs/ca-bundle.crt")
-    ut.InitClientCertificates()
     ut.AddHeader("User-Agent", "VLC/3.0.20 LibVLC/3.0.20")
     if not ut.AsyncGetToString() then return invalid
     msg = Wait(60000, porta)
@@ -83,7 +82,6 @@ function baixar(link as String) as Dynamic
     ut.SetMessagePort(porta)
     ut.SetUrl(link)
     ut.SetCertificatesFile("common:/certs/ca-bundle.crt")
-    ut.InitClientCertificates()
     ut.AddHeader("User-Agent", "VLC/3.0.20 LibVLC/3.0.20")
     if not ut.AsyncGetToFile(temporario) then return "Não consegui baixar essa lista"
     msg = Wait(30000, porta)

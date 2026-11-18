@@ -194,6 +194,18 @@ sub handleWebSocketUpgrade(conn as Object, sid as String, headersText as String)
     m.sessoes[sid] = conn
 end sub
 
+function originPermitido(headersText as String) as Boolean
+    ' Navegadores de outras origens não podem mexer no portal da TV.
+    ' Clientes nativos não enviam Origin e continuam funcionando.
+    originMatch = CreateObject("roRegex", "Origin:\s*([^\r\n]+)", "i").Match(headersText)
+    if originMatch = invalid or originMatch.Count() < 2 then return true
+    hostMatch = CreateObject("roRegex", "Host:\s*([^\r\n]+)", "i").Match(headersText)
+    if hostMatch = invalid or hostMatch.Count() < 2 then return false
+    host = LCase(hostMatch[1].Trim())
+    origem = LCase(originMatch[1].Trim())
+    return origem = "http://" + host or origem = "https://" + host
+end function
+
 sub handleHttpRequest(conn as Object, headersText as String, bodyText as String)
     firstLine = headersText
     crlfIdx = Instr(1, headersText, Chr(13))
@@ -209,10 +221,14 @@ sub handleHttpRequest(conn as Object, headersText as String, bodyText as String)
     qPos = Instr(1, reqPath, "?")
     cleanPath = reqPath
     if qPos > 0 then cleanPath = Left(reqPath, qPos - 1)
+    if not originPermitido(headersText) then
+        sendHttpText(conn, "403 Forbidden", "application/json; charset=utf-8", FormatJson({ ok: false, error: "Origem não permitida." }))
+        return
+    end if
 
     if method = "OPTIONS" then
         q = Chr(13) + Chr(10)
-        enviar(conn, "HTTP/1.1 204 No Content" + q + "Access-Control-Allow-Origin: *" + q + "Access-Control-Allow-Methods: GET, POST, OPTIONS" + q + "Access-Control-Allow-Headers: Content-Type" + q + "Connection: close" + q + q)
+        enviar(conn, "HTTP/1.1 204 No Content" + q + "Connection: close" + q + q)
         return
     end if
 
@@ -385,7 +401,7 @@ sub sendHttpText(conn as Object, statusLine as String, contentType as String, bo
     bodyBytes = CreateObject("roByteArray")
     bodyBytes.FromAsciiString(body)
     q = Chr(13) + Chr(10)
-    hdr = "HTTP/1.1 " + statusLine + q + "Content-Type: " + contentType + q + "Access-Control-Allow-Origin: *" + q + "Cache-Control: no-store" + q + "Content-Length: " + bodyBytes.Count().ToStr() + q + "Connection: close" + q + q
+    hdr = "HTTP/1.1 " + statusLine + q + "Content-Type: " + contentType + q + "Cache-Control: no-store" + q + "Content-Length: " + bodyBytes.Count().ToStr() + q + "Connection: close" + q + q
     hdrBytes = CreateObject("roByteArray")
     hdrBytes.FromAsciiString(hdr)
     hdrBytes.Append(bodyBytes)
@@ -539,8 +555,9 @@ sub mensagem(conn as Object, texto as String)
     end if
 end sub
 
-' Teclas do celular entram pelo controle externo do próprio Roku: assim chegam a
-' qualquer tela, como as do controle remoto.
+' Teclas do celular entram pelo controle externo do próprio Roku (ECP local):
+' assim chegam a qualquer tela e a qualquer lista, como as do controle remoto.
+' (Mandar só para a cena não move o foco dentro das telas.)
 sub apertar(codigo as String)
     mapa = { UP: "Up", DOWN: "Down", LEFT: "Left", RIGHT: "Right", OK: "Select", BACK: "Back", HOME: "Home", MENU: "Info" }
     tecla = mapa[UCase(codigo)]

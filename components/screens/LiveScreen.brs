@@ -544,10 +544,9 @@ sub playCurrentVariant()
     end if
 
     if m.tryingProxy and Instr(1, rawUrl, "/api/proxy") = 0 then
-        ut = CreateObject("roUrlTransfer")
-        playUrl = "https://saimo-tv.pages.dev/api/proxy?url=" + ut.Escape(rawUrl)
-        if hasReferer then playUrl = playUrl + "&referer=" + ut.Escape(v.referer)
-        if hasUa then playUrl = playUrl + "&ua=" + ut.Escape(v.userAgent)
+        playUrl = "https://saimo-tv.pages.dev/api/proxy?url=" + UrlEncode(rawUrl)
+        if hasReferer then playUrl = playUrl + "&referer=" + UrlEncode(v.referer)
+        if hasUa then playUrl = playUrl + "&ua=" + UrlEncode(v.userAgent)
     end if
 
     content = CreateObject("roSGNode", "ContentNode")
@@ -559,7 +558,6 @@ sub playCurrentVariant()
     end if
     content.streamFormat = formato
     content.live = true
-    content.HttpSendClientHeaders = true
 
     headers = []
     if hasReferer then headers.Push("Referer: " + v.referer)
@@ -915,11 +913,15 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
         m.okSolto = true
         m.holdTimer.control = "start"
         return true
-    else if key = "left" or key = "back" then
+    else if key = "left" then
         ' Abre o painel de canais
         m.channelDrawer.selectedIndex = m.top.currentChannelIndex
         m.channelDrawer.isOpen = true
         m.channelDrawer.setFocus(true)
+        return true
+    else if key = "back" then
+        ' Voltar na tela cheia sai do Ao vivo; o painel já tratou Voltar quando aberto.
+        m.top.homeRequested = true
         return true
     end if
 

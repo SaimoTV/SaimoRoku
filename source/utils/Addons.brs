@@ -268,7 +268,6 @@ function HttpTransferAsync(method as String, url as String, headersRaw = invalid
     ut.SetMessagePort(porta)
     ut.SetUrl(url)
     ut.SetCertificatesFile("common:/certs/ca-bundle.crt")
-    ut.InitClientCertificates()
     ut.RetainBodyOnError(true)
 
     san = SanitizeHttpHeaders(headersRaw)
@@ -321,7 +320,7 @@ function StringArrayFromDynamic(val as Dynamic) as Object
     return out
 end function
 
-function CompactResourcesFromManifest(rawResources as Dynamic, topTypes as Object, topPrefixes as Object) as Object
+function CompactResourcesFromManifest(rawResources as Dynamic) as Object
     out = []
     if rawResources = invalid or Type(rawResources) <> "roArray" then return out
     for each r in rawResources
@@ -427,7 +426,7 @@ function ParseAddonManifest(parsed as Dynamic, norm as Object, orderIdx = 0 as I
     if parsed.DoesExist("version") and parsed.version <> invalid then version = parsed.version.ToStr().Trim()
     types = StringArrayFromDynamic(parsed.types)
     idPrefixes = StringArrayFromDynamic(parsed.idPrefixes)
-    resources = CompactResourcesFromManifest(parsed.resources, types, idPrefixes)
+    resources = CompactResourcesFromManifest(parsed.resources)
 
     if resources.Count() = 0 then
         return { ok: false, error: "Manifesto sem nenhum recurso compatível (resources vazio)." }
@@ -502,7 +501,7 @@ function SanitizeCompactAddonRecord(raw as Dynamic, fallbackOrder = 0 as Integer
 
     types = StringArrayFromDynamic(raw.types)
     idPrefixes = StringArrayFromDynamic(raw.idPrefixes)
-    resources = CompactResourcesFromManifest(raw.resources, types, idPrefixes)
+    resources = CompactResourcesFromManifest(raw.resources)
 
     return {
         url: norm.url,

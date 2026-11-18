@@ -151,7 +151,6 @@ function DebridHttpRequest(method as String, url as String, headers = invalid as
     ut.SetMessagePort(porta)
     ut.SetUrl(url)
     ut.SetCertificatesFile("common:/certs/ca-bundle.crt")
-    ut.InitClientCertificates()
     ut.RetainBodyOnError(true)
     ut.AddHeader("User-Agent", "SaimoTV/3.0.5 (RokuOS)")
 
@@ -268,7 +267,7 @@ function DebridPickVideoFile(files as Object, fileIdx = invalid as Dynamic) as D
     return invalid
 end function
 
-function ResolveTorBoxTorrent(apiKey as String, infoHash as String, fileIdx as Dynamic, magnet as String) as Object
+function ResolveTorBoxTorrent(apiKey as String, fileIdx as Dynamic, magnet as String) as Object
     base = "https://api.torbox.app/v1/api"
     headers = {
         "Authorization": "Bearer " + apiKey,
@@ -332,7 +331,7 @@ function ResolveTorBoxTorrent(apiKey as String, infoHash as String, fileIdx as D
     return { ok: false, url: "", error: "TorBox: não foi possível gerar o link de reprodução." }
 end function
 
-function ResolveRealDebridTorrent(apiKey as String, infoHash as String, fileIdx as Dynamic, magnet as String) as Object
+function ResolveRealDebridTorrent(apiKey as String, fileIdx as Dynamic, magnet as String) as Object
     base = "https://api.real-debrid.com/rest/1.0"
     headers = {
         "Authorization": "Bearer " + apiKey,
@@ -423,7 +422,7 @@ sub DebridCollectAllDebridFiles(nodes as Dynamic, outFiles as Object)
     end for
 end sub
 
-function ResolveAllDebridTorrent(apiKey as String, infoHash as String, fileIdx as Dynamic, magnet as String) as Object
+function ResolveAllDebridTorrent(apiKey as String, fileIdx as Dynamic, magnet as String) as Object
     base = "https://api.alldebrid.com/v4"
     ut = CreateObject("roUrlTransfer")
     headers = {
@@ -502,7 +501,7 @@ function ResolveAllDebridTorrent(apiKey as String, infoHash as String, fileIdx a
     return { ok: false, url: "", error: "AllDebrid: falha ao desbloquear link." }
 end function
 
-function ResolvePremiumizeTorrent(apiKey as String, infoHash as String, fileIdx as Dynamic, magnet as String) as Object
+function ResolvePremiumizeTorrent(apiKey as String, fileIdx as Dynamic, magnet as String) as Object
     base = "https://www.premiumize.me/api"
     ut = CreateObject("roUrlTransfer")
     headers = { "Content-Type": "application/x-www-form-urlencoded" }
@@ -561,13 +560,13 @@ function ResolveTorrentViaDebrid(streamInfo as Object) as Object
     for each prov in providers
         res = invalid
         if prov.id = "torbox" then
-            res = ResolveTorBoxTorrent(prov.apiKey, infoHash, fileIdx, magnet)
+            res = ResolveTorBoxTorrent(prov.apiKey, fileIdx, magnet)
         else if prov.id = "realDebrid" then
-            res = ResolveRealDebridTorrent(prov.apiKey, infoHash, fileIdx, magnet)
+            res = ResolveRealDebridTorrent(prov.apiKey, fileIdx, magnet)
         else if prov.id = "allDebrid" then
-            res = ResolveAllDebridTorrent(prov.apiKey, infoHash, fileIdx, magnet)
+            res = ResolveAllDebridTorrent(prov.apiKey, fileIdx, magnet)
         else if prov.id = "premiumize" then
-            res = ResolvePremiumizeTorrent(prov.apiKey, infoHash, fileIdx, magnet)
+            res = ResolvePremiumizeTorrent(prov.apiKey, fileIdx, magnet)
         end if
 
         if res <> invalid then

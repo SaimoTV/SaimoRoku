@@ -8,6 +8,7 @@
     <field id="guiaRequested" type="boolean" alwaysNotify="true" />
     <field id="sairRequested" type="boolean" alwaysNotify="true" />
     <field id="focusUpRequested" type="boolean" alwaysNotify="true" />
+    <field id="homeRequested" type="boolean" alwaysNotify="true" />
     <function name="cleanUp" />
   </interface>
 
@@ -15,7 +16,7 @@
     <ChannelDrawer id="channelDrawer" />
 
     <!-- Player de Vídeo Nativo por Hardware: tela cheia ou janela de prévia -->
-    <Video id="liveVideo" width="1920" height="1080" translation="[0, 0]" enableUI="false" />
+    <Video id="liveVideo" width="1920" height="1080" translation="[0, 0]" enableUI="false" focusable="false" />
 
     <!-- Indicador de Carregando / Buffer -->
     <Group id="bufferingGroup" translation="[840, 500]" visible="false">
@@ -61,5 +62,6 @@
   </children>
 
   <script type="text/brightscript" uri="pkg:/source/utils/Storage.brs" />
+  <script type="text/brightscript" uri="pkg:/source/utils/Format.brs" />
   <script type="text/brightscript" uri="pkg:/components/screens/LiveScreen.brs" />
 </component>

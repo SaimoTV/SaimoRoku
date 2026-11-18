@@ -27,6 +27,7 @@ sub init()
     m.addonVodItems = []
     m.addonCatalogTask = invalid
     m.addonSyncTask = invalid
+    m.pendingDeepLinkId = invalid
 
     ' Observers do DataLoader
     m.dataLoader.observeField("responseChannels", "onChannelsLoaded")
@@ -64,7 +65,9 @@ sub init()
 end sub
 
 sub loadAllData()
-    ' Dispara tarefas assíncronas e armazena referências para evitar garbage collection prematuro
+    ' Cancela tarefas de um reload anterior: sem isso, respostas antigas
+    ' chegam depois e sobrescrevem os dados novos na TV.
+    pararLoaders()
     m.loaders = []
     prefs = LoadPreferences()
 
@@ -111,6 +114,19 @@ sub loadAllData()
     m.loaders.Push(loader7)
 
     loadAddonCatalogs()
+end sub
+sub pararLoaders()
+    if m.loaders = invalid then return
+    for each loader in m.loaders
+        loader.unobserveField("responseChannels")
+        loader.unobserveField("responseEpg")
+        loader.unobserveField("responseDestaques")
+        loader.unobserveField("responseVodItems")
+        loader.unobserveField("responseEvents")
+        loader.unobserveField("responseRadios")
+        loader.unobserveField("canais")
+        loader.control = "stop"
+    end for
 end sub
 
 sub loadAddonCatalogs()
@@ -269,6 +285,11 @@ sub juntarCanais()
     else if m.currentScreenName = "search" and m.currentScreenNode <> invalid then
         m.currentScreenNode.channels = m.cachedChannels
     end if
+    if m.currentScreenName = "guide" and m.currentScreenNode <> invalid then
+        m.currentScreenNode.channels = m.cachedChannels
+    end if
+    tocarDeepLinkPendente()
+
 end sub
 
 sub onEpgLoaded(evt as Object)
@@ -278,11 +299,19 @@ sub onEpgLoaded(evt as Object)
     if m.currentScreenName = "home" and m.currentScreenNode <> invalid then
         m.currentScreenNode.epgMap = m.cachedEpg
     end if
+    if m.currentScreenName = "guide" and m.currentScreenNode <> invalid then
+        m.currentScreenNode.epgMap = m.cachedEpg
+    end if
 end sub
 
 ' Árvore do Ao vivo: montada em segundo plano quando os dados mudam, não no clique.
 sub montarArvore()
     if m.cachedChannels = invalid then return
+    if m.tarefaArvore <> invalid then
+        m.tarefaArvore.unobserveField("arvore")
+        m.tarefaArvore.control = "stop"
+        m.tarefaArvore = invalid
+    end if
     t = CreateObject("roSGNode", "ArvoreCanaisTask")
     t.canais = m.cachedChannels
     if m.cachedEpg <> invalid then t.epg = m.cachedEpg
@@ -292,8 +321,10 @@ sub montarArvore()
 end sub
 
 sub onArvorePronta(evt as Object)
+    no = evt.getRoSGNode()
+    if no = invalid or m.tarefaArvore = invalid then return
+    if not no.isSameNode(m.tarefaArvore) then return
     m.arvoreCanais = evt.getData()
-    ' A árvore é um nó (vai por referência); a tarefa só guardava a cópia dos canais.
     m.tarefaArvore = invalid
     if m.currentScreenName = "live" and m.currentScreenNode <> invalid then m.currentScreenNode.arvore = m.arvoreCanais
 end sub
@@ -433,6 +464,7 @@ sub switchScreen(screenName as String, params = invalid as Dynamic)
         node.observeField("telaCheia", "onRadioTelaCheia")
         node.observeField("guiaRequested", "onAbrirGuia")
         node.observeField("sairRequested", "onSairDoApp")
+        node.observeField("homeRequested", "onLiveHomeRequested")
         node.observeField("focusUpRequested", "onScreenFocusUp")
         m.currentScreenNode = node
 
@@ -668,6 +700,10 @@ sub onGuiaVoltar()
     switchScreen("live")
 end sub
 
+sub onLiveHomeRequested()
+    switchScreen("home")
+end sub
+
 sub onSairDoApp()
     m.top.sairDoApp = true
 end sub
@@ -719,11 +755,11 @@ sub onConnectCommand(evt as Object)
         switchScreen("player", { title: cmd.title, url: cmd.url, isSeries: false })
     else if tipo = "playPause" then
         if m.currentScreenName = "player" and m.currentScreenNode <> invalid then
-            ' Dispara toggle play/pause no player
+            m.currentScreenNode.callFunc("playPause")
         end if
     else if tipo = "seek" then
         if m.currentScreenName = "player" and m.currentScreenNode <> invalid and cmd.delta <> invalid then
-            ' Dispara seek
+            m.currentScreenNode.callFunc("seek", cmd.delta)
         end if
     else if tipo = "key" and cmd.code <> invalid then
         handleVirtualKey(cmd.code)
@@ -864,6 +900,20 @@ sub onConnectCommand(evt as Object)
 end sub
 
 sub handleVirtualKey(code as String)
+    ' O celular também pode pedir saída direta do player e voltar ao início.
+    if code = "back" and m.currentScreenName = "player" and m.currentScreenNode <> invalid then
+        m.currentScreenNode.exitRequested = true
+        return
+    end if
+    if (code = "options" or code = "menu") and m.currentScreenName = "player" and m.currentScreenNode <> invalid then
+        m.currentScreenNode.callFunc("abrirOpcoes")
+        return
+    end if
+    if code = "home" or code = "menu" then
+        if m.currentScreenName <> "home" then switchScreen("home")
+        return
+    end if
+
     if code = "up" then
         onKeyEvent("up", true)
     else if code = "down" then
@@ -879,12 +929,30 @@ sub handleVirtualKey(code as String)
     end if
 end sub
 
+function campoDeepLink(link as Object, nome as String) as Dynamic
+    if link = invalid then return invalid
+    for each chave in link
+        if LCase(chave) = LCase(nome) then return link[chave]
+    end for
+    return invalid
+end function
+
 sub onDeepLinkChange()
-    ' Trata link externo recebido pelo Roku
+    ' Roku envia contentId/contentid em caixas diferentes conforme a origem.
     link = m.top.deepLink
-    if link <> invalid and link.contentId <> invalid then
-        tuneChannelByName(link.contentId)
-    end if
+    contentId = campoDeepLink(link, "contentId")
+    if contentId = invalid then return
+    contentId = contentId.ToStr().Trim()
+    if contentId = "" then return
+    m.pendingDeepLinkId = contentId
+    tocarDeepLinkPendente()
+end sub
+
+sub tocarDeepLinkPendente()
+    if m.pendingDeepLinkId = invalid or m.pendingDeepLinkId = "" then return
+    if m.cachedChannels = invalid then return
+    tuneChannelByName(m.pendingDeepLinkId)
+    m.pendingDeepLinkId = invalid
 end sub
 
 ' ====================================================================
