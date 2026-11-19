@@ -85,6 +85,8 @@ sub buildSettingsList()
 
     if not KidsAtivo() then addSettingItem(content, "Conta Saimo", ContaResumo(), "conta")
 
+    addSettingItem(content, "Estatísticas", EstatResumo(), "estatisticas")
+
     perfil = PerfilAtivo()
     descPerfil = perfil.nome
     if perfil.kids = true then descPerfil = descPerfil + " (Kids)"

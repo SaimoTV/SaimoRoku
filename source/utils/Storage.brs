@@ -151,11 +151,62 @@ function GetVODProgress(title as String) as Dynamic
     return invalid
 end function
 
+' ----- Estatísticas pessoais (por perfil): segundos assistidos e títulos vistos -----
+
+function EstatLer() as Object
+    reg = GetRegistry()
+    raw = reg.Read(ChavePerfil("estatisticas"))
+    if raw <> "" then
+        parsed = ParseJson(raw)
+        if parsed <> invalid and parsed.vistos <> invalid then return parsed
+    end if
+    return { segundos: 0, vistos: {} }
+end function
+
+sub EstatGravar(e as Object)
+    reg = GetRegistry()
+    reg.Write(ChavePerfil("estatisticas"), FormatJson(e))
+    reg.Flush()
+end sub
+
+sub EstatSomar(segundos as Integer, vistoTitulo = "" as String)
+    e = EstatLer()
+    if segundos > 0 then e.segundos = e.segundos + segundos
+    if vistoTitulo <> "" then e.vistos[vistoTitulo] = true
+    EstatGravar(e)
+end sub
+
+function EstatResumo() as String
+    e = EstatLer()
+    minutos = Int(e.segundos / 60)
+    filmes = 0
+    episodios = 0
+    for each k in e.vistos
+        if Instr(1, k, " · T") > 0 or Instr(1, k, "|") > 0 then
+            episodios = episodios + 1
+        else
+            filmes = filmes + 1
+        end if
+    end for
+    return Int(minutos / 60).ToStr() + " h " + (minutos mod 60).ToStr() + " min · " + filmes.ToStr() + " filmes · " + episodios.ToStr() + " episódios"
+end function
+
 sub SaveVODProgress(title as String, posSec as Integer, durSec as Integer, season = 0 as Integer, episode = 0 as Integer, epTitle = "" as String, url = "" as String, extra = invalid as Dynamic)
     if title = "" or durSec <= 0 then return
     all = LoadAllProgress()
     percent = Int((posSec / durSec) * 100)
-    
+    ' Estatísticas: soma o que andou desde a última gravação (teto de 2 min: salto não conta).
+    anteriorEst = all[title]
+    if anteriorEst <> invalid and anteriorEst.position <> invalid then
+        delta = posSec - anteriorEst.position
+        if delta > 0 and delta <= 120 then EstatSomar(delta)
+    end if
+    if percent >= 92 and durSec > 300 then
+        chaveVisto = title
+        if season > 0 then chaveVisto = title + " · T" + season.ToStr() + " E" + episode.ToStr()
+        EstatSomar(0, chaveVisto)
+    end if
+
     ' Se assistiu mais de 92%, marca como concluído
     if percent >= 92 then
         if all[title] <> invalid then
