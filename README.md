@@ -69,3 +69,7 @@ texto escuro (o padrão deixava letra branca na caixa clara).
 ## Conta Saimo (opcional)
 
 Ajustes > Conta Saimo mostra o QR e o código (o celular ou o site logado aprova) e tem "Entrar com e-mail e senha". Sincroniza perfis, onde parou e favoritos (listas e addons não vão nem voltam do Roku). Lógica em `source/utils/Conta.brs`, rede em `components/tasks/ContaTask.brs`. Servidor de teste: chave `conta_api` no registro. Contrato: SaimoPlayer/docs/conta.md. Sem conta, nada muda.
+
+## Recursos pessoais (3.1.1)
+
+- Estatísticas em Ajustes (tempo, filmes e episódios vistos). Velocidade e estilo da legenda não existem no player do Roku.
