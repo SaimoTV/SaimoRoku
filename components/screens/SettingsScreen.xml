@@ -6,6 +6,7 @@
     <field id="perfisRequested" type="boolean" alwaysNotify="true" />
     <field id="reloadRequested" type="boolean" value="false" alwaysNotify="true" />
     <field id="focusUpRequested" type="boolean" alwaysNotify="true" />
+    <field id="abrirConta" type="boolean" alwaysNotify="true" onChange="onAbrirConta" />
     <field id="textoRecebido" type="string" alwaysNotify="true" onChange="onTextoRecebido" />
     <function name="cleanUp" />
   </interface>

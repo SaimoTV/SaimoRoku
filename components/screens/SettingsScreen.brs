@@ -83,7 +83,14 @@ sub buildSettingsList()
     m.prefs = LoadPreferences()
     content = CreateObject("roSGNode", "ContentNode")
 
-    if not KidsAtivo() then addSettingItem(content, "Conta Saimo", ContaResumo(), "conta")
+    if not KidsAtivo() then
+        if ContaLogado() then
+            addSettingItem(content, "Conta Saimo", ContaResumo(), "conta")
+        else
+            ' Sem conta: a primeira opção, em destaque.
+            addSettingItem(content, "★ Entrar ou criar conta (opcional)", ContaResumo(), "conta")
+        end if
+    end if
 
     addSettingItem(content, "Estatísticas", EstatResumo(), "estatisticas")
 
@@ -426,6 +433,10 @@ end sub
 ' ===================== Conta Saimo =====================
 ' Sem conta: QR e código curto (o celular logado aprova) e, se a pessoa
 ' quiser, e-mail e senha. A rede fica no ContaTask; aqui só a tela.
+
+sub onAbrirConta()
+    if m.top.abrirConta then abrirConta()
+end sub
 
 sub abrirConta()
     if m.painelConta = invalid then

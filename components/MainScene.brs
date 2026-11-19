@@ -49,9 +49,17 @@ sub init()
     m.currentScreenNode = invalid
     m.currentScreenName = ""
 
+    ' Sem conta e sem ter escolhido "entrar sem login": primeiro as boas-vindas.
+    if not ContaLogado() and GetRegistry().Read("boas_vindas_feito") <> "1" then
+        abrirBoasVindas()
+    else
+        partidaNormal()
+    end if
+end sub
+
+sub partidaNormal()
     ' Com 2 ou mais perfis, a partida pergunta quem está assistindo.
     e = PerfisEstado()
-    ' (Sem "return" aqui: o init não pode sair no meio.)
     if e.perguntar = true and e.lista.Count() >= 2 then
         abrirPerfis(true, "escolher")
     else
@@ -63,6 +71,38 @@ sub init()
             switchScreen("home")
         end if
     end if
+end sub
+
+sub abrirBoasVindas()
+    m.telaBoasVindas = CreateObject("roSGNode", "BoasVindasScreen")
+    m.telaBoasVindas.observeField("entrarConta", "onBoasVindasEntrar")
+    m.telaBoasVindas.observeField("semLogin", "onBoasVindasSemLogin")
+    m.topNavBar.visible = false
+    m.top.appendChild(m.telaBoasVindas)
+    m.telaBoasVindas.setFocus(true)
+end sub
+
+sub fecharBoasVindas()
+    if m.telaBoasVindas <> invalid then
+        m.top.removeChild(m.telaBoasVindas)
+        m.telaBoasVindas = invalid
+    end if
+    m.topNavBar.visible = true
+end sub
+
+sub onBoasVindasSemLogin()
+    reg = GetRegistry()
+    reg.Write("boas_vindas_feito", "1")
+    reg.Flush()
+    fecharBoasVindas()
+    partidaNormal()
+end sub
+
+' Vai para os Ajustes, que abrem a Conta Saimo (QR ou e-mail e senha).
+sub onBoasVindasEntrar()
+    fecharBoasVindas()
+    switchScreen("settings")
+    if m.currentScreenNode <> invalid then m.currentScreenNode.abrirConta = true
 end sub
 
 sub loadAllData()
