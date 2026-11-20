@@ -74,7 +74,7 @@ function GetDefaultPreferences() as Object
         audioInteligente: true,
         versaoAudio: "dub",
         proximoAutomatico: true,
-        pularAutomatico: true,
+        pularAutomatico: false,
         pinParental: "1010",
         ultimoCanal: "",
         urlCanais: "",
@@ -99,6 +99,16 @@ function LoadPreferences() as Object
                 end if
             end for
         end if
+    end if
+    ' 3.3.4: "Pular abertura sozinho" passou a vir desligado. Quem tinha o valor
+    ' antigo (ligado por padrão) volta ao desligado uma vez; depois vale a escolha.
+    if reg.Read("pular_padrao_v2") <> "1" then
+        reg.Write("pular_padrao_v2", "1")
+        if defaults.pularautomatico = true then
+            defaults.pularautomatico = false
+            if raw <> "" then SavePreferences(defaults)
+        end if
+        reg.Flush()
     end if
     if defaults.urlCanais <> invalid and defaults.urlCanais <> "" then
         defaults.urlCanais = NormalizarEnderecoSaimo(defaults.urlCanais)

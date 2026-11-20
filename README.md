@@ -75,3 +75,8 @@ Remoções (3.3.3): tirar do Continue assistindo ou dos favoritos é anotado (`R
 ## Recursos pessoais (3.1.1)
 
 - Estatísticas em Ajustes (tempo, filmes e episódios vistos). Velocidade e estilo da legenda não existem no player do Roku.
+
+## Ajustes da 3.3.4
+
+- **Pular abertura sozinho** passou a vir desligado (quem tinha o padrão antigo volta ao desligado uma vez; flag `pular_padrao_v2`).
+- **On Demand com cache**: `cachefs:/destaques.txt` aparece na hora ao abrir o canal; o download confere e só publica de novo se mudou.

@@ -367,10 +367,21 @@ function lerMeuGuia(html as String, agora as Integer) as Object
 end function
 
 ' ----- Destaques e Trilhos da Home -----
+' Cache: a cópia guardada (cachefs) aparece na hora; o download confere a
+' novidade e só publica de novo se o arquivo mudou.
 sub fetchDestaques(baseUrl as String)
     if Right(baseUrl, 1) <> "/" then baseUrl = baseUrl + "/"
-    url = baseUrl + "destaques.txt"
-    text = HttpGet(url)
+    guardado = ""
+    if CreateObject("roFileSystem").Exists("cachefs:/destaques.txt") then guardado = ReadAsciiFile("cachefs:/destaques.txt")
+    if guardado <> "" then publicarDestaques(baseUrl, guardado)
+    text = HttpGet(baseUrl + "destaques.txt")
+    if text <> "" and text = guardado then return
+    if text <> "" then WriteAsciiFile("cachefs:/destaques.txt", text)
+    if text = "" and guardado <> "" then return
+    publicarDestaques(baseUrl, text)
+end sub
+
+sub publicarDestaques(baseUrl as String, text as String)
     rails = []
     allVodItems = []
     capaBase = "https://image.tmdb.org/t/p/w342"
