@@ -534,6 +534,15 @@ sub onContaTimer()
         contaVenceu("O código venceu.")
         return
     end if
+    ' 8 s nos 2 primeiros minutos, então 15 s, e 20 s depois de 5 min (cada pergunta é cobrada).
+    passou = 590 - (m.contaPedido.vence - CreateObject("roDateTime").AsSeconds())
+    novo = 8
+    if passou >= 300 then
+        novo = 20
+    else if passou >= 120 then
+        novo = 15
+    end if
+    if m.contaTimer.duration <> novo then m.contaTimer.duration = novo
     contaRodar("estado", { aparelhoCodigo: m.contaPedido.aparelhoCodigo })
 end sub
 
@@ -549,6 +558,7 @@ sub onContaResultado(evt as Object)
                 m.contaQr.removeChildIndex(0)
             end while
             QrRenderToGroup(m.contaQr, r.url, 380)
+            m.contaTimer.duration = 8
             m.contaTimer.control = "start"
         else
             contaVenceu(r.erro)

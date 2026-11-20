@@ -1134,7 +1134,8 @@ sub iniciarConta()
 end sub
 
 sub onContaRelogio()
-    m.contaRelogio.duration = 600
+    ' A cada 15 min (cada sincronia é um pedido cobrado).
+    m.contaRelogio.duration = 900
     m.contaRelogio.repeat = true
     m.contaRelogio.control = "start"
     if not ContaLogado() then return
