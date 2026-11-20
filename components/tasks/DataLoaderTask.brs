@@ -476,17 +476,47 @@ sub fetchEvents()
     m.top.responseEvents = events
 end sub
 
+' Segundos UTC de "2026-11-20T14:30:00-03:00" (o deslocamento vem no texto; sem ele, -03:00).
+function segundosIso(texto as String, d as Object) as Integer
+    d.FromISO8601String(Left(texto, 19) + "Z")
+    seg = d.AsSeconds()
+    resto = Mid(texto, 20)
+    sinal = Left(resto, 1)
+    if (sinal = "-" or sinal = "+") and Len(resto) >= 6 then
+        desloc = Val(Mid(resto, 2, 2)) * 3600 + Val(Mid(resto, 5, 2)) * 60
+        if sinal = "-" then return seg + desloc
+        return seg - desloc
+    end if
+    return seg + 10800
+end function
+
+' "14:30" no fuso de quem assiste (Acre, Amazonas, Noronha… cada um vê a sua).
+' Roku em UTC (sem fuso escolhido) mostra Brasília.
+function horaLocal(seg as Integer) as String
+    agora = CreateObject("roDateTime")
+    local = CreateObject("roDateTime")
+    local.FromSeconds(agora.AsSeconds())
+    local.ToLocalTime()
+    desloc = local.AsSeconds() - agora.AsSeconds()
+    if desloc = 0 then desloc = -10800
+    t = CreateObject("roDateTime")
+    t.FromSeconds(seg + desloc)
+    h = t.GetHours()
+    mi = t.GetMinutes()
+    hs = h.ToStr()
+    if h < 10 then hs = "0" + hs
+    ms = mi.ToStr()
+    if mi < 10 then ms = "0" + ms
+    return hs + ":" + ms
+end function
+
 ' Campo faltando só descarta o jogo: erro aqui derrubaria a tarefa.
 function lerJogo(ev as Object, d as Object, agora as Integer) as Dynamic
     if ev.teams = invalid or ev.time_start = invalid then return invalid
     if ev.teams.home = invalid or ev.teams.away = invalid or ev.teams.home.name = invalid or ev.teams.away.name = invalid then return invalid
-    d.FromISO8601String(Left(ev.time_start, 19) + "Z")
-    inicio = d.AsSeconds() + 10800
+    inicio = segundosIso(ev.time_start, d)
     fim = inicio + 7200
-    if ev.time_end <> invalid then
-        d.FromISO8601String(Left(ev.time_end, 19) + "Z")
-        fim = d.AsSeconds() + 10800
-    end if
+    if ev.time_end <> invalid then fim = segundosIso(ev.time_end, d)
     if fim <= agora then return invalid
     casa = ""
     fora = ""
@@ -494,7 +524,7 @@ function lerJogo(ev as Object, d as Object, agora as Integer) as Dynamic
     if ev.teams.away.image <> invalid then fora = ev.teams.away.image.Replace("w_34,h_34", "w_256,h_256")
     liga = ""
     if ev.league <> invalid and ev.league.name <> invalid then liga = ev.league.name
-    return { homeTeam: ev.teams.home.name, awayTeam: ev.teams.away.name, homeLogo: casa, awayLogo: fora, league: liga, timeStr: Mid(ev.time_start, 12, 5), aoVivo: agora >= inicio or ev.estado = "in", slugs: ev.players, estado: ev.estado, channelName: "", score: "" }
+    return { homeTeam: ev.teams.home.name, awayTeam: ev.teams.away.name, homeLogo: casa, awayLogo: fora, league: liga, timeStr: horaLocal(inicio), aoVivo: agora >= inicio or ev.estado = "in", slugs: ev.players, estado: ev.estado, channelName: "", score: "" }
 end function
 
 ' Mesmos estilos da TV Box: a ordem conta, rádio que cabe em dois fica no primeiro.
