@@ -514,13 +514,24 @@ sub contaRodar(acao as String, campos as Object)
     t.control = "run"
 end sub
 
+' Um código por vez: venceu (10 min) ou não deu para pedir, para de perguntar
+' e mostra "Gerar novo código" (cada pergunta ao servidor é cobrada).
+sub contaVenceu(texto as String)
+    m.contaTimer.control = "stop"
+    m.contaPedido = invalid
+    while m.contaQr.getChildCount() > 0
+        m.contaQr.removeChildIndex(0)
+    end while
+    m.contaCodigo.text = ""
+    m.contaSituacao.text = texto
+    contaBotoes(["Gerar novo código", "Entrar com e-mail e senha", "Voltar"])
+    m.contaBotoes.setFocus(true)
+end sub
+
 sub onContaTimer()
     if m.contaPedido = invalid then return
     if CreateObject("roDateTime").AsSeconds() > m.contaPedido.vence then
-        ' Código vencido (10 min): pede outro sozinho.
-        m.contaTimer.control = "stop"
-        m.contaPedido = invalid
-        contaRodar("pedir", {})
+        contaVenceu("O código venceu.")
         return
     end if
     contaRodar("estado", { aparelhoCodigo: m.contaPedido.aparelhoCodigo })
@@ -540,9 +551,7 @@ sub onContaResultado(evt as Object)
             QrRenderToGroup(m.contaQr, r.url, 380)
             m.contaTimer.control = "start"
         else
-            m.contaSituacao.text = r.erro + " Tentando de novo…"
-            m.contaPedido = { aparelhoCodigo: "", vence: 0 }
-            m.contaTimer.control = "start"
+            contaVenceu(r.erro)
         end if
     else if r.acao = "estado" then
         if r.ok then
@@ -570,6 +579,11 @@ sub onContaBotao()
     rotulo = m.contaBotoes.content.getChild(m.contaBotoes.itemSelected).title
     if rotulo = "Voltar" then
         fecharConta()
+    else if rotulo = "Gerar novo código" then
+        m.contaCodigo.text = "…"
+        m.contaSituacao.text = "Pedindo um código…"
+        contaBotoes(["Entrar com e-mail e senha", "Voltar"])
+        contaRodar("pedir", {})
     else if rotulo = "Sincronizar agora" then
         m.contaSituacao.text = "Sincronizando…"
         contaRodar("sincronizar", {})

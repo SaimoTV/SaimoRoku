@@ -70,6 +70,8 @@ texto escuro (o padrão deixava letra branca na caixa clara).
 
 Ajustes > Conta Saimo mostra o QR e o código (o celular ou o site logado aprova) e tem "Entrar com e-mail e senha". Sincroniza perfis, onde parou e favoritos (listas e addons não vão nem voltam do Roku). Lógica em `source/utils/Conta.brs`, rede em `components/tasks/ContaTask.brs`. Servidor de teste: chave `conta_api` no registro. Contrato: SaimoPlayer/docs/conta.md. Sem conta, nada muda.
 
+Remoções (3.3.3): tirar do Continue assistindo ou dos favoritos é anotado (`Rem*` em `source/utils/Storage.brs`, chave `remocoes` do perfil) e viaja no pacote, para a sincronia não trazer de volta. Uma sincronia é um pedido só (PUT com mudança, GET sem). O QR pergunta a cada 8 s e, vencido, mostra "Gerar novo código" (antes pedia outro sozinho para sempre). Atenção: `rem` é palavra reservada (comentário) em BrightScript; validar com `npx brighterscript --rootDir . --createPackage false`.
+
 ## Recursos pessoais (3.1.1)
 
 - Estatísticas em Ajustes (tempo, filmes e episódios vistos). Velocidade e estilo da legenda não existem no player do Roku.

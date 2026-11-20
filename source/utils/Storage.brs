@@ -276,6 +276,7 @@ sub ToggleFavoriteChannel(channelName as String)
     else
         favs.Push(channelName)
     end if
+    RemAnotar("canal", { nome: channelName }, idx >= 0)
     reg = GetRegistry()
     reg.Write(ChavePerfil("fav_channels"), FormatJson(favs))
     reg.Flush()
@@ -311,6 +312,11 @@ sub ToggleFavoriteVOD(item as Object)
             exit for
         end if
     end for
+    tipoFav = "f"
+    if item.isSeries = true then tipoFav = "s"
+    anoFav = ""
+    if item.year <> invalid and GetInterface(item.year, "ifString") <> invalid then anoFav = item.year
+    RemAnotar("fav", { tipo: tipoFav, titulo: item.title, ano: anoFav }, idx >= 0)
     if idx >= 0 then
         favs.Delete(idx)
     else
@@ -360,6 +366,11 @@ sub RemoveInProgress(title as String)
     for each key in all
         it = all[key]
         if key = title or (it <> invalid and it.title = title) then
+            tipoRem = "f"
+            if it <> invalid and it.isSeries = true then tipoRem = "s"
+            anoRem = ""
+            if it <> invalid and it.ano <> invalid and GetInterface(it.ano, "ifString") <> invalid then anoRem = it.ano
+            RemAnotar("prog", { tipo: tipoRem, titulo: title, ano: anoRem }, true)
             all.Delete(key)
             changed = true
         end if
@@ -562,3 +573,135 @@ function ParentalTrocar(atual as String, nova as String) as Boolean
     reg.Flush()
     return true
 end function
+
+' ----- Remoções (Conta Saimo) -----
+' O que foi tirado aqui ("Continue assistindo", favoritos, canais) viaja no
+' pacote para a sincronia não trazer de volta (SaimoPlayer/docs/perfis.md):
+' cada remoção é {…, em} em ms; um item só fica se for mais novo que ela.
+' Por perfil, chave "remocoes": { prog, fav, canal, favEm, canalEm }.
+
+function RemAgoraMs() as Double
+    return CreateObject("roDateTime").AsSeconds() * 1000#
+end function
+
+function RemTexto(v as Dynamic) as String
+    if v = invalid then return ""
+    if GetInterface(v, "ifString") <> invalid then return v
+    return ""
+end function
+
+function RemNumero(v as Dynamic) as Double
+    if v = invalid then return 0#
+    t = type(v)
+    if t = "roInt" or t = "Integer" or t = "roFloat" or t = "Float" or t = "roDouble" or t = "Double" or t = "LongInteger" or t = "roLongInteger" then return v + 0#
+    return 0#
+end function
+
+function RemChave(id as String) as String
+    if id = "principal" then return "remocoes"
+    return "remocoes@" + id
+end function
+
+function RemLer(id as String) as Object
+    r = invalid
+    raw = GetRegistry().Read(RemChave(id))
+    if raw <> invalid and raw <> "" then r = ParseJson(raw)
+    if r = invalid or type(r) <> "roAssociativeArray" then r = {}
+    for each k in ["prog", "fav", "canal"]
+        if r[k] = invalid or type(r[k]) <> "roArray" then r[k] = []
+    end for
+    for each k in ["favEm", "canalEm"]
+        if r[k] = invalid or type(r[k]) <> "roAssociativeArray" then r[k] = {}
+    end for
+    return r
+end function
+
+function RemChaveItem(lista as String, x as Object) as String
+    if x = invalid or type(x) <> "roAssociativeArray" then return ""
+    if lista = "canal" then return RemTexto(x.nome)
+    t = RemTexto(x.titulo)
+    if t = "" then return ""
+    tipo = "f"
+    if x.tipo = "s" then tipo = "s"
+    return tipo + "|" + t + "|" + RemTexto(x.ano)
+end function
+
+' Junta duas listas de remoções pela chave (vale o em maior), no máximo 300, nada com mais de 180 dias.
+function RemJuntarLista(lista as String, a as Dynamic, b as Dynamic) as Object
+    mapa = {}
+    limite = RemAgoraMs() - 180# * 24# * 3600000#
+    for each fonte in [a, b]
+        if fonte <> invalid and type(fonte) = "roArray" then
+            for each x in fonte
+                k = RemChaveItem(lista, x)
+                em = 0#
+                if k <> "" then em = RemNumero(x.em)
+                if k <> "" and em > 0 and em >= limite then
+                    atual = mapa[k]
+                    if atual = invalid or RemNumero(atual.em) < em then mapa[k] = x
+                end if
+            end for
+        end if
+    end for
+    saida = []
+    for each k in mapa
+        saida.Push(mapa[k])
+    end for
+    saida.SortBy("em", "r")
+    while saida.Count() > 300
+        saida.Pop()
+    end while
+    return saida
+end function
+
+sub RemGravar(id as String, r as Object)
+    reg = GetRegistry()
+    reg.Write(RemChave(id), FormatJson(r))
+    reg.Flush()
+end sub
+
+function RemTituloRemovido(remo as Object, tipo as String, titulo as String, ano as String, emItem as Double) as Boolean
+    for each x in remo
+        xt = "f"
+        if x.tipo = "s" then xt = "s"
+        xa = RemTexto(x.ano)
+        if xt = tipo and RemTexto(x.titulo) = titulo and (xa = "" or ano = "" or xa = ano) and RemNumero(x.em) >= emItem then return true
+    end for
+    return false
+end function
+
+function RemCanalRemovido(r as Object, nome as String) as Boolean
+    emItem = RemNumero(r.canalEm[nome])
+    for each x in r.canal
+        if RemTexto(x.nome) = nome and RemNumero(x.em) >= emItem then return true
+    end for
+    return false
+end function
+
+' Tirou ("removido") ou pôs um item, no perfil ativo. lista: prog, fav ou canal.
+sub RemAnotar(lista as String, item as Object, removido as Boolean)
+    id = PerfisEstado().ativo
+    r = RemLer(id)
+    item.em = RemAgoraMs()
+    k = RemChaveItem(lista, item)
+    if k = "" then return
+    mapaEm = r.favEm
+    if lista = "canal" then mapaEm = r.canalEm
+    if removido then
+        r[lista].Push(item)
+        if lista <> "prog" then mapaEm.Delete(k)
+    else
+        nova = []
+        for each x in r[lista]
+            if RemChaveItem(lista, x) <> k then nova.Push(x)
+        end for
+        r[lista] = nova
+        if lista = "canal" then
+            mapaEm[RemTexto(item.nome)] = item.em
+        else
+            mapaEm[k] = item.em
+        end if
+    end if
+    r[lista] = RemJuntarLista(lista, r[lista], [])
+    RemGravar(id, r)
+end sub

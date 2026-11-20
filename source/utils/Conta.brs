@@ -88,6 +88,7 @@ end function
 
 ' Onde parou e favoritos de um perfil, no formato do pacote.
 function ContaDadosDoPerfil(id as String) as Object
+    remo = RemLer(id)
     progresso = []
     tudo = ContaLerJson(ContaChave("vod_progress", id), {})
     for each titulo in tudo
@@ -99,12 +100,14 @@ function ContaDadosDoPerfil(id as String) as Object
             if not serie or (temporada > 0 and episodio > 0) then
                 tipo = "f"
                 if serie then tipo = "s"
-                progresso.Push({
-                    tipo: tipo, titulo: titulo, ano: ContaTexto(it.ano), letra: ContaTexto(it.letter),
-                    temporada: temporada, episodio: episodio,
-                    pos: ContaNumero(it.position) * 1000#, dur: ContaNumero(it.duration) * 1000#,
-                    em: ContaNumero(it.updatedAt) * 1000#
-                })
+                if not RemTituloRemovido(remo.prog, tipo, titulo, ContaTexto(it.ano), ContaNumero(it.updatedAt) * 1000#) then
+                    progresso.Push({
+                        tipo: tipo, titulo: titulo, ano: ContaTexto(it.ano), letra: ContaTexto(it.letter),
+                        temporada: temporada, episodio: episodio,
+                        pos: ContaNumero(it.position) * 1000#, dur: ContaNumero(it.duration) * 1000#,
+                        em: ContaNumero(it.updatedAt) * 1000#
+                    })
+                end if
             end if
         end if
     end for
@@ -113,14 +116,17 @@ function ContaDadosDoPerfil(id as String) as Object
         if f <> invalid and ContaTexto(f.title) <> "" then
             tipo = "f"
             if f.isSeries = true then tipo = "s"
-            favTitulos.Push({ tipo: tipo, titulo: f.title, ano: ContaTexto(f.year), letra: ContaTexto(f.letter) })
+            ft = { tipo: tipo, titulo: f.title, ano: ContaTexto(f.year), letra: ContaTexto(f.letter) }
+            emFav = remo.favEm[tipo + "|" + f.title + "|" + ContaTexto(f.year)]
+            if emFav <> invalid then ft.em = emFav
+            favTitulos.Push(ft)
         end if
     end for
     favCanais = []
     for each n in ContaLerJson(ContaChave("fav_channels", id), [])
         if ContaTexto(n) <> "" then favCanais.Push(n)
     end for
-    return { progresso: progresso, favTitulos: favTitulos, favCanais: favCanais }
+    return { progresso: progresso, favTitulos: favTitulos, favCanais: favCanais, remo: remo }
 end function
 
 function ContaPacote() as Object
@@ -129,6 +135,11 @@ function ContaPacote() as Object
     for each p in e.lista
         d = ContaDadosDoPerfil(p.id)
         o = { id: p.id, nome: p.nome, avatar: p.avatar, em: ContaNumero(p.em), progresso: d.progresso, favTitulos: d.favTitulos, favCanais: d.favCanais }
+        ' Remoções: o que foi tirado aqui não volta pela união.
+        if d.remo.prog.Count() > 0 then o.progressoRemovido = d.remo.prog
+        if d.remo.fav.Count() > 0 then o.favTitulosRemovidos = d.remo.fav
+        if d.remo.canal.Count() > 0 then o.favCanaisRemovidos = d.remo.canal
+        if d.remo.canalEm.Count() > 0 then o.favCanaisEm = d.remo.canalEm
         if p.kids = true then
             o.kids = true
             o.codigo = ContaTexto(p.codigo)
@@ -147,6 +158,59 @@ end function
 ' Junta progresso e favoritos que vieram da conta aos de um perfil daqui.
 sub ContaJuntarNoPerfil(id as String, chegou as Object)
     reg = GetRegistry()
+    ' Remoções que vieram de fora: juntam às daqui e tiram o que entrou antes delas.
+    remo = RemLer(id)
+    remo.prog = RemJuntarLista("prog", remo.prog, chegou.progressoRemovido)
+    remo.fav = RemJuntarLista("fav", remo.fav, chegou.favTitulosRemovidos)
+    remo.canal = RemJuntarLista("canal", remo.canal, chegou.favCanaisRemovidos)
+    if chegou.favCanaisEm <> invalid and type(chegou.favCanaisEm) = "roAssociativeArray" then
+        for each n in chegou.favCanaisEm
+            if ContaNumero(chegou.favCanaisEm[n]) > ContaNumero(remo.canalEm[n]) then remo.canalEm[n] = ContaNumero(chegou.favCanaisEm[n])
+        end for
+    end if
+    if chegou.favTitulos <> invalid then
+        for each f in chegou.favTitulos
+            if ContaNumero(f.em) > 0 then
+                tf = "f"
+                if f.tipo = "s" then tf = "s"
+                kf = tf + "|" + ContaTexto(f.titulo) + "|" + ContaTexto(f.ano)
+                if ContaNumero(f.em) > ContaNumero(remo.favEm[kf]) then remo.favEm[kf] = ContaNumero(f.em)
+            end if
+        end for
+    end if
+    RemGravar(id, remo)
+    chaveP = ContaChave("vod_progress", id)
+    tudoP = ContaLerJson(chaveP, {})
+    tirou = false
+    for each k in tudoP
+        it = tudoP[k]
+        if it <> invalid then
+            tp = "f"
+            if it.isSeries = true then tp = "s"
+            if RemTituloRemovido(remo.prog, tp, ContaTexto(it.title), ContaTexto(it.ano), ContaNumero(it.updatedAt) * 1000#) then
+                tudoP.Delete(k)
+                tirou = true
+            end if
+        end if
+    end for
+    if tirou then reg.Write(chaveP, FormatJson(tudoP))
+    chaveF = ContaChave("fav_vod", id)
+    favsF = ContaLerJson(chaveF, [])
+    ficaF = []
+    for each x in favsF
+        tx = "f"
+        if x.isSeries = true then tx = "s"
+        kx = tx + "|" + ContaTexto(x.title) + "|" + ContaTexto(x.year)
+        if not RemTituloRemovido(remo.fav, tx, ContaTexto(x.title), ContaTexto(x.year), ContaNumero(remo.favEm[kx])) then ficaF.Push(x)
+    end for
+    if ficaF.Count() <> favsF.Count() then reg.Write(chaveF, FormatJson(ficaF))
+    chaveC = ContaChave("fav_channels", id)
+    favsC = ContaLerJson(chaveC, [])
+    ficaC = []
+    for each n in favsC
+        if not RemCanalRemovido(remo, ContaTexto(n)) then ficaC.Push(n)
+    end for
+    if ficaC.Count() <> favsC.Count() then reg.Write(chaveC, FormatJson(ficaC))
     if chegou.progresso <> invalid then
         chave = ContaChave("vod_progress", id)
         tudo = ContaLerJson(chave, {})
@@ -159,7 +223,10 @@ sub ContaJuntarNoPerfil(id as String, chegou as Object)
                 serie = (p.tipo = "s")
                 temporada = Int(ContaNumero(p.temporada))
                 episodio = Int(ContaNumero(p.episodio))
-                if not serie or (temporada > 0 and episodio > 0) then
+                tpp = "f"
+                if serie then tpp = "s"
+                if RemTituloRemovido(remo.prog, tpp, titulo, ContaTexto(p.ano), ContaNumero(p.em)) then temporada = -1
+                if temporada >= 0 and (not serie or (temporada > 0 and episodio > 0)) then
                     em = ContaNumero(p.em) / 1000
                     atual = tudo[titulo]
                     if atual = invalid or ContaNumero(atual.updatedAt) < em then
@@ -183,6 +250,9 @@ sub ContaJuntarNoPerfil(id as String, chegou as Object)
         mudou = false
         for each f in chegou.favTitulos
             titulo = ContaTexto(f.titulo)
+            tff = "f"
+            if f.tipo = "s" then tff = "s"
+            if titulo <> "" and RemTituloRemovido(remo.fav, tff, titulo, ContaTexto(f.ano), ContaNumero(f.em)) then titulo = ""
             if titulo <> "" then
                 tem = false
                 for each x in favs
@@ -202,6 +272,7 @@ sub ContaJuntarNoPerfil(id as String, chegou as Object)
         mudou = false
         for each n in chegou.favCanais
             nome = ContaTexto(n)
+            if nome <> "" and RemCanalRemovido(remo, nome) then nome = ""
             if nome <> "" then
                 tem = false
                 for each x in favs

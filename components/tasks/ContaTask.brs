@@ -49,24 +49,39 @@ function ContaMensagem(r as Object) as String
 end function
 
 sub ContaEntrou(j as Object)
+    reg = GetRegistry()
+    reg.Delete("conta_ultimo_enviado")
+    reg.Flush()
     email = ""
     if j.conta <> invalid and j.conta.email <> invalid then email = j.conta.email
     ContaGravarSessao({ token: j.token, email: email, sincronizadaEm: 0 })
 end sub
 
-' Baixa, junta aqui, manda o que o Roku tem (o servidor junta de novo).
+' Com mudança aqui desde o último envio: manda (PUT) e o servidor devolve tudo
+' já juntado, que é aplicado aqui. Sem mudança: só baixa (GET). Um pedido por
+' sincronia (cada pedido ao servidor é cobrado).
 function ContaSincronizar() as Object
     s = ContaSessao()
     if s.token = "" then return { ok: false, erro: "Entre na sua conta primeiro" }
-    r = ContaChamar("GET", "/v1/dados", invalid, s.token)
+    reg = GetRegistry()
+    pacote = ContaPacote()
+    texto = FormatJson(pacote)
+    ultimo = reg.Read("conta_ultimo_enviado")
+    if ultimo = invalid then ultimo = ""
+    if texto <> ultimo then
+        r = ContaChamar("PUT", "/v1/dados", { dados: pacote }, s.token)
+    else
+        r = ContaChamar("GET", "/v1/dados", invalid, s.token)
+    end if
     if r.status = 401 then
         ContaGravarSessao(invalid)
         return { ok: false, erro: "Sessão encerrada: entre de novo", saiu: true }
     end if
     if r.status < 200 or r.status >= 300 then return { ok: false, erro: ContaMensagem(r) }
     if r.json <> invalid and r.json.dados <> invalid then ContaAplicar(r.json.dados)
-    p = ContaChamar("PUT", "/v1/dados", { dados: ContaPacote() }, s.token)
-    if p.status < 200 or p.status >= 300 then return { ok: false, erro: ContaMensagem(p) }
+    ' O servidor já tem tudo o que ficou aqui depois de juntar.
+    reg.Write("conta_ultimo_enviado", FormatJson(ContaPacote()))
+    reg.Flush()
     s = ContaSessao()
     s.sincronizadaEm = CreateObject("roDateTime").AsSeconds()
     ContaGravarSessao(s)
