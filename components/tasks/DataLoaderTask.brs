@@ -71,16 +71,20 @@ function fonteDesativada(url as String) as Boolean
     return false
 end function
 
-' Mesma prioridade do site (httpsFirst): fontes HTTPS .m3u8 primeiro, depois HTTPS .txt, e HTTP por último.
+' Mesma prioridade do site (httpsFirst): fontes HTTPS .m3u8 primeiro, depois HTTPS .txt, HTTP e por último DASH/ClearKey.
 function ordenarFontesCanal(fontes as Object) as Object
     if fontes = invalid or fontes.Count() = 0 then return []
     httpsM3u8 = []
     httpsTxt = []
     httpOutras = []
+    dashDrm = []
     for each f in fontes
         if f <> invalid and f.url <> invalid and not fonteDesativada(f.url) then
             u = LCase(f.url.Trim())
-            if Left(u, 8) = "https://" then
+            temChave = (f.clearKey <> invalid and f.clearKey <> "")
+            if temChave or Instr(1, u, ".mpd") > 0 then
+                dashDrm.Push(f)
+            else if Left(u, 8) = "https://" then
                 if Instr(1, u, ".txt") > 0 then
                     httpsTxt.Push(f)
                 else
@@ -95,6 +99,7 @@ function ordenarFontesCanal(fontes as Object) as Object
     saida.Append(httpsM3u8)
     saida.Append(httpsTxt)
     saida.Append(httpOutras)
+    saida.Append(dashDrm)
     return saida
 end function
 
