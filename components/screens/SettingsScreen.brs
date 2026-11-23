@@ -18,6 +18,8 @@ sub init()
     end if
     m.botoes = m.top.findNode("botoes")
     m.campoAtivo = ""
+    ' O grupo aberto ("" = a lista de grupos).
+    m.grupo = ""
 
     appInfo = CreateObject("roAppInfo")
     m.versao.text = "Saimo TV v" + appInfo.GetVersion()
@@ -92,12 +94,24 @@ sub buildSettingsList()
         end if
     end if
 
+    if m.grupo = "" then
+        addSettingItem(content, "Listas e conteúdo", "Minhas listas, addons, Debrid e endereços", "g:listas")
+        addSettingItem(content, "Reprodução", "Ao abrir, atraso, áudio, versão, abertura e próximo episódio", "g:reproducao")
+        addSettingItem(content, "Aparência", "Brilho do app", "g:aparencia")
+        addSettingItem(content, "Perfis e dados", "Perfis, estatísticas e histórico", "g:perfis")
+        if not KidsAtivo() then addSettingItem(content, "Controle parental", "Conteúdo adulto e senha", "g:parental")
+    else
+        addSettingItem(content, "‹ Voltar", "Volta à lista de ajustes", "voltar")
+    end if
+
+    m.construindo = "perfis"
     addSettingItem(content, "Estatísticas", EstatResumo(), "estatisticas")
 
     perfil = PerfilAtivo()
     descPerfil = perfil.nome
     if perfil.kids = true then descPerfil = descPerfil + " (Kids)"
     addSettingItem(content, "Perfis", descPerfil + " · trocar, criar, avatares e perfil Kids", "perfis")
+    m.construindo = "listas"
     addSettingItem(content, "Minhas listas", "Adicionar ou gerenciar listas M3U e Xtream Codes", "minhasListas")
 
     addonsCount = LoadAddons().Count()
@@ -118,6 +132,7 @@ sub buildSettingsList()
     if valFilmes = invalid or valFilmes = "" then valFilmes = "Não configurado · aperte OK para digitar"
     addSettingItem(content, "Endereço de filmes e séries", valFilmes, "urlFilmes")
 
+    m.construindo = "reproducao"
     valAbrir = "Tela inicial"
     if m.prefs.abrirEm = "canal" or m.prefs.abrirEm = "canais" then valAbrir = "Último canal ao vivo"
     addSettingItem(content, "Ao abrir o Saimo", valAbrir, "abrirEm")
@@ -143,6 +158,7 @@ sub buildSettingsList()
     if not m.prefs.proximoAutomatico then valProximo = "Desativado"
     addSettingItem(content, "Próximo episódio automático", valProximo, "proximoAutomatico")
 
+    m.construindo = "aparencia"
     brilho = 100
     b = GetRegistry().Read("brilho_app")
     if b <> invalid and b <> "" then brilho = b.ToInt()
@@ -150,8 +166,10 @@ sub buildSettingsList()
     if brilho >= 100 then descBrilho = "100% (normal) · OK diminui 25%"
     addSettingItem(content, "Brilho do app", descBrilho, "brilho")
 
+    m.construindo = "perfis"
     addSettingItem(content, "Limpar histórico e progresso", "Remove todos os itens de Continuar Assistindo", "limparCache")
     ' Controle parental: no fim, discreto. No Roku o conteúdo adulto fica sempre de fora.
+    m.construindo = "parental"
     if not KidsAtivo() then
         senha = "senha própria"
         h = GetRegistry().Read("parental_senha")
@@ -159,7 +177,14 @@ sub buildSettingsList()
         addSettingItem(content, "Controle parental", "No Roku o conteúdo adulto fica sempre de fora · trocar a senha (" + senha + ")", "parental")
     end if
 
+    m.construindo = ""
+    nomes = {listas: "LISTAS E CONTEÚDO", reproducao: "REPRODUÇÃO", aparencia: "APARÊNCIA", perfis: "PERFIS E DADOS", parental: "CONTROLE PARENTAL"}
+    if m.grupo = "" then m.lblSecao.text = "AJUSTES" else m.lblSecao.text = nomes[m.grupo]
     idx = m.settingsList.itemFocused
+    if m.pularPara <> invalid then
+        idx = m.pularPara
+        m.pularPara = invalid
+    end if
     m.settingsList.content = content
     if idx >= 0 and idx < content.getChildCount() then
         m.settingsList.jumpToItem = idx
@@ -167,6 +192,8 @@ sub buildSettingsList()
 end sub
 
 sub addSettingItem(parent as Object, title as String, value as String, key as String)
+    ' Só entra o que é do grupo aberto (a lista de grupos não tem itens soltos).
+    if m.construindo <> invalid and m.construindo <> "" and m.construindo <> m.grupo then return
     item = parent.createChild("ContentNode")
     item.title = title
     item.description = value
@@ -183,6 +210,17 @@ sub onItemSelected()
 
     key = item.key
     m.prefs = LoadPreferences()
+
+    if Left(key, 2) = "g:" then
+        m.posGrupo = idx
+        m.grupo = Mid(key, 3)
+        m.pularPara = 1
+        buildSettingsList()
+        return
+    else if key = "voltar" then
+        fecharGrupo()
+        return
+    end if
 
     if key = "conta" then
         abrirConta()
@@ -385,10 +423,21 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
     else if key = "left" then
         return true
     else if key = "back" then
+        ' Dentro de um grupo, Voltar volta à lista de grupos.
+        if m.grupo <> "" then
+            fecharGrupo()
+            return true
+        end if
         return false
     end if
     return false
 end function
+
+sub fecharGrupo()
+    m.grupo = ""
+    if m.posGrupo <> invalid then m.pularPara = m.posGrupo else m.pularPara = 0
+    buildSettingsList()
+end sub
 
 sub onSenhaAtual(evt as Object)
     d = evt.getRoSGNode()
