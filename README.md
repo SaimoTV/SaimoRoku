@@ -80,3 +80,7 @@ Remoções (3.3.3): tirar do Continue assistindo ou dos favoritos é anotado (`R
 
 - **Pular abertura sozinho** passou a vir desligado (quem tinha o padrão antigo volta ao desligado uma vez; flag `pular_padrao_v2`).
 - **On Demand com cache**: `cachefs:/destaques.txt` aparece na hora ao abrir o canal; o download confere e só publica de novo se mudou.
+
+## Licença
+
+Código aberto sob a licença MIT (arquivo `LICENSE`). Bibliotecas de terceiros seguem as licenças delas.
