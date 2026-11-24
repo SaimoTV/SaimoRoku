@@ -7,15 +7,15 @@
   </interface>
   <children>
     <Rectangle width="1920" height="1080" color="#0B0F2A" />
-    <Rectangle translation="100,120" width="860" height="800" color="#FFFFFF14" />
-    <Rectangle translation="980,120" width="840" height="800" color="#FFFFFF14" />
-    <Label translation="150,160" width="760" color="#FFFFFF" text="Entrar ou criar conta"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="52" /></Label>
-    <Label translation="150,250" width="760" color="#FFFFFF" text="Por que criar uma conta?"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="32" /></Label>
-    <Label translation="150,310" width="760" wrap="true" lineSpacing="10" color="#A8B4C0" text="• Perfis, favoritos, listas e addons guardados e em qualquer aparelho.&#10;• Continue de onde parou no celular, na TV e no computador.&#10;• Trocou de aparelho ou reinstalou? Nada se perde."><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="28" /></Label>
-    <LabelList id="esquerda" translation="150,700" itemSize="[700, 80]" textHorizAlign="center" />
-    <Label translation="1030,160" width="740" color="#FFFFFF" text="Entrar sem login"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="52" /></Label>
-    <Label translation="1030,250" width="740" wrap="true" lineSpacing="10" color="#A8B4C0" text="A conta não é obrigatória. Dá para usar o Saimo TV inteiro sem entrar: tudo fica guardado só nesta TV.&#10;&#10;Crie a conta quando quiser, em Ajustes &gt; Conta Saimo."><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="28" /></Label>
-    <LabelList id="direita" translation="1030,700" itemSize="[700, 80]" textHorizAlign="center" />
+    <Rectangle translation="[100, 120]" width="860" height="800" color="#FFFFFF14" />
+    <Rectangle translation="[980, 120]" width="840" height="800" color="#FFFFFF14" />
+    <Label translation="[150, 160]" width="760" color="#FFFFFF" text="Entrar ou criar conta"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="52" /></Label>
+    <Label translation="[150, 250]" width="760" color="#FFFFFF" text="Por que criar uma conta?"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="32" /></Label>
+    <Label translation="[150, 310]" width="760" wrap="true" lineSpacing="10" color="#A8B4C0" text="• Perfis, favoritos, listas e addons guardados e em qualquer aparelho.&#10;• Continue de onde parou no celular, na TV e no computador.&#10;• Trocou de aparelho ou reinstalou? Nada se perde."><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="28" /></Label>
+    <LabelList id="esquerda" translation="[150, 700]" itemSize="[700, 80]" textHorizAlign="center" />
+    <Label translation="[1030, 160]" width="740" color="#FFFFFF" text="Entrar sem login"><Font role="font" uri="pkg:/fonts/Roboto-Medium.ttf" size="52" /></Label>
+    <Label translation="[1030, 250]" width="740" wrap="true" lineSpacing="10" color="#A8B4C0" text="A conta não é obrigatória. Dá para usar o Saimo TV inteiro sem entrar: tudo fica guardado só nesta TV.&#10;&#10;Crie a conta quando quiser, em Ajustes &gt; Conta Saimo."><Font role="font" uri="pkg:/fonts/Roboto-Regular.ttf" size="28" /></Label>
+    <LabelList id="direita" translation="[1030, 700]" itemSize="[700, 80]" textHorizAlign="center" />
   </children>
   <script type="text/brightscript" uri="pkg:/components/screens/BoasVindasScreen.brs" />
 </component>
